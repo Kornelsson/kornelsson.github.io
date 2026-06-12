@@ -1,0 +1,989 @@
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kornelsson Portfolio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&family=Inter:wght@300;400;500&display=swap" rel="stylesheet" />
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --black:   #0A0A0A;
+      --dark:    #141414;
+      --panel:   #1C1C1C;
+      --border:  #2A2A2A;
+      --muted:   #888;
+      --light:   #E8E8E8;
+      --white:   #FFFFFF;
+      --gold:    #C9A84C;
+      --gold-dim:#8a6e2f;
+      --radius:  4px;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--black);
+      color: var(--light);
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      font-weight: 300;
+      min-height: 100vh;
+    }
+
+    /* ── HEADER ── */
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: var(--black);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 32px;
+      height: 60px;
+    }
+
+    .logo {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 22px;
+      font-weight: 300;
+      letter-spacing: 0.12em;
+      color: var(--white);
+      text-transform: uppercase;
+      text-decoration: none;
+    }
+    .logo span {
+      color: var(--gold);
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    #authBtn {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--light);
+      font-family: 'Inter', sans-serif;
+      font-size: 12px;
+      font-weight: 400;
+      letter-spacing: 0.08em;
+      padding: 7px 18px;
+      cursor: pointer;
+      border-radius: var(--radius);
+      transition: border-color 0.2s, color 0.2s;
+    }
+    #authBtn:hover { border-color: var(--gold); color: var(--gold); }
+
+    #userEmail {
+      font-size: 12px;
+      color: var(--muted);
+      display: none;
+    }
+
+    /* ── UPLOAD BAR (admin only) ── */
+    #uploadBar {
+      display: none;
+      background: var(--dark);
+      border-bottom: 1px solid var(--border);
+      padding: 14px 32px;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    #dropZone {
+      flex: 1;
+      min-width: 220px;
+      border: 1px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 12px 20px;
+      color: var(--muted);
+      font-size: 12px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.2s, color 0.2s;
+      position: relative;
+    }
+    #dropZone:hover, #dropZone.dragover {
+      border-color: var(--gold);
+      color: var(--gold);
+    }
+    #dropZone input[type="file"] {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+      width: 100%;
+      height: 100%;
+    }
+
+    #uploadBtn {
+      background: var(--gold);
+      color: var(--black);
+      border: none;
+      font-family: 'Inter', sans-serif;
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      padding: 10px 24px;
+      cursor: pointer;
+      border-radius: var(--radius);
+      transition: background 0.2s;
+      white-space: nowrap;
+    }
+    #uploadBtn:hover { background: #e0bc5a; }
+    #uploadBtn:disabled { background: var(--gold-dim); cursor: not-allowed; }
+
+    #uploadStatus {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    /* ── MAIN GRID ── */
+    main {
+      padding: 40px 32px;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    #emptyState {
+      text-align: center;
+      padding: 100px 20px;
+      color: var(--muted);
+    }
+    #emptyState .big {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 48px;
+      font-weight: 300;
+      color: var(--border);
+      line-height: 1;
+      margin-bottom: 16px;
+    }
+
+    #grid {
+      columns: 4;
+      column-gap: 12px;
+    }
+
+    @media (max-width: 1100px) { #grid { columns: 3; } }
+    @media (max-width: 720px)  { #grid { columns: 2; } main { padding: 24px 16px; } header { padding: 0 16px; } #uploadBar { padding: 12px 16px; } }
+    @media (max-width: 420px)  { #grid { columns: 1; } }
+
+    .grid-item {
+      break-inside: avoid;
+      margin-bottom: 12px;
+      position: relative;
+      cursor: pointer;
+      border-radius: var(--radius);
+      overflow: hidden;
+      border: 1px solid var(--border);
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .grid-item.draggable { cursor: grab; }
+    .grid-item.draggable:active { cursor: grabbing; }
+    .grid-item.dragging {
+      opacity: 0.4;
+      border-color: var(--gold);
+    }
+    .grid-item.drag-over {
+      border-color: var(--gold);
+      box-shadow: 0 0 0 1px var(--gold);
+    }
+
+    .grid-item img {
+      width: 100%;
+      display: block;
+      object-fit: cover;
+      transition: transform 0.4s ease;
+    }
+    .grid-item:hover img { transform: scale(1.025); }
+
+    .grid-item .overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 50%);
+      opacity: 0;
+      transition: opacity 0.3s;
+      display: flex;
+      align-items: flex-end;
+      padding: 14px;
+    }
+    .grid-item:hover .overlay { opacity: 1; }
+
+    .overlay-actions {
+      display: flex;
+      gap: 8px;
+      margin-left: auto;
+    }
+
+    .btn-icon {
+      background: rgba(255,255,255,0.12);
+      border: 1px solid rgba(255,255,255,0.2);
+      color: var(--white);
+      border-radius: var(--radius);
+      width: 30px;
+      height: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 13px;
+      transition: background 0.2s;
+      backdrop-filter: blur(4px);
+    }
+    .btn-icon:hover { background: var(--gold); border-color: var(--gold); color: var(--black); }
+
+    /* ── LIGHTBOX ── */
+    #lightbox {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.92);
+      z-index: 999;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    #lightbox.open { display: flex; }
+    #lightbox img {
+      max-width: 90vw;
+      max-height: 90vh;
+      object-fit: contain;
+      border-radius: var(--radius);
+      box-shadow: 0 0 80px rgba(0,0,0,0.8);
+    }
+    #lightboxClose {
+      position: absolute;
+      top: 20px;
+      right: 24px;
+      background: none;
+      border: none;
+      color: var(--muted);
+      font-size: 28px;
+      cursor: pointer;
+      transition: color 0.2s;
+      line-height: 1;
+    }
+    #lightboxClose:hover { color: var(--white); }
+
+    .lightbox-nav {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.15);
+      color: var(--white);
+      font-size: 22px;
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s, border-color 0.2s;
+      backdrop-filter: blur(4px);
+    }
+    .lightbox-nav:hover { background: var(--gold); border-color: var(--gold); color: var(--black); }
+    #lightboxPrev { left: 20px; }
+    #lightboxNext { right: 20px; }
+
+    @media (max-width: 600px) {
+      #lightboxPrev { left: 8px; }
+      #lightboxNext { right: 8px; }
+    }
+
+    /* ── LOGIN MODAL ── */
+    #loginModal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.8);
+      z-index: 200;
+      align-items: center;
+      justify-content: center;
+    }
+    #loginModal.open { display: flex; }
+
+    .modal-box {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 40px;
+      width: 100%;
+      max-width: 360px;
+    }
+    .modal-box h2 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 26px;
+      font-weight: 300;
+      margin-bottom: 6px;
+      color: var(--white);
+    }
+    .modal-box p { font-size: 12px; color: var(--muted); margin-bottom: 28px; }
+
+    .field { margin-bottom: 16px; }
+    .field label { display: block; font-size: 11px; color: var(--muted); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 6px; }
+    .field input {
+      width: 100%;
+      background: var(--dark);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--white);
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      padding: 10px 14px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .field input:focus { border-color: var(--gold); }
+
+    #loginSubmit {
+      width: 100%;
+      background: var(--gold);
+      border: none;
+      color: var(--black);
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      padding: 12px;
+      border-radius: var(--radius);
+      cursor: pointer;
+      margin-top: 8px;
+      transition: background 0.2s;
+    }
+    #loginSubmit:hover { background: #e0bc5a; }
+
+    #loginError { color: #e06060; font-size: 12px; margin-top: 10px; min-height: 18px; }
+
+    #loginClose {
+      position: absolute;
+      top: 14px;
+      right: 18px;
+      background: none;
+      border: none;
+      color: var(--muted);
+      font-size: 22px;
+      cursor: pointer;
+    }
+
+    /* ── PROGRESS BAR ── */
+    #progressWrap {
+      width: 100%;
+      background: var(--border);
+      border-radius: 2px;
+      height: 3px;
+      display: none;
+      margin-top: 4px;
+    }
+    #progressBar {
+      height: 3px;
+      background: var(--gold);
+      border-radius: 2px;
+      width: 0%;
+      transition: width 0.3s;
+    }
+
+    /* ── DRAG HINT ── */
+    #dragHint {
+      display: none;
+      font-size: 11px;
+      color: var(--muted);
+      text-align: center;
+      margin-bottom: 16px;
+      letter-spacing: 0.06em;
+    }
+
+    /* ── BOTTOM FADE ── */
+    #bottomFade {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 30vh;
+      background: linear-gradient(to bottom, transparent 0%, rgba(10,10,10,0.15) 50%, rgba(10,10,10,0.55) 100%);
+      pointer-events: none;
+      z-index: 50;
+    }
+
+    /* ── STORAGE PANEL ── */
+    #storagePanel {
+      display: none;
+      background: var(--dark);
+      border-top: 1px solid var(--border);
+      padding: 20px 32px;
+      gap: 32px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .storage-bar-wrap {
+      flex: 1;
+      min-width: 200px;
+    }
+
+    .storage-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      color: var(--muted);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+    .storage-label span:last-child { color: var(--light); }
+
+    .storage-track {
+      height: 4px;
+      background: var(--border);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+    .storage-fill {
+      height: 4px;
+      border-radius: 2px;
+      background: var(--gold);
+      transition: width 0.6s ease;
+      width: 0%;
+    }
+    .storage-fill.warn  { background: #e09030; }
+    .storage-fill.danger{ background: #e05050; }
+
+    .storage-stats {
+      display: flex;
+      gap: 24px;
+      flex-shrink: 0;
+    }
+
+    .stat-box {
+      text-align: center;
+    }
+    .stat-box .val {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 26px;
+      font-weight: 300;
+      color: var(--white);
+      line-height: 1;
+    }
+    .stat-box .lbl {
+      font-size: 10px;
+      color: var(--muted);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-top: 4px;
+    }
+
+    .storage-console-link {
+      font-size: 11px;
+      color: var(--muted);
+      text-decoration: none;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 6px 14px;
+      white-space: nowrap;
+      transition: border-color 0.2s, color 0.2s;
+      flex-shrink: 0;
+    }
+    .storage-console-link:hover { border-color: var(--gold); color: var(--gold); }
+
+    @media (max-width: 720px) {
+      #storagePanel { padding: 16px; gap: 16px; }
+    }
+
+    /* ── SETUP NOTICE ── */
+    #setupNotice {
+      background: #1a1400;
+      border: 1px solid var(--gold-dim);
+      border-radius: var(--radius);
+      padding: 16px 24px;
+      margin: 24px 32px;
+      font-size: 13px;
+      color: #c9a84c99;
+      line-height: 1.7;
+    }
+    #setupNotice strong { color: var(--gold); }
+    #setupNotice code {
+      background: rgba(201,168,76,0.1);
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-size: 12px;
+      color: var(--gold);
+    }
+  </style>
+</head>
+<body>
+
+
+
+<!-- HEADER -->
+<header>
+  <a href="#" class="logo" onclick="window.scrollTo({top:0,behavior:'smooth'});return false;">Kornelsson<span>.</span></a>
+  <div class="header-right">
+    <span id="userEmail"></span>
+    <button id="authBtn">Prihlásiť sa</button>
+  </div>
+</header>
+
+<!-- UPLOAD BAR (admin only) -->
+<div id="uploadBar">
+  <div id="dropZone">
+    Pretiahnite obrázky sem alebo kliknite pre výber
+    <input type="file" id="fileInput" accept="image/*" multiple />
+  </div>
+  <div>
+    <button id="uploadBtn" disabled>Nahrať</button>
+    <div id="progressWrap"><div id="progressBar"></div></div>
+    <div id="uploadStatus"></div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<main>
+  <div id="dragHint">↔ Presuňte obrázky pre zmenu poradia</div>
+  <div id="emptyState">
+    <div class="big">∅</div>
+    <div>Zatiaľ žiadne obrázky</div>
+  </div>
+  <div id="grid"></div>
+</main>
+<div id="bottomFade"></div>
+
+<!-- LIGHTBOX -->
+<div id="lightbox">
+  <button id="lightboxClose">×</button>
+  <button class="lightbox-nav" id="lightboxPrev">&#8249;</button>
+  <img id="lightboxImg" src="" alt="" />
+  <button class="lightbox-nav" id="lightboxNext">&#8250;</button>
+</div>
+
+<!-- LOGIN MODAL -->
+<div id="loginModal">
+  <div class="modal-box" style="position:relative">
+    <button id="loginClose">×</button>
+    <h2>Prihlásenie</h2>
+    <p>Prístup len pre administrátora</p>
+    <div class="field">
+      <label>Email</label>
+      <input type="email" id="loginEmail" placeholder="vas@email.com" />
+    </div>
+    <div class="field">
+      <label>Heslo</label>
+      <input type="password" id="loginPassword" placeholder="••••••••" />
+    </div>
+    <button id="loginSubmit">Prihlásiť sa</button>
+    <div id="loginError"></div>
+  </div>
+</div>
+
+<!-- STORAGE PANEL (admin only) -->
+<div id="storagePanel">
+  <div class="storage-stats">
+    <div class="stat-box">
+      <div class="val" id="statUsed">0 MB</div>
+      <div class="lbl">Využité</div>
+    </div>
+    <div class="stat-box">
+      <div class="val" id="statFree">5 GB</div>
+      <div class="lbl">Zostatok</div>
+    </div>
+    <div class="stat-box">
+      <div class="val" id="statCount">0</div>
+      <div class="lbl">Obrázkov</div>
+    </div>
+  </div>
+  <div class="storage-bar-wrap">
+    <div class="storage-label">
+      <span>Firebase Storage</span>
+      <span id="statPct">0%</span>
+    </div>
+    <div class="storage-track">
+      <div class="storage-fill" id="storageFill"></div>
+    </div>
+  </div>
+  <a class="storage-console-link" href="https://console.firebase.google.com/project/kornelsson-bea69/storage" target="_blank">
+    → Presné údaje v konzole
+  </a>
+  <button id="recalcBtn" class="storage-console-link" style="cursor:pointer;background:transparent;font-family:inherit;">
+    ↺ Prepočítať
+  </button>
+</div>
+
+<!-- FIREBASE SDK -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged }
+    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+  import { getFirestore, collection, getDocs, addDoc, deleteDoc, doc, updateDoc, query, orderBy, getDoc, setDoc }
+    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+  import { getStorage, ref, uploadBytesResumable, getDownloadURL, deleteObject }
+    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
+
+  // ─────────────────────────────────────────────
+  // 🔧 VYPLŇ TIETO ÚDAJE Z FIREBASE KONZOLY
+  // ─────────────────────────────────────────────
+  const firebaseConfig = {
+    apiKey:            "AIzaSyDzwgVupB_pDsoHZiG8JvQLx5QZy-BXdNY",
+    authDomain:        "kornelsson-bea69.firebaseapp.com",
+    projectId:         "kornelsson-bea69",
+    storageBucket:     "kornelsson-bea69.firebasestorage.app",
+    messagingSenderId: "129211041007",
+    appId:             "1:129211041007:web:5923134219948f8bdbc71a"
+  };
+  // ─────────────────────────────────────────────
+
+  const app     = initializeApp(firebaseConfig);
+  const auth    = getAuth(app);
+  const db      = getFirestore(app);
+  const storage = getStorage(app);
+
+  // DOM refs
+  const grid         = document.getElementById('grid');
+  const emptyState   = document.getElementById('emptyState');
+  const dragHint     = document.getElementById('dragHint');
+  const authBtn      = document.getElementById('authBtn');
+  const userEmail    = document.getElementById('userEmail');
+  const uploadBar    = document.getElementById('uploadBar');
+  const fileInput    = document.getElementById('fileInput');
+  const dropZone     = document.getElementById('dropZone');
+  const uploadBtn    = document.getElementById('uploadBtn');
+  const uploadStatus = document.getElementById('uploadStatus');
+  const progressWrap = document.getElementById('progressWrap');
+  const progressBar  = document.getElementById('progressBar');
+  const loginModal   = document.getElementById('loginModal');
+  const loginClose   = document.getElementById('loginClose');
+  const loginEmail   = document.getElementById('loginEmail');
+  const loginPassword= document.getElementById('loginPassword');
+  const loginSubmit  = document.getElementById('loginSubmit');
+  const loginError   = document.getElementById('loginError');
+  const lightbox     = document.getElementById('lightbox');
+  const lightboxImg  = document.getElementById('lightboxImg');
+  const lightboxClose= document.getElementById('lightboxClose');
+  const lightboxPrev = document.getElementById('lightboxPrev');
+  const lightboxNext = document.getElementById('lightboxNext');
+  const storagePanel = document.getElementById('storagePanel');
+  const statUsed     = document.getElementById('statUsed');
+  const statFree     = document.getElementById('statFree');
+  const statCount    = document.getElementById('statCount');
+  const statPct      = document.getElementById('statPct');
+  const storageFill  = document.getElementById('storageFill');
+  const recalcBtn    = document.getElementById('recalcBtn');
+
+  let isAdmin = false;
+  let images  = [];   // [{id, url, storagePath, order}]
+  let selectedFiles = [];
+  let lightboxCurrentIdx = 0;
+
+  // ── AUTH ──
+  onAuthStateChanged(auth, user => {
+    isAdmin = !!user;
+    if (user) {
+      authBtn.textContent = 'Odhlásiť sa';
+      userEmail.style.display = 'block';
+      userEmail.textContent = user.email;
+      uploadBar.style.display = 'flex';
+      dragHint.style.display = 'block';
+      storagePanel.style.display = 'flex';
+      updateStorageUI();
+    } else {
+      authBtn.textContent = 'Prihlásiť sa';
+      userEmail.style.display = 'none';
+      uploadBar.style.display = 'none';
+      dragHint.style.display = 'none';
+      storagePanel.style.display = 'none';
+    }
+    renderGrid();
+  });
+
+  authBtn.addEventListener('click', () => {
+    if (isAdmin) { signOut(auth); }
+    else { loginModal.classList.add('open'); }
+  });
+
+  loginClose.addEventListener('click', () => loginModal.classList.remove('open'));
+  loginModal.addEventListener('click', e => { if (e.target === loginModal) loginModal.classList.remove('open'); });
+
+  loginSubmit.addEventListener('click', async () => {
+    loginError.textContent = '';
+    try {
+      await signInWithEmailAndPassword(auth, loginEmail.value.trim(), loginPassword.value);
+      loginModal.classList.remove('open');
+      loginPassword.value = '';
+    } catch(e) {
+      loginError.textContent = 'Nesprávny email alebo heslo.';
+    }
+  });
+
+  loginPassword.addEventListener('keydown', e => { if (e.key === 'Enter') loginSubmit.click(); });
+
+  // ── FILE SELECTION ──
+  fileInput.addEventListener('change', () => {
+    selectedFiles = Array.from(fileInput.files);
+    uploadBtn.disabled = selectedFiles.length === 0;
+    uploadStatus.textContent = selectedFiles.length
+      ? `${selectedFiles.length} súbor(ov) pripravených`
+      : '';
+  });
+
+  dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('dragover'); });
+  dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+  dropZone.addEventListener('drop', e => {
+    e.preventDefault();
+    dropZone.classList.remove('dragover');
+    selectedFiles = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/'));
+    uploadBtn.disabled = selectedFiles.length === 0;
+    uploadStatus.textContent = selectedFiles.length ? `${selectedFiles.length} súbor(ov) pripravených` : '';
+  });
+
+  // ── UPLOAD ──
+  uploadBtn.addEventListener('click', async () => {
+    if (!selectedFiles.length) return;
+    uploadBtn.disabled = true;
+    progressWrap.style.display = 'block';
+    let done = 0;
+
+    for (const file of selectedFiles) {
+      const path = `images/${Date.now()}_${file.name}`;
+      const storageRef = ref(storage, path);
+      const fileSize = file.size;
+      await new Promise((resolve, reject) => {
+        const task = uploadBytesResumable(storageRef, file);
+        task.on('state_changed',
+          snap => {
+            const pct = (done / selectedFiles.length + snap.bytesTransferred / snap.totalBytes / selectedFiles.length) * 100;
+            progressBar.style.width = pct + '%';
+          },
+          reject,
+          async () => {
+            const url = await getDownloadURL(task.snapshot.ref);
+            const maxOrder = images.length ? Math.max(...images.map(i => i.order)) : -1;
+            await addDoc(collection(db, 'images'), { url, storagePath: path, order: maxOrder + 1, size: fileSize });
+            await addStorageUsed(fileSize);
+            done++;
+            resolve();
+          }
+        );
+      });
+    }
+
+    progressBar.style.width = '100%';
+    uploadStatus.textContent = 'Nahraté!';
+    selectedFiles = [];
+    fileInput.value = '';
+    uploadBtn.disabled = false;
+    setTimeout(() => { progressWrap.style.display = 'none'; progressBar.style.width = '0'; uploadStatus.textContent = ''; }, 2000);
+    await loadImages();
+    renderGrid();
+    updateStorageUI();
+  });
+
+  // ── STORAGE TRACKING ──
+  const TOTAL_FREE_BYTES = 5 * 1024 * 1024 * 1024; // 5 GB
+
+  function formatBytes(bytes) {
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+    if (bytes < 1024 * 1024 * 1024) return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+    return (bytes / (1024 * 1024 * 1024)).toFixed(2) + ' GB';
+  }
+
+  async function getStorageUsed() {
+    try {
+      const snap = await getDoc(doc(db, 'meta', 'storage'));
+      return snap.exists() ? (snap.data().usedBytes || 0) : 0;
+    } catch { return 0; }
+  }
+
+  async function addStorageUsed(bytes) {
+    const current = await getStorageUsed();
+    await setDoc(doc(db, 'meta', 'storage'), { usedBytes: current + bytes });
+  }
+
+  async function subtractStorageUsed(bytes) {
+    const current = await getStorageUsed();
+    await setDoc(doc(db, 'meta', 'storage'), { usedBytes: Math.max(0, current - bytes) });
+  }
+
+  async function updateStorageUI() {
+    const used = await getStorageUsed();
+    const free = Math.max(0, TOTAL_FREE_BYTES - used);
+    const pct  = Math.min(100, (used / TOTAL_FREE_BYTES) * 100);
+    statUsed.textContent  = formatBytes(used);
+    statFree.textContent  = formatBytes(free);
+    statCount.textContent = images.length;
+    statPct.textContent   = pct.toFixed(2) + '%';
+    storageFill.style.width = pct + '%';
+    storageFill.className = 'storage-fill' + (pct > 90 ? ' danger' : pct > 70 ? ' warn' : '');
+  }
+
+  recalcBtn.addEventListener('click', async () => {
+    recalcBtn.textContent = '↺ Počítam...';
+    recalcBtn.disabled = true;
+    let totalBytes = 0;
+
+    for (const img of images) {
+      try {
+        const res = await fetch(img.url, { method: 'HEAD' });
+        const size = parseInt(res.headers.get('content-length') || '0');
+        if (size > 0) {
+          await updateDoc(doc(db, 'images', img.id), { size });
+          totalBytes += size;
+        }
+      } catch(_) {}
+    }
+
+    await setDoc(doc(db, 'meta', 'storage'), { usedBytes: totalBytes });
+    await updateStorageUI();
+    recalcBtn.textContent = '↺ Prepočítať';
+    recalcBtn.disabled = false;
+  });
+
+  // ── LOAD IMAGES ──
+  async function loadImages() {
+    const q = query(collection(db, 'images'), orderBy('order'));
+    const snap = await getDocs(q);
+    images = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  }
+
+  await loadImages();
+  renderGrid();
+
+  // ── RENDER ──
+  function renderGrid() {
+    grid.innerHTML = '';
+    if (!images.length) {
+      emptyState.style.display = 'block';
+      return;
+    }
+    emptyState.style.display = 'none';
+
+    images.forEach((img, idx) => {
+      const item = document.createElement('div');
+      item.className = 'grid-item';
+      item.dataset.id = img.id;
+      item.dataset.idx = idx;
+      item.draggable = isAdmin;
+      if (isAdmin) item.classList.add('draggable');
+
+      item.innerHTML = `
+        <img src="${img.url}" alt="Kornelsson Portfolio" loading="lazy" />
+        <div class="overlay">
+          <div class="overlay-actions">
+            <button class="btn-icon btn-open" title="Otvoriť">⤢</button>
+            ${isAdmin ? `<button class="btn-icon btn-delete" title="Zmazať">✕</button>` : ''}
+          </div>
+        </div>
+      `;
+
+      item.addEventListener('click', () => {
+        lightboxCurrentIdx = idx;
+        lightboxImg.src = img.url;
+        lightbox.classList.add('open');
+      });
+
+      item.querySelector('.btn-open').addEventListener('click', e => {
+        e.stopPropagation();
+        lightboxCurrentIdx = idx;
+        lightboxImg.src = img.url;
+        lightbox.classList.add('open');
+      });
+
+      if (isAdmin) {
+        item.querySelector('.btn-delete').addEventListener('click', async e => {
+          e.stopPropagation();
+          if (!confirm('Zmazať tento obrázok?')) return;
+          await deleteDoc(doc(db, 'images', img.id));
+          if (img.size) await subtractStorageUsed(img.size);
+          try { await deleteObject(ref(storage, img.storagePath)); } catch(_) {}
+          await loadImages();
+          renderGrid();
+          updateStorageUI();
+        });
+
+        // drag & drop reorder
+        item.addEventListener('dragstart', onDragStart);
+        item.addEventListener('dragover',  onDragOver);
+        item.addEventListener('drop',      onDrop);
+        item.addEventListener('dragend',   onDragEnd);
+      }
+
+      grid.appendChild(item);
+    });
+  }
+
+  // ── DRAG & DROP REORDER ──
+  let dragSrcIdx = null;
+
+  function onDragStart(e) {
+    dragSrcIdx = +e.currentTarget.dataset.idx;
+    e.currentTarget.classList.add('dragging');
+    e.dataTransfer.effectAllowed = 'move';
+  }
+
+  function onDragOver(e) {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    document.querySelectorAll('.grid-item').forEach(el => el.classList.remove('drag-over'));
+    e.currentTarget.classList.add('drag-over');
+  }
+
+  async function onDrop(e) {
+    e.preventDefault();
+    const destIdx = +e.currentTarget.dataset.idx;
+    if (dragSrcIdx === null || dragSrcIdx === destIdx) return;
+
+    const moved = images.splice(dragSrcIdx, 1)[0];
+    images.splice(destIdx, 0, moved);
+
+    // Save new order to Firestore
+    await Promise.all(images.map((img, i) =>
+      updateDoc(doc(db, 'images', img.id), { order: i })
+    ));
+
+    renderGrid();
+  }
+
+  function onDragEnd(e) {
+    e.currentTarget.classList.remove('dragging');
+    document.querySelectorAll('.grid-item').forEach(el => el.classList.remove('drag-over'));
+    dragSrcIdx = null;
+  }
+
+  // ── LIGHTBOX ──
+  function openLightbox(idx) {
+    lightboxCurrentIdx = idx;
+    lightboxImg.src = images[idx].url;
+    lightbox.classList.add('open');
+  }
+
+  lightboxClose.addEventListener('click', () => lightbox.classList.remove('open'));
+  lightbox.addEventListener('click', e => { if (e.target === lightbox) lightbox.classList.remove('open'); });
+
+  lightboxPrev.addEventListener('click', e => {
+    e.stopPropagation();
+    lightboxCurrentIdx = (lightboxCurrentIdx - 1 + images.length) % images.length;
+    lightboxImg.src = images[lightboxCurrentIdx].url;
+  });
+
+  lightboxNext.addEventListener('click', e => {
+    e.stopPropagation();
+    lightboxCurrentIdx = (lightboxCurrentIdx + 1) % images.length;
+    lightboxImg.src = images[lightboxCurrentIdx].url;
+  });
+
+  document.addEventListener('keydown', e => {
+    if (!lightbox.classList.contains('open')) return;
+    if (e.key === 'Escape')      lightbox.classList.remove('open');
+    if (e.key === 'ArrowRight')  { lightboxCurrentIdx = (lightboxCurrentIdx + 1) % images.length; lightboxImg.src = images[lightboxCurrentIdx].url; }
+    if (e.key === 'ArrowLeft')   { lightboxCurrentIdx = (lightboxCurrentIdx - 1 + images.length) % images.length; lightboxImg.src = images[lightboxCurrentIdx].url; }
+  });
+</script>
+</body>
+</html>

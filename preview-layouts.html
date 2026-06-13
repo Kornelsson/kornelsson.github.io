@@ -3,347 +3,201 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Portfolio Layouts — Preview</title>
+<title>Jadro — Spline Style</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400&family=Inter:wght@300;400;500&display=swap" rel="stylesheet" />
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r158/three.min.js"></script>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
   :root {
-    --black:#0A0A0A; --dark:#141414; --panel:#1C1C1C;
-    --border:#2A2A2A; --muted:#888; --light:#E8E8E8;
-    --white:#FFFFFF; --gold:#C9A84C;
+    --ink:#0F0A1F;
+    --muted:#a89ec4;
+    --light:#FFFFFF;
+    --accent:#E8B0E0;
   }
 
+  html, body { width: 100%; height: 100%; }
+
   body {
-    background: var(--black);
+    background: #0F0A1F;
     color: var(--light);
     font-family: 'Inter', sans-serif;
     font-size: 14px;
-    font-weight: 300;
-    min-height: 100vh;
-    overflow-x: hidden;
+    font-weight: 400;
+    overflow: hidden;
   }
 
   header {
-    position: sticky; top: 0; z-index: 100;
-    background: rgba(10,10,10,0.85);
-    backdrop-filter: blur(14px);
-    border-bottom: 1px solid var(--border);
-    padding: 0 32px;
-    height: 64px;
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    padding: 18px 36px 32px;
     display: flex;
     align-items: center;
-    gap: 32px;
+    gap: 24px;
+    pointer-events: none;
+    background: linear-gradient(to bottom, rgba(15,10,31,0.35), transparent);
   }
-
   .logo {
     font-family: 'Cormorant Garamond', serif;
     font-size: 22px;
     font-weight: 300;
-    letter-spacing: 0.12em;
-    color: var(--white);
+    letter-spacing: 0.14em;
+    color: var(--light);
     text-transform: uppercase;
+    text-shadow: 0 2px 20px rgba(255,255,255,0.15);
   }
-  .logo span { color: var(--gold); }
-
-  .tabs { display: flex; gap: 4px; margin-left: auto; }
-  .tab {
-    background: transparent;
-    border: 1px solid var(--border);
-    color: var(--muted);
-    font-family: 'Inter', sans-serif;
-    font-size: 12px;
-    font-weight: 400;
-    letter-spacing: 0.08em;
-    padding: 8px 18px;
-    cursor: pointer;
-    border-radius: 4px;
-    text-transform: uppercase;
-    transition: all 0.2s;
+  .logo span {
+    background: linear-gradient(120deg, #FFB7E8, #FFCC9B);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
   }
-  .tab:hover { color: var(--light); border-color: var(--muted); }
-  .tab.active {
-    background: var(--gold);
-    color: var(--black);
-    border-color: var(--gold);
-  }
-
-  .meta {
-    padding: 20px 32px;
-    border-bottom: 1px solid var(--border);
-    background: var(--dark);
-  }
-  .meta h1 {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 24px;
-    font-weight: 300;
-    color: var(--white);
-    margin-bottom: 6px;
-  }
-  .meta p { font-size: 13px; color: var(--muted); line-height: 1.6; max-width: 720px; }
-
-  #scene {
-    position: relative;
-    width: 100%;
-    min-height: calc(100vh - 64px);
-  }
-
-  /* ════════ GALAXY ════════ */
-  #galaxy {
-    position: relative;
-    width: 100%;
-    height: calc(100vh - 64px);
-    overflow: hidden;
-    background:
-      radial-gradient(circle at 20% 30%, rgba(201,168,76,0.04) 0%, transparent 50%),
-      radial-gradient(circle at 80% 70%, rgba(122,139,181,0.04) 0%, transparent 50%);
-  }
-  #galaxy::before {
-    content: '';
-    position: absolute; inset: 0;
-    background-image:
-      radial-gradient(1px 1px at 20% 30%, #fff, transparent),
-      radial-gradient(1px 1px at 40% 70%, rgba(255,255,255,0.4), transparent),
-      radial-gradient(1px 1px at 60% 20%, rgba(255,255,255,0.6), transparent),
-      radial-gradient(1px 1px at 80% 80%, rgba(255,255,255,0.3), transparent),
-      radial-gradient(1px 1px at 10% 50%, rgba(255,255,255,0.5), transparent),
-      radial-gradient(1px 1px at 90% 40%, rgba(255,255,255,0.4), transparent),
-      radial-gradient(1px 1px at 30% 90%, rgba(255,255,255,0.3), transparent);
-    background-size: 250px 250px;
-    opacity: 0.7;
-  }
-  .galaxy-svg {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    pointer-events: none;
-  }
-  .galaxy-line {
-    stroke: var(--gold);
-    stroke-width: 0.5;
-    opacity: 0;
-    transition: opacity 0.4s;
-  }
-  .galaxy-line.active { opacity: 0.3; }
-
-  .galaxy-node {
-    position: absolute;
-    border-radius: 50%;
-    overflow: hidden;
-    cursor: pointer;
-    box-shadow: 0 0 0 2px var(--black), 0 4px 20px rgba(0,0,0,0.6);
-    transition: transform 0.4s ease, box-shadow 0.3s ease;
-    animation: floatY var(--dur) ease-in-out infinite alternate;
-  }
-  .galaxy-node img {
-    width: 100%; height: 100%; object-fit: cover;
-  }
-  .galaxy-node:hover {
-    transform: scale(1.6);
-    z-index: 10;
-    box-shadow: 0 0 0 2px var(--gold), 0 8px 30px rgba(201,168,76,0.4);
-  }
-  @keyframes floatY {
-    from { transform: translateY(0); }
-    to   { transform: translateY(8px); }
-  }
-
-  .cluster-label {
-    position: absolute;
-    color: var(--gold);
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 14px;
-    font-style: italic;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    opacity: 0.6;
-    pointer-events: none;
-    transform: translate(-50%, -50%);
-  }
-
-  /* ════════ MOOD BOARD ════════ */
-  #moodboard {
-    padding: 40px;
-    background: #0F0E0C;
-    min-height: calc(100vh - 64px);
-  }
-  .mb-grid {
-    columns: 5;
-    column-gap: 16px;
-  }
-  @media (max-width: 1100px) { .mb-grid { columns: 4; } }
-  @media (max-width: 800px)  { .mb-grid { columns: 3; } }
-  @media (max-width: 500px)  { .mb-grid { columns: 2; } }
-
-  .mb-item {
-    break-inside: avoid;
-    margin-bottom: 16px;
-    position: relative;
-    background: #fff;
-    padding: 8px 8px 32px;
-    box-shadow: 0 6px 18px rgba(0,0,0,0.5);
-    transition: transform 0.3s ease;
-    cursor: pointer;
-  }
-  .mb-item img { width: 100%; display: block; }
-  .mb-item:nth-child(3n)   { transform: rotate(-1.5deg); }
-  .mb-item:nth-child(3n+1) { transform: rotate(1.2deg); }
-  .mb-item:nth-child(3n+2) { transform: rotate(-0.8deg); }
-  .mb-item:hover { transform: rotate(0) scale(1.04) translateY(-4px); z-index: 5; }
-
-  .mb-item::before {
-    content: '';
-    position: absolute;
-    top: -8px; left: 50%;
-    transform: translateX(-50%) rotate(-3deg);
-    width: 60px; height: 16px;
-    background: rgba(201,168,76,0.4);
-    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-  }
-
-  .mb-caption {
-    position: absolute;
-    bottom: 8px; left: 12px; right: 12px;
-    font-family: 'Cormorant Garamond', serif;
-    font-style: italic;
+  #loadStatus {
     font-size: 11px;
-    color: #444;
-    text-align: center;
+    color: rgba(255,255,255,0.55);
+    letter-spacing: 0.08em;
+    transition: opacity 0.6s;
+    margin-left: auto;
   }
 
-  /* ════════ POLAROIDS ════════ */
-  #polaroids {
-    position: relative;
-    width: 100%;
-    min-height: calc(100vh - 64px);
-    background:
-      radial-gradient(ellipse at center, rgba(80,60,40,0.3) 0%, transparent 60%),
-      #1a1410;
-    overflow: hidden;
-  }
-  .polaroid {
-    position: absolute;
-    width: 180px;
-    background: #f5f0e8;
-    padding: 10px 10px 36px;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.5), 0 2px 6px rgba(0,0,0,0.3);
-    cursor: pointer;
-    transition: transform 0.3s ease, z-index 0s;
-  }
-  .polaroid img { width: 100%; height: 180px; object-fit: cover; display: block; }
-  .polaroid .caption {
-    position: absolute;
-    bottom: 10px; left: 10px; right: 10px;
-    font-family: 'Cormorant Garamond', serif;
-    font-style: italic;
-    font-size: 13px;
-    color: #2a2520;
-    text-align: center;
-  }
-  .polaroid:hover {
-    transform: scale(1.15) rotate(0) !important;
-    z-index: 100;
-    box-shadow: 0 16px 40px rgba(0,0,0,0.7);
-  }
-
-  /* ════════ JADRO (3D Network) ════════ */
   #core3d {
-    position: relative;
-    width: 100%;
-    height: calc(100vh - 64px);
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
     overflow: hidden;
-    background:
-      radial-gradient(circle at center, #1a1612 0%, var(--black) 60%, #050505 100%);
     cursor: grab;
+    transition: filter 0.5s ease;
+    background:
+      radial-gradient(ellipse 70% 50% at 22% 30%, rgba(80,40,90,0.45), transparent 60%),
+      radial-gradient(ellipse 60% 50% at 78% 75%, rgba(60,30,70,0.35), transparent 60%),
+      radial-gradient(ellipse 50% 70% at 55% 50%, rgba(35,25,75,0.5), transparent 65%),
+      linear-gradient(135deg, #060410 0%, #0a0820 35%, #100a25 65%, #050410 100%);
   }
   #core3d.dragging { cursor: grabbing; }
+  #core3d.dimmed { filter: blur(10px) brightness(0.55) saturate(1.2); }
   #core3d canvas { display: block; width: 100%; height: 100%; }
 
+  /* Hviezdny závoj */
   #core3d::before {
     content: '';
     position: absolute; inset: 0;
     background-image:
       radial-gradient(1px 1px at 15% 25%, rgba(255,255,255,0.5), transparent),
       radial-gradient(1px 1px at 75% 65%, rgba(255,255,255,0.4), transparent),
-      radial-gradient(1px 1px at 35% 75%, rgba(255,255,255,0.3), transparent),
+      radial-gradient(1px 1px at 35% 75%, rgba(255,255,255,0.5), transparent),
       radial-gradient(1px 1px at 85% 15%, rgba(255,255,255,0.4), transparent),
-      radial-gradient(1px 1px at 45% 35%, rgba(255,255,255,0.3), transparent);
-    background-size: 300px 300px;
+      radial-gradient(2px 2px at 45% 35%, rgba(200,160,220,0.35), transparent),
+      radial-gradient(1px 1px at 65% 85%, rgba(160,180,220,0.4), transparent),
+      radial-gradient(1px 1px at 5% 50%, rgba(220,180,160,0.3), transparent),
+      radial-gradient(2px 2px at 95% 45%, rgba(200,140,180,0.3), transparent);
+    background-size: 380px 380px, 320px 320px, 260px 260px, 420px 420px, 290px 290px, 360px 360px, 240px 240px, 310px 310px;
     opacity: 0.5;
     pointer-events: none;
   }
 
   #coreHint {
-    position: absolute;
-    bottom: 24px; left: 50%;
+    position: fixed;
+    bottom: 28px; left: 50%;
     transform: translateX(-50%);
-    font-size: 11px;
-    color: rgba(255,255,255,0.35);
-    letter-spacing: 0.1em;
+    font-size: 10.5px;
+    color: rgba(255,255,255,0.45);
+    letter-spacing: 0.14em;
     text-transform: uppercase;
     pointer-events: none;
+    z-index: 50;
+    text-shadow: 0 1px 12px rgba(0,0,0,0.4);
   }
 
-  #corePreview {
+  /* ── LIGHTBOX ── */
+  #lightbox {
+    position: fixed;
+    inset: 0;
+    background: rgba(15,10,31,0.6);
+    backdrop-filter: blur(4px);
+    z-index: 200;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+  }
+  #lightbox.open { display: flex; }
+  #lightbox img {
+    max-width: 88vw;
+    max-height: 86vh;
+    object-fit: contain;
+    border-radius: 12px;
+    box-shadow:
+      0 0 0 1px rgba(255,255,255,0.1),
+      0 40px 120px rgba(0,0,0,0.6),
+      0 0 80px rgba(232,138,205,0.15);
+    animation: lbZoomIn 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  @keyframes lbZoomIn {
+    from { opacity: 0; transform: scale(0.92); }
+    to   { opacity: 1; transform: scale(1); }
+  }
+
+  .lb-btn {
     position: absolute;
-    top: 50%; left: 50%;
-    transform: translate(-50%, -50%) scale(0.9);
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.3s, transform 0.3s;
-    z-index: 10;
-    max-width: 320px;
-    max-height: 320px;
-    border-radius: 6px;
-    box-shadow: 0 0 0 2px var(--gold), 0 24px 80px rgba(0,0,0,0.8), 0 0 60px rgba(201,168,76,0.3);
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.18);
+    color: rgba(255,255,255,0.9);
+    border-radius: 50%;
+    cursor: pointer;
+    backdrop-filter: blur(14px);
+    transition: all 0.25s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
-  #corePreview.active { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  .lb-btn:hover {
+    background: linear-gradient(120deg, #FFB7E8, #FFCC9B);
+    color: #2a1850;
+    border-color: transparent;
+    transform: scale(1.08);
+  }
+  #lbPrev:hover, #lbNext:hover { transform: translateY(-50%) scale(1.08); }
+  #lbClose { top: 28px; right: 28px; width: 44px; height: 44px; font-size: 22px; }
+  #lbPrev  { left: 28px; top: 50%; transform: translateY(-50%); width: 54px; height: 54px; font-size: 26px; }
+  #lbNext  { right: 28px; top: 50%; transform: translateY(-50%); width: 54px; height: 54px; font-size: 26px; }
 
-  /* Hide all views except active */
-  .view { display: none; }
-  .view.active { display: block; }
+  #lbCounter {
+    position: absolute;
+    bottom: 32px; left: 50%;
+    transform: translateX(-50%);
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 15px;
+    color: rgba(255,255,255,0.65);
+    letter-spacing: 0.12em;
+  }
+
+  @media (max-width: 600px) {
+    #lbPrev { left: 8px; width: 46px; height: 46px; }
+    #lbNext { right: 8px; width: 46px; height: 46px; }
+    #lightbox { padding: 16px; }
+  }
 </style>
 </head>
 <body>
 
 <header>
   <div class="logo">Kornelsson<span>.</span></div>
-  <div id="loadStatus" style="font-size:11px;color:var(--muted);letter-spacing:0.06em;transition:opacity 0.6s;">Načítavam obrázky...</div>
-  <div class="tabs">
-    <button class="tab active" data-view="galaxy">Galaxia</button>
-    <button class="tab" data-view="moodboard">Nástenka</button>
-    <button class="tab" data-view="polaroids">Polaroidy</button>
-    <button class="tab" data-view="core">Jadro</button>
-  </div>
+  <div id="loadStatus">Načítavam obrázky...</div>
 </header>
 
-<div class="meta" id="meta"></div>
+<div id="core3d"></div>
+<div id="coreHint">Ťahaj myšou · Klikni obrázok pre detail</div>
 
-<main id="scene">
-  <div class="view active" id="view-galaxy">
-    <div id="galaxy">
-      <svg class="galaxy-svg" id="galaxySvg"></svg>
-    </div>
-  </div>
-  <div class="view" id="view-moodboard">
-    <div id="moodboard"><div class="mb-grid" id="mbGrid"></div></div>
-  </div>
-  <div class="view" id="view-polaroids">
-    <div id="polaroids"></div>
-  </div>
-  <div class="view" id="view-core">
-    <div id="core3d">
-      <img id="corePreview" src="" alt="" />
-      <div id="coreHint">Posúvaj myšou · Hover obrázok pre detail</div>
-    </div>
-  </div>
-</main>
+<div id="lightbox">
+  <button class="lb-btn" id="lbClose">×</button>
+  <button class="lb-btn" id="lbPrev">‹</button>
+  <img id="lbImg" src="" alt="" />
+  <button class="lb-btn" id="lbNext">›</button>
+  <div id="lbCounter"></div>
+</div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
 // ─── FIREBASE ───
 const firebaseConfig = {
@@ -357,284 +211,280 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
-// Helper na získanie URL obrázka
 function picUrl(img, size) {
   if (img.url) return img.url;
   return `https://picsum.photos/id/${img.id}/${size || 200}/${size || 200}`;
 }
 
-// ─── DATA: 32 mock obrázkov v 4 klastroch (fallback) ───
-const clusters = [
-  { name: 'Portréty',    color: '#C98A8A', ids: [64, 91, 177, 219, 338, 494, 628, 717] },
-  { name: 'Krajina',     color: '#7A8BB5', ids: [11, 28, 109, 119, 169, 248, 365, 559] },
-  { name: 'Architektúra',color: '#9AAE8F', ids: [0, 31, 79, 122, 161, 233, 360, 451] },
-  { name: 'Abstrakcia',  color: '#D4A95C', ids: [250, 350, 450, 550, 650, 750, 855, 1015] },
-];
-let allImages = clusters.flatMap((c, ci) =>
-  c.ids.map((id, i) => ({ id, cluster: ci, clusterName: c.name, color: c.color, idx: i }))
-);
+// Fallback mock
+let allImages = [
+  64, 91, 177, 219, 338, 494, 628, 717,
+  11, 28, 109, 119, 169, 248, 365, 559,
+  0, 31, 79, 122, 161, 233, 360, 451,
+  250, 350, 450, 550, 650, 750, 855, 1015
+].map(id => ({ id }));
 
-const captions = ['Untitled, 2024','Quiet hours','Threshold','First light','Studio I','Echo','Drift','Bloom','Atlas','Notes','Margin','Veil'];
-
-const descriptions = {
-  galaxy: {
-    title: 'Galaxia — klastrované zoskupenia',
-    text: 'Každý klaster (Portréty, Krajina, Architektúra, Abstrakcia) má vlastné gravitačné centrum. Veľkosť klastra rastie s počtom obrázkov. Pri hoveri sa rozsvietia spojnice s ostatnými v rovnakom klastri. Vhodné pre väčšie portfólio — vizuálne dramatické, ukáže "tematickú mapu" tvojej tvorby.'
-  },
-  moodboard: {
-    title: 'Nástenka — pinboard estetika',
-    text: 'Masonry grid s jemnými rotáciami a páskou navrchu, ako keby si pripínal výtlačky na korkovú tabuľu. Príjemne nedokonalé. Funguje pre menšie aj väčšie zbierky — uvoľnený, intímny pocit.'
-  },
-  polaroids: {
-    title: 'Polaroidy — náhodné rozhodenie',
-    text: 'Polaroidové fotky náhodne rozhádzané na drevenom stole. Každá má rukou písaný popisok. Pri hoveri sa otočí rovno a zväčší. Tactile, nostalgia, fotografický feeling. Funguje pre menšie zbierky (do ~50 ks).'
-  },
-  core: {
-    title: 'Jadro — drôtená sféra v 3D priestore',
-    text: 'V strede pulzuje geodetická drôtená sféra — "jadro" tvojej tvorby. Obrázky vystupujú z nej v 3D priestore, spojené tenkými zlatými vláknami s vrcholmi siete. Celá scéna pomaly rotuje, môžeš ňou aj sám otáčať myšou. Hover na obrázok = priblíži sa k tebe a otvorí preview. Najdramatickejšia voľba — funguje ako "hologram" tvojej zbierky.'
-  }
-};
-
-// ─── META ─── 
-function updateMeta(view) {
-  const d = descriptions[view];
-  document.getElementById('meta').innerHTML = `<h1>${d.title}</h1><p>${d.text}</p>`;
+// ─── HELPER: rounded image texture ───
+function makeRoundedTexture(image, radiusPct) {
+  const w = image.naturalWidth || image.width;
+  const h = image.naturalHeight || image.height;
+  const canvas = document.createElement('canvas');
+  // limit max size to keep texture memory manageable
+  const maxDim = 512;
+  const scale = Math.min(1, maxDim / Math.max(w, h));
+  canvas.width  = Math.round(w * scale);
+  canvas.height = Math.round(h * scale);
+  const ctx = canvas.getContext('2d');
+  const r = Math.min(canvas.width, canvas.height) * (radiusPct || 0.06);
+  ctx.beginPath();
+  ctx.moveTo(r, 0);
+  ctx.lineTo(canvas.width - r, 0);
+  ctx.quadraticCurveTo(canvas.width, 0, canvas.width, r);
+  ctx.lineTo(canvas.width, canvas.height - r);
+  ctx.quadraticCurveTo(canvas.width, canvas.height, canvas.width - r, canvas.height);
+  ctx.lineTo(r, canvas.height);
+  ctx.quadraticCurveTo(0, canvas.height, 0, canvas.height - r);
+  ctx.lineTo(0, r);
+  ctx.quadraticCurveTo(0, 0, r, 0);
+  ctx.closePath();
+  ctx.clip();
+  ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.colorSpace = THREE.SRGBColorSpace || THREE.sRGBEncoding;
+  return tex;
 }
 
-// ─── GALAXY ───
-function renderGalaxy() {
-  const container = document.getElementById('galaxy');
-  // clear existing nodes/labels (keep svg, starfield)
-  container.querySelectorAll('.galaxy-node, .cluster-label').forEach(el => el.remove());
-
-  const w = container.clientWidth;
-  const h = container.clientHeight;
-
-  // cluster centers (relative positions)
-  const centers = [
-    { x: w*0.25, y: h*0.30 },
-    { x: w*0.72, y: h*0.25 },
-    { x: w*0.30, y: h*0.72 },
-    { x: w*0.75, y: h*0.70 },
-  ];
-
-  const positions = [];
-  allImages.forEach((img, gi) => {
-    const c = centers[img.cluster];
-    const angle = (img.idx / 8) * Math.PI * 2 + img.cluster;
-    const radius = 60 + Math.random() * 60;
-    const x = c.x + Math.cos(angle) * radius;
-    const y = c.y + Math.sin(angle) * radius;
-    positions.push({ x, y, cluster: img.cluster });
-
-    const size = 44 + Math.random() * 18;
-    const node = document.createElement('div');
-    node.className = 'galaxy-node';
-    node.style.cssText = `left:${x - size/2}px; top:${y - size/2}px; width:${size}px; height:${size}px; --dur:${4 + Math.random() * 4}s; animation-delay:${Math.random() * 2}s;`;
-    node.innerHTML = `<img src="${picUrl(img, 200)}" alt="" />`;
-    node.dataset.cluster = img.cluster;
-    node.dataset.idx = gi;
-    node.addEventListener('mouseenter', () => highlightCluster(img.cluster, gi));
-    node.addEventListener('mouseleave', () => clearHighlight());
-    container.appendChild(node);
-  });
-
-  // cluster labels
-  clusters.forEach((c, i) => {
-    const label = document.createElement('div');
-    label.className = 'cluster-label';
-    label.style.left = centers[i].x + 'px';
-    label.style.top  = (centers[i].y - 110) + 'px';
-    label.textContent = c.name;
-    container.appendChild(label);
-  });
-
-  // draw possible connections for hover
-  const svg = document.getElementById('galaxySvg');
-  svg.setAttribute('viewBox', `0 0 ${w} ${h}`);
-  svg.innerHTML = '';
-  positions.forEach((p1, i) => {
-    positions.forEach((p2, j) => {
-      if (j <= i) return;
-      if (p1.cluster !== p2.cluster) return;
-      const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-      line.setAttribute('x1', p1.x); line.setAttribute('y1', p1.y);
-      line.setAttribute('x2', p2.x); line.setAttribute('y2', p2.y);
-      line.classList.add('galaxy-line');
-      line.dataset.a = i; line.dataset.b = j;
-      svg.appendChild(line);
-    });
-  });
-}
-function highlightCluster(cluster, idx) {
-  document.querySelectorAll('.galaxy-line').forEach(l => {
-    if (l.dataset.a == idx || l.dataset.b == idx) l.classList.add('active');
-  });
-}
-function clearHighlight() {
-  document.querySelectorAll('.galaxy-line').forEach(l => l.classList.remove('active'));
-}
-
-// ─── MOODBOARD ───
-function renderMoodboard() {
-  const grid = document.getElementById('mbGrid');
-  grid.innerHTML = '';
-  // shuffle order for varied look
-  const shuffled = [...allImages].sort(() => Math.random() - 0.5);
-  shuffled.forEach((img, i) => {
-    const heights = [220, 280, 340, 200, 260, 320, 240];
-    const h = heights[i % heights.length];
-    const div = document.createElement('div');
-    div.className = 'mb-item';
-    div.innerHTML = `
-      <img src="${picUrl(img, 300)}" alt="" />
-      <div class="mb-caption">${captions[i % captions.length]}</div>
-    `;
-    grid.appendChild(div);
-  });
-}
-
-// ─── POLAROIDS ───
-function renderPolaroids() {
-  const container = document.getElementById('polaroids');
-  container.innerHTML = '';
-  const w = container.clientWidth;
-  const h = Math.max(window.innerHeight - 64, 700);
-
-  // Spread polaroids in a loose grid with jitter
-  const cols = Math.floor(w / 220);
-  const rows = Math.ceil(allImages.length / cols);
-  container.style.minHeight = (rows * 240 + 80) + 'px';
-
-  allImages.forEach((img, i) => {
-    const col = i % cols;
-    const row = Math.floor(i / cols);
-    const baseX = col * 220 + 30 + (Math.random() * 40 - 20);
-    const baseY = row * 240 + 30 + (Math.random() * 40 - 20);
-    const rot = (Math.random() * 16 - 8);
-    const p = document.createElement('div');
-    p.className = 'polaroid';
-    p.style.cssText = `left:${baseX}px; top:${baseY}px; transform:rotate(${rot}deg); z-index:${i};`;
-    p.innerHTML = `
-      <img src="${picUrl(img, 200)}" alt="" />
-      <div class="caption">${captions[i % captions.length]}</div>
-    `;
-    container.appendChild(p);
-  });
-}
-
-// ─── JADRO (Three.js 3D scéna) ───
-let coreInitialized = false;
-let coreScene, coreCamera, coreRenderer, coreGroup, coreWireframe, coreImages = [], coreConnectors;
+// ─── THREE.JS SCÉNA ───
+let coreScene, coreCamera, coreRenderer, coreGroup;
+let coreBlob, coreGlow, coreHalo;
+let coreParticles;
+let coreImages = [];
 let coreRaycaster, coreMouse, coreHoveredObj = null;
-let coreDragState = { dragging: false, lastX: 0, lastY: 0, rotX: 0, rotY: 0 };
-let coreAnimId = null;
+let coreDragState = { dragging: false, lastX: 0, lastY: 0, rotX: 0, rotY: 0, moved: false };
+let lightboxOpen = false;
+let lightboxIdx = 0;
+let clock;
 
 function initCore() {
+  clock = new THREE.Clock();
   const container = document.getElementById('core3d');
   const w = container.clientWidth;
   const h = container.clientHeight;
 
   coreScene = new THREE.Scene();
-  coreCamera = new THREE.PerspectiveCamera(55, w / h, 0.1, 100);
-  coreCamera.position.set(0, 0, 12);
+  coreCamera = new THREE.PerspectiveCamera(55, w / h, 0.1, 200);
+  coreCamera.position.set(0, 0, 14);
 
   coreRenderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
   coreRenderer.setSize(w, h);
-  coreRenderer.setPixelRatio(window.devicePixelRatio);
+  coreRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  coreRenderer.outputColorSpace = THREE.SRGBColorSpace;
   container.appendChild(coreRenderer.domElement);
 
   coreGroup = new THREE.Group();
   coreScene.add(coreGroup);
 
-  // ── Geodetická drôtená sféra (jadro) ──
-  const icoGeom = new THREE.IcosahedronGeometry(2.5, 2);
-  const wireGeom = new THREE.WireframeGeometry(icoGeom);
-  const wireMat = new THREE.LineBasicMaterial({
-    color: 0xC9A84C, transparent: true, opacity: 0.55
-  });
-  coreWireframe = new THREE.LineSegments(wireGeom, wireMat);
-  coreGroup.add(coreWireframe);
+  // ── LIGHTS (mäkké, farebné) ──
+  coreScene.add(new THREE.AmbientLight(0xffffff, 0.45));
 
-  // Vnútorná glow guľa
-  const innerGeom = new THREE.SphereGeometry(2.4, 32, 32);
-  const innerMat = new THREE.MeshBasicMaterial({
-    color: 0xC9A84C, transparent: true, opacity: 0.06
-  });
-  const inner = new THREE.Mesh(innerGeom, innerMat);
-  coreGroup.add(inner);
+  const keyLight = new THREE.DirectionalLight(0xffffff, 1.2);
+  keyLight.position.set(6, 8, 5);
+  coreScene.add(keyLight);
 
-  // Vrcholy sféry pre konektory
-  const verts = [];
-  const posAttr = icoGeom.attributes.position;
-  for (let i = 0; i < posAttr.count; i++) {
-    verts.push(new THREE.Vector3().fromBufferAttribute(posAttr, i));
+  const pinkLight = new THREE.PointLight(0xff79c6, 2.5, 30);
+  pinkLight.position.set(-6, 3, 4);
+  coreScene.add(pinkLight);
+
+  const peachLight = new THREE.PointLight(0xffb088, 2.0, 30);
+  peachLight.position.set(5, -4, 3);
+  coreScene.add(peachLight);
+
+  const violetLight = new THREE.PointLight(0x9a7bff, 1.5, 25);
+  violetLight.position.set(0, 5, -5);
+  coreScene.add(violetLight);
+
+  // ── CENTRÁLNY ORGANICKÝ BLOB (sklenený) ──
+  function makeOrganic(radius, detail, seed, noiseScale) {
+    const geom = new THREE.IcosahedronGeometry(radius, detail);
+    const positions = geom.attributes.position;
+    for (let i = 0; i < positions.count; i++) {
+      const v = new THREE.Vector3().fromBufferAttribute(positions, i);
+      const n =
+        Math.sin(v.x * 1.4 + seed)        * noiseScale +
+        Math.cos(v.y * 1.7 + seed * 1.3)  * noiseScale * 1.1 +
+        Math.sin(v.z * 1.3 + seed * 2.1)  * noiseScale * 0.9 +
+        Math.cos(v.x * 0.8 + v.y * 0.6 + seed) * noiseScale * 0.5;
+      v.normalize().multiplyScalar(radius + n);
+      positions.setXYZ(i, v.x, v.y, v.z);
+    }
+    positions.needsUpdate = true;
+    geom.computeVertexNormals();
+    return geom;
   }
 
-  // ── Obrázky v 3D priestore ──
+  const blobGeom = makeOrganic(2.0, 4, 0.7, 0.28);
+  const blobMat = new THREE.MeshPhysicalMaterial({
+    color: 0x6a4a9c,
+    metalness: 0.15,
+    roughness: 0.2,
+    transmission: 0.7,
+    thickness: 1.2,
+    ior: 1.45,
+    clearcoat: 1.0,
+    clearcoatRoughness: 0.15,
+    iridescence: 0.45,
+    iridescenceIOR: 1.3,
+    transparent: true,
+    opacity: 0.75,
+    side: THREE.DoubleSide
+  });
+  coreBlob = new THREE.Mesh(blobGeom, blobMat);
+  coreGroup.add(coreBlob);
+
+  // Vnútorné svetlé jadro (žiariace)
+  const glowGeom = new THREE.IcosahedronGeometry(1.0, 3);
+  // jemne deformovať
+  const gPos = glowGeom.attributes.position;
+  for (let i = 0; i < gPos.count; i++) {
+    const v = new THREE.Vector3().fromBufferAttribute(gPos, i);
+    const n = Math.sin(v.x * 2 + 1) * 0.1 + Math.cos(v.y * 2 + 0.5) * 0.1;
+    v.normalize().multiplyScalar(1.0 + n);
+    gPos.setXYZ(i, v.x, v.y, v.z);
+  }
+  gPos.needsUpdate = true;
+  glowGeom.computeVertexNormals();
+
+  const glowMat = new THREE.MeshBasicMaterial({
+    color: 0xffd6ec,
+    transparent: true,
+    opacity: 0.7,
+    blending: THREE.AdditiveBlending,
+    depthWrite: false
+  });
+  coreGlow = new THREE.Mesh(glowGeom, glowMat);
+  coreGroup.add(coreGlow);
+
+  // Vonkajšia halo (mäkký glow)
+  const haloGeom = new THREE.SphereGeometry(3.0, 32, 32);
+  const haloMat = new THREE.MeshBasicMaterial({
+    color: 0xff9bd3,
+    transparent: true,
+    opacity: 0.08,
+    blending: THREE.AdditiveBlending,
+    depthWrite: false,
+    side: THREE.BackSide
+  });
+  coreHalo = new THREE.Mesh(haloGeom, haloMat);
+  coreGroup.add(coreHalo);
+
+  // ── ČIASTOČKY (farebný prach) ──
+  const partCount = 1500;
+  const partPositions = new Float32Array(partCount * 3);
+  const partColors    = new Float32Array(partCount * 3);
+
+  for (let i = 0; i < partCount; i++) {
+    const r = 3.5 + Math.pow(Math.random(), 0.7) * 16;
+    const phi = Math.acos(2 * Math.random() - 1);
+    const theta = Math.random() * Math.PI * 2;
+    const flatten = 0.6 + Math.random() * 0.4;
+    partPositions[i*3]   = r * Math.sin(phi) * Math.cos(theta);
+    partPositions[i*3+1] = r * Math.sin(phi) * Math.sin(theta) * flatten;
+    partPositions[i*3+2] = r * Math.cos(phi);
+
+    const tone = Math.random();
+    if (tone < 0.4) {
+      const w = 0.85 + Math.random() * 0.15;
+      partColors[i*3] = w; partColors[i*3+1] = w; partColors[i*3+2] = w;
+    } else if (tone < 0.7) {
+      partColors[i*3] = 1.0; partColors[i*3+1] = 0.72; partColors[i*3+2] = 0.9;  // ružová
+    } else if (tone < 0.88) {
+      partColors[i*3] = 0.6; partColors[i*3+1] = 0.7; partColors[i*3+2] = 1.0;   // modrá
+    } else {
+      partColors[i*3] = 1.0; partColors[i*3+1] = 0.85; partColors[i*3+2] = 0.65; // broskyňová
+    }
+  }
+
+  const partGeom = new THREE.BufferGeometry();
+  partGeom.setAttribute('position', new THREE.BufferAttribute(partPositions, 3));
+  partGeom.setAttribute('color',    new THREE.BufferAttribute(partColors, 3));
+
+  const partMat = new THREE.PointsMaterial({
+    size: 0.07,
+    vertexColors: true,
+    transparent: true,
+    opacity: 0.9,
+    blending: THREE.AdditiveBlending,
+    sizeAttenuation: true,
+    depthWrite: false
+  });
+  coreParticles = new THREE.Points(partGeom, partMat);
+  coreGroup.add(coreParticles);
+
+  // ── OBRÁZKY ──
   const loader = new THREE.TextureLoader();
   loader.crossOrigin = 'anonymous';
-  const connectorPositions = [];
 
   allImages.forEach((img, i) => {
-    // Pozícia na sférickom obale (Fibonacci spiral pre rovnomerné rozloženie)
     const phi = Math.acos(-1 + (2 * i) / allImages.length);
     const theta = Math.sqrt(allImages.length * Math.PI) * phi;
-    const radius = 4.5 + Math.random() * 2.5;
+    const radius = 5.5 + Math.random() * 3.5;
     const x = radius * Math.cos(theta) * Math.sin(phi);
     const y = radius * Math.sin(theta) * Math.sin(phi);
     const z = radius * Math.cos(phi);
 
-    // Načítaj texturu
-    const tex = loader.load(picUrl(img, 200));
-    tex.colorSpace = THREE.SRGBColorSpace || THREE.sRGBEncoding;
-
-    const size = 0.85 + Math.random() * 0.3;
-    const planeGeom = new THREE.PlaneGeometry(size, size);
+    const baseSize = 0.95 + Math.random() * 0.65;
+    const planeGeom = new THREE.PlaneGeometry(baseSize, baseSize);
     const mat = new THREE.MeshBasicMaterial({
-      map: tex, side: THREE.DoubleSide, transparent: true
+      color: 0x1a1530, side: THREE.DoubleSide, transparent: true, opacity: 0.5
     });
     const plane = new THREE.Mesh(planeGeom, mat);
     plane.position.set(x, y, z);
-    plane.userData = { img, baseSize: size, basePos: new THREE.Vector3(x, y, z) };
+    plane.userData = {
+      img,
+      baseSize,
+      index: i,
+      floatOffset: Math.random() * Math.PI * 2,
+      floatAmp: 0.15 + Math.random() * 0.2,
+      floatSpeed: 0.5 + Math.random() * 0.4,
+      basePos: new THREE.Vector3(x, y, z)
+    };
     coreGroup.add(plane);
     coreImages.push(plane);
 
-    // Zaznamenaj pozíciu pre konektor (každý 2. obrázok)
-    if (i % 2 === 0) {
-      const vert = verts[i % verts.length];
-      connectorPositions.push(vert.x, vert.y, vert.z);
-      connectorPositions.push(x, y, z);
-    }
+    loader.load(picUrl(img, 400), (texture) => {
+      // Rounded texture
+      const roundedTex = makeRoundedTexture(texture.image, 0.06);
+      mat.map = roundedTex;
+      mat.color = new THREE.Color(0xffffff);
+      mat.opacity = 1;
+      mat.needsUpdate = true;
+
+      const rawAspect = texture.image.width / texture.image.height;
+      const aspect = Math.max(0.55, Math.min(1.85, rawAspect));
+      const planeW = baseSize * Math.sqrt(aspect);
+      const planeH = baseSize / Math.sqrt(aspect);
+
+      plane.geometry.dispose();
+      plane.geometry = new THREE.PlaneGeometry(planeW, planeH);
+    });
   });
 
-  // ── Konektory: zlaté vlákna z vrcholov sféry k obrázkom ──
-  const connGeom = new THREE.BufferGeometry();
-  connGeom.setAttribute('position', new THREE.Float32BufferAttribute(connectorPositions, 3));
-  const connMat = new THREE.LineBasicMaterial({
-    color: 0xC9A84C, transparent: true, opacity: 0.18
-  });
-  coreConnectors = new THREE.LineSegments(connGeom, connMat);
-  coreGroup.add(coreConnectors);
-
-  // ── Raycaster pre hover ──
   coreRaycaster = new THREE.Raycaster();
   coreMouse = new THREE.Vector2();
 
-  // ── Interakcie ──
   const canvas = coreRenderer.domElement;
   canvas.addEventListener('mousedown', onCoreMouseDown);
   window.addEventListener('mousemove', onCoreMouseMove);
   window.addEventListener('mouseup',   onCoreMouseUp);
   canvas.addEventListener('mousemove', onCoreHover);
-  canvas.addEventListener('mouseleave', () => { hideCorePreview(); });
+  canvas.addEventListener('click', onCoreClick);
 
-  coreInitialized = true;
   animateCore();
 }
 
 function onCoreMouseDown(e) {
   coreDragState.dragging = true;
+  coreDragState.moved = false;
   coreDragState.lastX = e.clientX;
   coreDragState.lastY = e.clientY;
   document.getElementById('core3d').classList.add('dragging');
@@ -647,6 +497,7 @@ function onCoreMouseMove(e) {
   if (!coreDragState.dragging) return;
   const dx = e.clientX - coreDragState.lastX;
   const dy = e.clientY - coreDragState.lastY;
+  if (Math.abs(dx) + Math.abs(dy) > 3) coreDragState.moved = true;
   coreDragState.rotY += dx * 0.005;
   coreDragState.rotX += dy * 0.005;
   coreDragState.lastX = e.clientX;
@@ -654,144 +505,160 @@ function onCoreMouseMove(e) {
 }
 
 function onCoreHover(e) {
+  if (lightboxOpen) return;
   const rect = coreRenderer.domElement.getBoundingClientRect();
   coreMouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
   coreMouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
   coreRaycaster.setFromCamera(coreMouse, coreCamera);
   const intersects = coreRaycaster.intersectObjects(coreImages);
   if (intersects.length > 0) {
-    const obj = intersects[0].object;
-    if (coreHoveredObj !== obj) {
-      coreHoveredObj = obj;
-      showCorePreview(obj.userData.img);
-    }
+    coreHoveredObj = intersects[0].object;
+    document.body.style.cursor = 'pointer';
   } else {
-    if (coreHoveredObj) {
-      coreHoveredObj = null;
-      hideCorePreview();
-    }
+    coreHoveredObj = null;
+    document.body.style.cursor = '';
   }
 }
 
-function showCorePreview(img) {
-  const preview = document.getElementById('corePreview');
-  preview.src = picUrl(img, 600);
-  preview.classList.add('active');
-}
-function hideCorePreview() {
-  document.getElementById('corePreview').classList.remove('active');
+function onCoreClick(e) {
+  if (coreDragState.moved) return;
+  const rect = coreRenderer.domElement.getBoundingClientRect();
+  coreMouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+  coreMouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+  coreRaycaster.setFromCamera(coreMouse, coreCamera);
+  const intersects = coreRaycaster.intersectObjects(coreImages);
+  if (intersects.length > 0) openLightbox(intersects[0].object.userData.index);
 }
 
+// ─── LIGHTBOX ───
+const lightbox  = document.getElementById('lightbox');
+const lbImg     = document.getElementById('lbImg');
+const lbCounter = document.getElementById('lbCounter');
+
+function openLightbox(idx) {
+  lightboxIdx = idx;
+  lbImg.src = picUrl(allImages[idx], 1200);
+  lbCounter.textContent = `${idx + 1} / ${allImages.length}`;
+  lightbox.classList.add('open');
+  document.getElementById('core3d').classList.add('dimmed');
+  lightboxOpen = true;
+}
+function closeLightbox() {
+  lightbox.classList.remove('open');
+  document.getElementById('core3d').classList.remove('dimmed');
+  lightboxOpen = false;
+}
+function navLightbox(dir) {
+  lightboxIdx = (lightboxIdx + dir + allImages.length) % allImages.length;
+  lbImg.src = picUrl(allImages[lightboxIdx], 1200);
+  lbCounter.textContent = `${lightboxIdx + 1} / ${allImages.length}`;
+}
+
+document.getElementById('lbClose').addEventListener('click', closeLightbox);
+document.getElementById('lbPrev').addEventListener('click', () => navLightbox(-1));
+document.getElementById('lbNext').addEventListener('click', () => navLightbox(1));
+lightbox.addEventListener('click', (e) => { if (e.target === lightbox) closeLightbox(); });
+
+document.addEventListener('keydown', (e) => {
+  if (!lightboxOpen) return;
+  if (e.key === 'Escape')     closeLightbox();
+  if (e.key === 'ArrowRight') navLightbox(1);
+  if (e.key === 'ArrowLeft')  navLightbox(-1);
+});
+
+let touchStartX = 0;
+lightbox.addEventListener('touchstart', e => touchStartX = e.changedTouches[0].screenX, { passive: true });
+lightbox.addEventListener('touchend',   e => {
+  const dx = e.changedTouches[0].screenX - touchStartX;
+  if (Math.abs(dx) > 50) navLightbox(dx < 0 ? 1 : -1);
+}, { passive: true });
+
+// ─── ANIMÁCIA ───
 function animateCore() {
-  coreAnimId = requestAnimationFrame(animateCore);
+  requestAnimationFrame(animateCore);
+  const t = clock.getElapsedTime();
+  const speedBoost = lightboxOpen ? 3.5 : 1.0;
 
-  // Auto rotácia + manuálne overrride
-  coreGroup.rotation.y += 0.0015;
+  // Skupina rotuje pomaly + drag tlmenie
+  coreGroup.rotation.y += 0.0008 * speedBoost;
+  coreGroup.rotation.x += 0.0002 * speedBoost;
   coreGroup.rotation.y += coreDragState.rotY * 0.1;
   coreGroup.rotation.x += coreDragState.rotX * 0.1;
-  coreDragState.rotY *= 0.85; // damping
-  coreDragState.rotX *= 0.85;
+  coreDragState.rotY *= 0.88;
+  coreDragState.rotX *= 0.88;
 
-  // Drôtená sféra rotuje rýchlejšie a opačne — vnútorný pohyb
-  coreWireframe.rotation.y -= 0.003;
-  coreWireframe.rotation.x += 0.0015;
+  // Centrálny blob rotuje a jemne pulzuje
+  if (coreBlob) {
+    coreBlob.rotation.x += 0.0015 * speedBoost;
+    coreBlob.rotation.y += 0.002 * speedBoost;
+    const pulse = 1 + Math.sin(t * 0.6) * 0.04;
+    coreBlob.scale.setScalar(pulse);
+  }
+  if (coreGlow) {
+    coreGlow.rotation.x -= 0.003 * speedBoost;
+    coreGlow.rotation.y += 0.004 * speedBoost;
+    const gPulse = 1 + Math.sin(t * 1.2) * 0.08;
+    coreGlow.scale.setScalar(gPulse);
+  }
+  if (coreHalo) {
+    const hPulse = 1 + Math.sin(t * 0.4) * 0.06;
+    coreHalo.scale.setScalar(hPulse);
+    coreHalo.material.opacity = 0.06 + Math.sin(t * 0.5) * 0.03;
+  }
 
-  // Obrázky stále smerujú ku kamere (billboard) — počítané v lokálnom space
+  if (coreParticles) {
+    coreParticles.rotation.y += 0.0003 * speedBoost;
+    coreParticles.rotation.x += 0.0001 * speedBoost;
+  }
+
+  // Floating animácia + billboard
   const camWorld = new THREE.Vector3();
   coreCamera.getWorldPosition(camWorld);
+
   coreImages.forEach(p => {
-    // Billboard: každý plane otoč ku kamere
+    const ud = p.userData;
+    const bob = Math.sin(t * ud.floatSpeed + ud.floatOffset) * ud.floatAmp;
+    p.position.copy(ud.basePos);
+    p.position.y += bob;
+
     p.lookAt(coreGroup.worldToLocal(camWorld.clone()));
 
-    // Hover scale animácia
-    const targetScale = (p === coreHoveredObj) ? 1.6 : 1;
-    p.scale.x += (targetScale - p.scale.x) * 0.15;
-    p.scale.y += (targetScale - p.scale.y) * 0.15;
+    const targetScale = (p === coreHoveredObj && !lightboxOpen) ? 1.5 : 1;
+    const cs = p.scale.x;
+    const ns = cs + (targetScale - cs) * 0.15;
+    p.scale.set(ns, ns, ns);
   });
 
   coreRenderer.render(coreScene, coreCamera);
 }
 
-function renderCore() {
-  if (!coreInitialized) initCore();
-}
-
-// ─── VIEW SWITCHING ───
-const views = ['galaxy', 'moodboard', 'polaroids', 'core'];
-function showView(v) {
-  views.forEach(name => {
-    document.getElementById('view-' + name).classList.toggle('active', name === v);
-  });
-  document.querySelectorAll('.tab').forEach(t => {
-    t.classList.toggle('active', t.dataset.view === v);
-  });
-  updateMeta(v);
-
-  // Pause Three.js when not visible
-  if (v !== 'core' && coreAnimId) {
-    cancelAnimationFrame(coreAnimId);
-    coreAnimId = null;
-  }
-
-  if (v === 'galaxy')    renderGalaxy();
-  if (v === 'moodboard') renderMoodboard();
-  if (v === 'polaroids') renderPolaroids();
-  if (v === 'core') {
-    if (!coreInitialized) renderCore();
-    else if (!coreAnimId) animateCore();
-  }
-}
-
-document.querySelectorAll('.tab').forEach(t =>
-  t.addEventListener('click', () => showView(t.dataset.view))
-);
-
-window.addEventListener('resize', () => {
-  const current = document.querySelector('.view.active').id.replace('view-','');
-  if (current === 'galaxy') renderGalaxy();
-  if (current === 'polaroids') renderPolaroids();
-  if (current === 'core' && coreInitialized) {
-    const c = document.getElementById('core3d');
-    coreCamera.aspect = c.clientWidth / c.clientHeight;
-    coreCamera.updateProjectionMatrix();
-    coreRenderer.setSize(c.clientWidth, c.clientHeight);
-  }
-});
-
-// initial render — najprv načítaj reálne obrázky z Firestore
+// ─── LOAD & START ───
 async function loadFromFirebase() {
   try {
     const snap = await db.collection('images').orderBy('order').get();
     const real = snap.docs.map(d => ({ id: d.id, url: d.data().url }));
     if (real.length === 0) throw new Error('Žiadne obrázky');
-
-    // Prerozdeľ reálne obrázky cez 4 vizuálne klastre
-    allImages = real.map((img, i) => ({
-      id: img.id,
-      url: img.url,
-      cluster: i % 4,
-      clusterName: clusters[i % 4].name,
-      color: clusters[i % 4].color,
-      idx: Math.floor(i / 4)
-    }));
-
-    // Update status
-    document.getElementById('loadStatus').textContent = `✓ Načítaných ${real.length} obrázkov z tvojho portfolia`;
-    setTimeout(() => {
-      document.getElementById('loadStatus').style.opacity = '0';
-    }, 3000);
-    return true;
+    allImages = real;
+    document.getElementById('loadStatus').textContent = `✓ ${real.length} obrázkov z portfolia`;
+    setTimeout(() => { document.getElementById('loadStatus').style.opacity = '0'; }, 3000);
   } catch (e) {
     console.warn('Firebase load failed:', e);
-    document.getElementById('loadStatus').textContent = '⚠ Používam ukážkové obrázky (Firebase nedostupný)';
-    return false;
+    document.getElementById('loadStatus').textContent = '⚠ Používam ukážkové obrázky';
   }
 }
 
 (async () => {
   await loadFromFirebase();
-  showView('galaxy');
+  initCore();
 })();
+
+window.addEventListener('resize', () => {
+  if (!coreRenderer) return;
+  const c = document.getElementById('core3d');
+  coreCamera.aspect = c.clientWidth / c.clientHeight;
+  coreCamera.updateProjectionMatrix();
+  coreRenderer.setSize(c.clientWidth, c.clientHeight);
+});
 </script>
 </body>
 </html>

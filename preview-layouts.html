@@ -8,7 +8,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400&family=Inter:wght@300;400;500&display=swap" rel="stylesheet" />
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r158/three.min.js"></script>
+<script src="https://unpkg.com/three@0.158.0/build/three.min.js"></script>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -49,7 +49,7 @@
     text-shadow: 0 2px 20px rgba(255,255,255,0.15);
   }
   .logo span {
-    background: linear-gradient(120deg, #FFB7E8, #FFCC9B);
+    background: linear-gradient(120deg, #c89aff, #ddb088);
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
@@ -152,8 +152,8 @@
     justify-content: center;
   }
   .lb-btn:hover {
-    background: linear-gradient(120deg, #FFB7E8, #FFCC9B);
-    color: #2a1850;
+    background: linear-gradient(120deg, #c89aff, #ddb088);
+    color: #0a0820;
     border-color: transparent;
     transform: scale(1.08);
   }
@@ -285,21 +285,21 @@ function initCore() {
   coreScene.add(coreGroup);
 
   // ── LIGHTS (mäkké, farebné) ──
-  coreScene.add(new THREE.AmbientLight(0xffffff, 0.45));
+  coreScene.add(new THREE.AmbientLight(0xffffff, 0.25));
 
-  const keyLight = new THREE.DirectionalLight(0xffffff, 1.2);
+  const keyLight = new THREE.DirectionalLight(0xc8b8ff, 0.7);
   keyLight.position.set(6, 8, 5);
   coreScene.add(keyLight);
 
-  const pinkLight = new THREE.PointLight(0xff79c6, 2.5, 30);
+  const pinkLight = new THREE.PointLight(0xc05a9a, 1.4, 30);
   pinkLight.position.set(-6, 3, 4);
   coreScene.add(pinkLight);
 
-  const peachLight = new THREE.PointLight(0xffb088, 2.0, 30);
+  const peachLight = new THREE.PointLight(0xa0704c, 1.0, 30);
   peachLight.position.set(5, -4, 3);
   coreScene.add(peachLight);
 
-  const violetLight = new THREE.PointLight(0x9a7bff, 1.5, 25);
+  const violetLight = new THREE.PointLight(0x5040a8, 1.2, 25);
   violetLight.position.set(0, 5, -5);
   coreScene.add(violetLight);
 
@@ -355,9 +355,9 @@ function initCore() {
   glowGeom.computeVertexNormals();
 
   const glowMat = new THREE.MeshBasicMaterial({
-    color: 0xffd6ec,
+    color: 0xc89aff,
     transparent: true,
-    opacity: 0.7,
+    opacity: 0.45,
     blending: THREE.AdditiveBlending,
     depthWrite: false
   });
@@ -367,9 +367,9 @@ function initCore() {
   // Vonkajšia halo (mäkký glow)
   const haloGeom = new THREE.SphereGeometry(3.0, 32, 32);
   const haloMat = new THREE.MeshBasicMaterial({
-    color: 0xff9bd3,
+    color: 0x9670c8,
     transparent: true,
-    opacity: 0.08,
+    opacity: 0.05,
     blending: THREE.AdditiveBlending,
     depthWrite: false,
     side: THREE.BackSide
@@ -392,15 +392,15 @@ function initCore() {
     partPositions[i*3+2] = r * Math.cos(phi);
 
     const tone = Math.random();
-    if (tone < 0.4) {
-      const w = 0.85 + Math.random() * 0.15;
+    if (tone < 0.5) {
+      const w = 0.55 + Math.random() * 0.25;
       partColors[i*3] = w; partColors[i*3+1] = w; partColors[i*3+2] = w;
-    } else if (tone < 0.7) {
-      partColors[i*3] = 1.0; partColors[i*3+1] = 0.72; partColors[i*3+2] = 0.9;  // ružová
-    } else if (tone < 0.88) {
-      partColors[i*3] = 0.6; partColors[i*3+1] = 0.7; partColors[i*3+2] = 1.0;   // modrá
+    } else if (tone < 0.75) {
+      partColors[i*3] = 0.7; partColors[i*3+1] = 0.45; partColors[i*3+2] = 0.65;  // tlmená ružová
+    } else if (tone < 0.92) {
+      partColors[i*3] = 0.4; partColors[i*3+1] = 0.5; partColors[i*3+2] = 0.75;   // tlmená modrá
     } else {
-      partColors[i*3] = 1.0; partColors[i*3+1] = 0.85; partColors[i*3+2] = 0.65; // broskyňová
+      partColors[i*3] = 0.7; partColors[i*3+1] = 0.55; partColors[i*3+2] = 0.4;   // tlmená broskyňová
     }
   }
 
@@ -412,7 +412,7 @@ function initCore() {
     size: 0.07,
     vertexColors: true,
     transparent: true,
-    opacity: 0.9,
+    opacity: 0.65,
     blending: THREE.AdditiveBlending,
     sizeAttenuation: true,
     depthWrite: false
@@ -603,7 +603,7 @@ function animateCore() {
   if (coreHalo) {
     const hPulse = 1 + Math.sin(t * 0.4) * 0.06;
     coreHalo.scale.setScalar(hPulse);
-    coreHalo.material.opacity = 0.06 + Math.sin(t * 0.5) * 0.03;
+    coreHalo.material.opacity = 0.04 + Math.sin(t * 0.5) * 0.02;
   }
 
   if (coreParticles) {
@@ -648,6 +648,11 @@ async function loadFromFirebase() {
 }
 
 (async () => {
+  if (typeof THREE === 'undefined') {
+    document.getElementById('loadStatus').textContent = '✗ Three.js sa nenačítal';
+    console.error('THREE is undefined — CDN failed');
+    return;
+  }
   await loadFromFirebase();
   initCore();
 })();

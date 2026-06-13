@@ -370,7 +370,7 @@ const clusters = [
   { name: 'Architektúra',color: '#9AAE8F', ids: [0, 31, 79, 122, 161, 233, 360, 451] },
   { name: 'Abstrakcia',  color: '#D4A95C', ids: [250, 350, 450, 550, 650, 750, 855, 1015] },
 ];
-const allImages = clusters.flatMap((c, ci) =>
+let allImages = clusters.flatMap((c, ci) =>
   c.ids.map((id, i) => ({ id, cluster: ci, clusterName: c.name, color: c.color, idx: i }))
 );
 

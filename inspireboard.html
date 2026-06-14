@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Pinterest Clone — Test</title>
+<title>Inspireboard</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
 <script type="module">
@@ -181,6 +181,31 @@
     border-style: dashed;
   }
   .board-chip.add:hover { color: var(--text); border-color: var(--text); }
+
+  .board-edit-btn {
+    background: transparent;
+    border: none;
+    width: 18px;
+    height: 18px;
+    padding: 0;
+    margin-left: 2px;
+    border-radius: 50%;
+    opacity: 0.5;
+    font-size: 11px;
+    line-height: 1;
+    color: inherit;
+    transition: opacity 0.2s, background 0.2s;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .board-edit-btn:hover {
+    opacity: 1;
+    background: rgba(255,255,255,0.15);
+  }
+  .board-chip:not(.active) .board-edit-btn:hover {
+    background: rgba(0,0,0,0.08);
+  }
 
   /* ── PINS GRID ── */
   main {
@@ -546,7 +571,7 @@
 <body>
 
 <header>
-  <div class="logo">Pinly</div>
+  <div class="logo">Inspireboard</div>
   <div class="search">
     <input id="searchInput" type="text" placeholder="Hľadať vo všetkých pinoch..." />
   </div>
@@ -627,6 +652,30 @@
       <textarea id="boardDesc" placeholder="O čom je tento board"></textarea>
     </div>
     <button id="boardSaveBtn" class="btn-primary" style="width:100%">Vytvoriť board</button>
+  </div>
+</div>
+
+<!-- Edit board modal -->
+<div class="modal" id="boardEditModal">
+  <div class="modal-box">
+    <button class="modal-close" data-close="boardEditModal">×</button>
+    <h2>Upraviť board</h2>
+    <div class="subtitle">Premenuj alebo zmaž board</div>
+    <div class="field">
+      <label>Názov</label>
+      <input id="boardEditName" type="text" />
+    </div>
+    <div class="field">
+      <label>Popis</label>
+      <textarea id="boardEditDesc"></textarea>
+    </div>
+    <div style="display:flex; gap:8px; margin-top:8px">
+      <button id="boardEditSaveBtn" class="btn-primary" style="flex:1">Uložiť</button>
+      <button id="boardDeleteBtn" style="background:transparent; border:1px solid rgba(189,31,47,0.3); color:var(--accent); border-radius:999px; padding:10px 22px; font-weight:600; font-size:13.5px; transition:all 0.2s">Zmazať</button>
+    </div>
+    <div style="font-size:11.5px; color:var(--muted); margin-top:12px; line-height:1.5">
+      Pri zmazaní boardu sa piny <strong>nezmažú</strong> — len stratia priradenie k boardu.
+    </div>
   </div>
 </div>
 
@@ -822,8 +871,16 @@ window.addEventListener('fb-ready', () => {
     const chip = document.createElement('button');
     chip.className = 'board-chip';
     chip.dataset.id = b.id;
-    chip.innerHTML = `<span>${escapeHtml(b.name)}</span><span class="count">${count}</span>`;
-    chip.addEventListener('click', () => {
+    const editBtn = (isAdmin && b.id !== 'all')
+      ? `<span class="board-edit-btn" data-edit="${b.id}" title="Upraviť">✎</span>`
+      : '';
+    chip.innerHTML = `<span>${escapeHtml(b.name)}</span><span class="count">${count}</span>${editBtn}`;
+    chip.addEventListener('click', (e) => {
+      if (e.target.closest('[data-edit]')) {
+        e.stopPropagation();
+        openBoardEdit(b);
+        return;
+      }
       currentBoardId = b.id;
       renderBoards();
       renderPins();
@@ -976,6 +1033,43 @@ window.addEventListener('fb-ready', () => {
     currentBoardId = docRef.id;
     renderBoards();
     renderPins();
+  });
+
+  // ─── BOARD EDIT / DELETE ───
+  let editingBoard = null;
+  function openBoardEdit(b) {
+    editingBoard = b;
+    $('boardEditName').value = b.name;
+    $('boardEditDesc').value = b.description || '';
+    openModal('boardEditModal');
+  }
+  $('boardEditSaveBtn').addEventListener('click', async () => {
+    if (!editingBoard) return;
+    const name = $('boardEditName').value.trim();
+    if (!name) return alert('Názov nemôže byť prázdny');
+    await updateDoc(doc(db, 'boards', editingBoard.id), {
+      name,
+      description: $('boardEditDesc').value.trim()
+    });
+    closeModal('boardEditModal');
+    await loadAll();
+  });
+  $('boardDeleteBtn').addEventListener('click', async () => {
+    if (!editingBoard) return;
+    const pinCount = pins.filter(p => p.boardId === editingBoard.id).length;
+    const msg = pinCount > 0
+      ? `Zmazať board "${editingBoard.name}"?\n${pinCount} pinov stratí priradenie (nezmaže sa).`
+      : `Zmazať board "${editingBoard.name}"?`;
+    if (!confirm(msg)) return;
+    // Unassign pins
+    const affected = pins.filter(p => p.boardId === editingBoard.id);
+    await Promise.all(affected.map(p => updateDoc(doc(db, 'pins', p.id), { boardId: null })));
+    // Delete the board
+    await deleteDoc(doc(db, 'boards', editingBoard.id));
+    if (currentBoardId === editingBoard.id) currentBoardId = 'all';
+    editingBoard = null;
+    closeModal('boardEditModal');
+    await loadAll();
   });
 
   // ─── UPLOAD ───

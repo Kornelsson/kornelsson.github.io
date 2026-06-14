@@ -455,14 +455,48 @@
     gap: 8px;
     margin-bottom: 16px;
   }
-  #uploadPreview img {
-    width: 100%;
+  .preview-item {
+    position: relative;
     aspect-ratio: 1;
+  }
+  .preview-item img {
+    width: 100%;
+    height: 100%;
     object-fit: cover;
     border-radius: 8px;
     border: 1px solid var(--border);
   }
+  .preview-item .badge {
+    position: absolute;
+    top: 3px; right: 3px;
+    background: rgba(0,0,0,0.72);
+    color: #fff;
+    font-size: 10px;
+    padding: 2px 5px;
+    border-radius: 5px;
+    font-weight: 600;
+  }
+  .preview-item .remove-btn {
+    position: absolute;
+    top: 3px; left: 3px;
+    background: rgba(0,0,0,0.72);
+    color: #fff;
+    width: 18px; height: 18px;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 12px;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+  .preview-item:hover .remove-btn { opacity: 1; }
   #uploadPreview:empty { display: none; }
+
+  #urlAddBtn:hover { border-color: var(--text) !important; }
 
   #uploadStatus {
     font-size: 12.5px;
@@ -616,6 +650,20 @@
       <input type="file" id="fileInput" accept="image/*" multiple />
     </div>
 
+    <div style="display:flex; align-items:center; gap:12px; margin: 0 0 16px; color:var(--muted); font-size:11.5px; font-weight:600; letter-spacing:0.06em; text-transform:uppercase">
+      <span style="flex:1; height:1px; background:var(--border-soft)"></span>
+      ALEBO
+      <span style="flex:1; height:1px; background:var(--border-soft)"></span>
+    </div>
+
+    <div class="field" style="margin-bottom: 16px">
+      <label>Vlož link na obrázok</label>
+      <div style="display:flex; gap:8px">
+        <input id="urlInput" type="url" placeholder="https://example.com/obrazok.jpg" style="flex:1" />
+        <button id="urlAddBtn" type="button" style="background:transparent; border:1px solid var(--border); color:var(--text); border-radius:12px; padding:0 18px; font-size:13.5px; font-weight:600; cursor:pointer; transition:all 0.2s; white-space:nowrap">+ Pridať</button>
+      </div>
+    </div>
+
     <div id="uploadPreview"></div>
 
     <div class="field">
@@ -757,6 +805,7 @@ window.addEventListener('fb-ready', () => {
   let searchTerm = '';
   let isAdmin = false;
   let selectedFiles = [];
+  let selectedUrls = [];
   let currentPin = null;
 
   // ─── DOM ───
@@ -1087,16 +1136,74 @@ window.addEventListener('fb-ready', () => {
   const uploadBtn = $('uploadBtn');
   const uploadPreview = $('uploadPreview');
 
-  function handleFiles(files) {
-    selectedFiles = Array.from(files).filter(f => f.type.startsWith('image/'));
+  function updateUploadPreview() {
     uploadPreview.innerHTML = '';
-    selectedFiles.forEach(f => {
-      const img = document.createElement('img');
-      img.src = URL.createObjectURL(f);
-      uploadPreview.appendChild(img);
+    selectedFiles.forEach((f, i) => {
+      const wrap = document.createElement('div');
+      wrap.className = 'preview-item';
+      wrap.innerHTML = `
+        <img src="${URL.createObjectURL(f)}" alt="" />
+        <button class="remove-btn" data-type="file" data-idx="${i}" title="Odstrániť">×</button>
+      `;
+      uploadPreview.appendChild(wrap);
     });
-    uploadBtn.disabled = selectedFiles.length === 0;
-    $('uploadStatus').textContent = selectedFiles.length ? `${selectedFiles.length} obrázkov pripravených` : '';
+    selectedUrls.forEach((u, i) => {
+      const wrap = document.createElement('div');
+      wrap.className = 'preview-item';
+      wrap.innerHTML = `
+        <img src="${u}" alt="" />
+        <span class="badge">URL</span>
+        <button class="remove-btn" data-type="url" data-idx="${i}" title="Odstrániť">×</button>
+      `;
+      uploadPreview.appendChild(wrap);
+    });
+    const total = selectedFiles.length + selectedUrls.length;
+    uploadBtn.disabled = total === 0;
+    $('uploadStatus').textContent = total ? `${total} pinov pripravených` : '';
+  }
+
+  function handleFiles(files) {
+    const newFiles = Array.from(files).filter(f => f.type.startsWith('image/'));
+    selectedFiles = selectedFiles.concat(newFiles);
+    updateUploadPreview();
+  }
+
+  uploadPreview.addEventListener('click', (e) => {
+    const btn = e.target.closest('.remove-btn');
+    if (!btn) return;
+    const idx = parseInt(btn.dataset.idx, 10);
+    if (btn.dataset.type === 'file') selectedFiles.splice(idx, 1);
+    else selectedUrls.splice(idx, 1);
+    updateUploadPreview();
+  });
+
+  // URL add
+  $('urlAddBtn').addEventListener('click', () => addUrlFromInput());
+  $('urlInput').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') { e.preventDefault(); addUrlFromInput(); }
+  });
+  function addUrlFromInput() {
+    const url = $('urlInput').value.trim();
+    if (!url) return;
+    if (!/^https?:\/\//i.test(url)) {
+      alert('Zadaj platnú http(s) URL');
+      return;
+    }
+    // Test if image loads
+    $('urlInput').disabled = true;
+    const test = new Image();
+    test.onload = () => {
+      selectedUrls.push(url);
+      $('urlInput').value = '';
+      $('urlInput').disabled = false;
+      $('urlInput').focus();
+      updateUploadPreview();
+    };
+    test.onerror = () => {
+      $('urlInput').disabled = false;
+      alert('Nepodarilo sa načítať obrázok z tejto URL. Skontroluj link.');
+    };
+    test.src = url;
   }
   fileInput.addEventListener('change', () => handleFiles(fileInput.files));
   dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('dragover'); });
@@ -1108,7 +1215,8 @@ window.addEventListener('fb-ready', () => {
   });
 
   uploadBtn.addEventListener('click', async () => {
-    if (!selectedFiles.length) return;
+    const total = selectedFiles.length + selectedUrls.length;
+    if (!total) return;
     const boardId = $('uploadBoard').value;
     if (!boardId) { alert('Vyber board'); return; }
     const title = $('uploadTitle').value.trim();
@@ -1118,8 +1226,20 @@ window.addEventListener('fb-ready', () => {
     const bar = $('uploadProgress').firstElementChild;
     let done = 0;
 
+    // Najprv spracuj URL piny (rýchle — len addDoc)
+    for (const url of selectedUrls) {
+      $('uploadStatus').textContent = `Pridávam link ${done + 1}/${total}...`;
+      await addDoc(collection(db, 'pins'), {
+        url, storagePath: null, boardId, title, description: '',
+        external: true, createdAt: Date.now()
+      });
+      done++;
+      bar.style.width = (done / total * 100) + '%';
+    }
+
+    // Potom súborové uploady s kompresiou
     for (const file of selectedFiles) {
-      $('uploadStatus').textContent = `Komprimujem ${done + 1}/${selectedFiles.length}...`;
+      $('uploadStatus').textContent = `Komprimujem ${done + 1}/${total}...`;
       const compressed = await compressImage(file);
       const path = `pins/${Date.now()}_${file.name.replace(/\.[^.]+$/, '')}.jpg`;
       const storageRef = ref(storage, path);
@@ -1127,9 +1247,9 @@ window.addEventListener('fb-ready', () => {
         const task = uploadBytesResumable(storageRef, compressed);
         task.on('state_changed',
           snap => {
-            const pct = (done / selectedFiles.length + snap.bytesTransferred / snap.totalBytes / selectedFiles.length) * 100;
+            const pct = ((done + snap.bytesTransferred / snap.totalBytes) / total) * 100;
             bar.style.width = pct + '%';
-            $('uploadStatus').textContent = `Nahrávam ${done + 1}/${selectedFiles.length}...`;
+            $('uploadStatus').textContent = `Nahrávam ${done + 1}/${total}...`;
           },
           reject,
           async () => {
@@ -1151,10 +1271,10 @@ window.addEventListener('fb-ready', () => {
       $('uploadProgress').style.display = 'none';
       bar.style.width = '0%';
       $('uploadStatus').textContent = '';
-      uploadPreview.innerHTML = '';
       selectedFiles = [];
+      selectedUrls = [];
       fileInput.value = '';
-      uploadBtn.disabled = true;
+      updateUploadPreview();
       closeModal('uploadModal');
     }, 800);
     await loadAll();

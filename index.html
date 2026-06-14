@@ -926,15 +926,12 @@
     recalcBtn.disabled = true;
     let totalBytes = 0;
 
-    console.log('Počet obrázkov:', images.length);
-
+    // Portfolio obrázky
     for (const img of images) {
       try {
-        console.log('Sťahujem:', img.url);
         const res = await fetch(img.url);
         const blob = await res.blob();
         const size = blob.size;
-        console.log('Veľkosť:', size, 'bytes');
         if (size > 0) {
           await updateDoc(doc(db, 'images', img.id), { size });
           totalBytes += size;
@@ -944,7 +941,23 @@
       }
     }
 
-    console.log('Celkom bytes:', totalBytes);
+    // Inspireboard piny (preskočiť URL piny bez storagePath)
+    try {
+      const pinsSnap = await getDocs(collection(db, 'pins'));
+      for (const d of pinsSnap.docs) {
+        const data = d.data();
+        if (!data.storagePath) continue; // external URL pin
+        try {
+          const res = await fetch(data.url);
+          const blob = await res.blob();
+          if (blob.size > 0) {
+            await updateDoc(doc(db, 'pins', d.id), { size: blob.size });
+            totalBytes += blob.size;
+          }
+        } catch(_) {}
+      }
+    } catch(_) {}
+
     await setDoc(doc(db, 'meta', 'storage'), { usedBytes: totalBytes });
     await updateStorageUI();
     recalcBtn.textContent = '↺ Prepočítať';

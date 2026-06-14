@@ -629,7 +629,7 @@
 
 <!-- Storage panel -->
 <div id="storagePanel">
-  <span class="storage-text"><strong id="statUsed">0 MB</strong> / 5 GB</span>
+  <span class="storage-text" title="Spoločné s portfoliom"><strong id="statUsed">0 MB</strong> / 5 GB</span>
   <div class="storage-bar"><div class="storage-fill" id="storageFill"></div></div>
   <span class="storage-text"><span id="statCount">0</span> pinov</span>
   <button id="recompressBtn">↺ Prepočítať</button>
@@ -1286,12 +1286,12 @@ window.addEventListener('fb-ready', () => {
 
   async function getStorageUsed() {
     try {
-      const snap = await getDoc(doc(db, 'meta', 'pin_storage'));
+      const snap = await getDoc(doc(db, 'meta', 'storage'));
       return snap.exists() ? (snap.data().usedBytes || 0) : 0;
     } catch { return 0; }
   }
-  async function addStorage(b)      { const c = await getStorageUsed(); await setDoc(doc(db, 'meta', 'pin_storage'), { usedBytes: c + b }); }
-  async function subtractStorage(b) { const c = await getStorageUsed(); await setDoc(doc(db, 'meta', 'pin_storage'), { usedBytes: Math.max(0, c - b) }); }
+  async function addStorage(b)      { const c = await getStorageUsed(); await setDoc(doc(db, 'meta', 'storage'), { usedBytes: c + b }); }
+  async function subtractStorage(b) { const c = await getStorageUsed(); await setDoc(doc(db, 'meta', 'storage'), { usedBytes: Math.max(0, c - b) }); }
 
   async function updateStorageUI() {
     const used = await getStorageUsed();
@@ -1302,10 +1302,13 @@ window.addEventListener('fb-ready', () => {
   }
 
   $('recompressBtn').addEventListener('click', async () => {
-    if (!confirm(`Prepočítať veľkosti pre ${pins.length} pinov?`)) return;
+    if (!confirm('Prepočítať celkové využitie storage (piny + portfolio obrázky)?')) return;
     $('recompressBtn').disabled = true;
     let total = 0;
+
+    // Piny (preskočiť URL piny — tie nemajú storage)
     for (const p of pins) {
+      if (!p.storagePath) continue; // external URL pin
       try {
         const r = await fetch(p.url);
         const blob = await r.blob();
@@ -1315,7 +1318,24 @@ window.addEventListener('fb-ready', () => {
         }
       } catch (_) {}
     }
-    await setDoc(doc(db, 'meta', 'pin_storage'), { usedBytes: total });
+
+    // Portfolio obrázky
+    try {
+      const imgSnap = await getDocs(collection(db, 'images'));
+      for (const d of imgSnap.docs) {
+        const data = d.data();
+        try {
+          const r = await fetch(data.url);
+          const blob = await r.blob();
+          if (blob.size > 0) {
+            await updateDoc(doc(db, 'images', d.id), { size: blob.size });
+            total += blob.size;
+          }
+        } catch (_) {}
+      }
+    } catch (_) {}
+
+    await setDoc(doc(db, 'meta', 'storage'), { usedBytes: total });
     await loadAll();
     await updateStorageUI();
     $('recompressBtn').disabled = false;

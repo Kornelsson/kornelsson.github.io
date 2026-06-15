@@ -14,591 +14,460 @@
     from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
   import { getStorage, ref, uploadBytesResumable, getDownloadURL, deleteObject }
     from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
-
-  // Make available globally for non-module code
-  window.fb = {
-    initializeApp, getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged,
+  window.fb = { initializeApp, getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged,
     getFirestore, collection, getDocs, getDoc, addDoc, deleteDoc, doc, updateDoc, setDoc, query, orderBy, where,
-    getStorage, ref, uploadBytesResumable, getDownloadURL, deleteObject
-  };
+    getStorage, ref, uploadBytesResumable, getDownloadURL, deleteObject };
   window.dispatchEvent(new Event('fb-ready'));
 </script>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
   :root {
-    --bg:         #FAF6F0;
-    --card:       #FFFFFF;
-    --text:       #1A1A1A;
-    --text-soft:  #4A4A4A;
-    --muted:      #8B8580;
-    --border:     #E8E1D5;
-    --border-soft:#F0EBE0;
-    --accent:     #BD1F2F;
-    --accent-hi:  #9B1A26;
-    --shadow:     0 1px 3px rgba(0,0,0,0.04), 0 4px 16px rgba(0,0,0,0.04);
-    --shadow-hi:  0 4px 8px rgba(0,0,0,0.06), 0 12px 32px rgba(0,0,0,0.1);
-    --radius:     16px;
-    --radius-sm:  10px;
+    --bg:#FAF6F0; --card:#FFFFFF; --text:#1A1A1A; --text-soft:#4A4A4A;
+    --muted:#8B8580; --border:#E8E1D5; --border-soft:#F0EBE0;
+    --accent:#BD1F2F; --accent-hi:#9B1A26;
+    --shadow:0 1px 3px rgba(0,0,0,0.04), 0 4px 16px rgba(0,0,0,0.04);
+    --shadow-hi:0 4px 8px rgba(0,0,0,0.06), 0 12px 32px rgba(0,0,0,0.1);
+    --radius:16px; --radius-sm:10px;
   }
-
   body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
-    font-size: 14px;
-    font-weight: 400;
-    min-height: 100vh;
-    line-height: 1.5;
+    background:var(--bg); color:var(--text);
+    font-family:'Plus Jakarta Sans', -apple-system, sans-serif;
+    font-size:14px; font-weight:400; min-height:100vh; line-height:1.5;
   }
+  button { font-family:inherit; cursor:pointer; }
 
-  button { font-family: inherit; cursor: pointer; }
-
-  /* ── HEADER ── */
+  /* HEADER */
   header {
-    position: sticky; top: 0; z-index: 100;
-    background: rgba(250, 246, 240, 0.92);
-    backdrop-filter: blur(12px);
-    border-bottom: 1px solid var(--border-soft);
-    padding: 0 24px;
-    height: 64px;
-    display: flex;
-    align-items: center;
-    gap: 18px;
+    position:sticky; top:0; z-index:100;
+    background:rgba(250,246,240,0.92); backdrop-filter:blur(12px);
+    border-bottom:1px solid var(--border-soft);
+    padding:0 24px; height:64px; display:flex; align-items:center; gap:18px;
   }
-
-  .logo {
-    font-weight: 800;
-    font-size: 22px;
-    color: var(--accent);
-    letter-spacing: -0.02em;
-  }
-  .logo::before { content: '◉ '; }
-
-  .search {
-    flex: 1;
-    max-width: 720px;
-    position: relative;
-  }
+  .logo { font-weight:800; font-size:22px; color:var(--accent); letter-spacing:-0.02em; }
+  .logo::before { content:'◉ '; }
+  .search { flex:1; max-width:720px; position:relative; }
   .search input {
-    width: 100%;
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 999px;
-    padding: 10px 18px 10px 42px;
-    font-family: inherit;
-    font-size: 14px;
-    outline: none;
-    transition: border-color 0.2s, background 0.2s;
+    width:100%; background:var(--card); border:1px solid var(--border);
+    border-radius:999px; padding:10px 18px 10px 42px;
+    font-family:inherit; font-size:14px; outline:none;
+    transition:border-color 0.2s, background 0.2s;
   }
-  .search input:focus { border-color: var(--text); background: #fff; }
+  .search input:focus { border-color:var(--text); background:#fff; }
   .search::before {
-    content: '⌕';
-    position: absolute;
-    left: 16px; top: 50%;
-    transform: translateY(-50%);
-    color: var(--muted);
-    font-size: 16px;
+    content:'⌕'; position:absolute; left:16px; top:50%;
+    transform:translateY(-50%); color:var(--muted); font-size:16px;
   }
-
-  .header-actions { display: flex; gap: 8px; align-items: center; }
-
+  .header-actions { display:flex; gap:8px; align-items:center; }
   .btn-primary {
-    background: var(--accent);
-    color: #fff;
-    border: none;
-    border-radius: 999px;
-    padding: 10px 22px;
-    font-size: 13.5px;
-    font-weight: 600;
-    transition: background 0.2s, transform 0.2s;
+    background:var(--accent); color:#fff; border:none; border-radius:999px;
+    padding:10px 22px; font-size:13.5px; font-weight:600;
+    transition:background 0.2s, transform 0.2s;
   }
-  .btn-primary:hover { background: var(--accent-hi); transform: translateY(-1px); }
-
+  .btn-primary:hover { background:var(--accent-hi); transform:translateY(-1px); }
   .btn-ghost {
-    background: transparent;
-    color: var(--text);
-    border: none;
-    border-radius: 999px;
-    padding: 10px 18px;
-    font-size: 13.5px;
-    font-weight: 600;
-    transition: background 0.2s;
+    background:transparent; color:var(--text); border:none; border-radius:999px;
+    padding:10px 18px; font-size:13.5px; font-weight:600; transition:background 0.2s;
   }
-  .btn-ghost:hover { background: rgba(0,0,0,0.05); }
+  .btn-ghost:hover { background:rgba(0,0,0,0.05); }
+  #userBadge { font-size:12.5px; color:var(--muted); padding:0 6px; }
 
-  #userBadge {
-    font-size: 12.5px;
-    color: var(--muted);
-    padding: 0 6px;
-  }
-
-  /* ── BOARDS NAV ── */
+  /* BOARDS NAV */
   #boardsNav {
-    background: var(--bg);
-    border-bottom: 1px solid var(--border-soft);
-    padding: 14px 24px;
-    overflow-x: auto;
-    white-space: nowrap;
-    scrollbar-width: none;
+    background:var(--bg); border-bottom:1px solid var(--border-soft);
+    padding:14px 24px; overflow-x:auto; white-space:nowrap; scrollbar-width:none;
   }
-  #boardsNav::-webkit-scrollbar { display: none; }
-
+  #boardsNav::-webkit-scrollbar { display:none; }
   .board-chip {
-    background: var(--card);
-    border: 1px solid var(--border);
-    color: var(--text);
-    border-radius: 999px;
-    padding: 8px 18px;
-    margin-right: 8px;
-    font-size: 13.5px;
-    font-weight: 600;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    transition: all 0.2s;
+    background:var(--card); border:1px solid var(--border); color:var(--text);
+    border-radius:999px; padding:8px 18px; margin-right:8px;
+    font-size:13.5px; font-weight:600;
+    display:inline-flex; align-items:center; gap:8px; transition:all 0.2s;
   }
-  .board-chip:hover { border-color: var(--text); }
-  .board-chip.active {
-    background: var(--text);
-    color: #fff;
-    border-color: var(--text);
-  }
+  .board-chip:hover { border-color:var(--text); }
+  .board-chip.active { background:var(--text); color:#fff; border-color:var(--text); }
+  .board-chip.drop-target { border-color:var(--accent); border-style:dashed; background:rgba(189,31,47,0.05); }
   .board-chip .count {
-    background: rgba(0,0,0,0.06);
-    color: inherit;
-    border-radius: 999px;
-    padding: 1px 8px;
-    font-size: 11.5px;
-    font-weight: 500;
-    opacity: 0.7;
+    background:rgba(0,0,0,0.06); color:inherit; border-radius:999px;
+    padding:1px 8px; font-size:11.5px; font-weight:500; opacity:0.7;
   }
-  .board-chip.active .count {
-    background: rgba(255,255,255,0.18);
-  }
-  .board-chip.add {
-    color: var(--muted);
-    border-style: dashed;
-  }
-  .board-chip.add:hover { color: var(--text); border-color: var(--text); }
-
+  .board-chip.active .count { background:rgba(255,255,255,0.18); }
+  .board-chip.add { color:var(--muted); border-style:dashed; }
+  .board-chip.add:hover { color:var(--text); border-color:var(--text); }
   .board-edit-btn {
-    background: transparent;
-    border: none;
-    width: 18px;
-    height: 18px;
-    padding: 0;
-    margin-left: 2px;
-    border-radius: 50%;
-    opacity: 0.5;
-    font-size: 11px;
-    line-height: 1;
-    color: inherit;
-    transition: opacity 0.2s, background 0.2s;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
+    background:transparent; border:none; width:18px; height:18px; padding:0;
+    margin-left:2px; border-radius:50%; opacity:0.5; font-size:11px;
+    line-height:1; color:inherit; transition:opacity 0.2s, background 0.2s;
+    display:inline-flex; align-items:center; justify-content:center;
   }
-  .board-edit-btn:hover {
-    opacity: 1;
-    background: rgba(255,255,255,0.15);
-  }
-  .board-chip:not(.active) .board-edit-btn:hover {
-    background: rgba(0,0,0,0.08);
-  }
+  .board-edit-btn:hover { opacity:1; background:rgba(255,255,255,0.15); }
+  .board-chip:not(.active) .board-edit-btn:hover { background:rgba(0,0,0,0.08); }
+  .board-public-icon { opacity:0.6; font-size:10px; margin-left:2px; }
 
-  /* ── PINS GRID ── */
-  main {
-    padding: 24px;
-    padding-bottom: 100px;
+  /* FILTER BAR */
+  #filterBar {
+    background:var(--bg); padding:0 24px 14px; display:none;
+    border-bottom:1px solid var(--border-soft);
+    flex-wrap:wrap; gap:8px; align-items:center;
   }
+  #filterBar.has-content { display:flex; }
+  .filter-label {
+    font-size:11px; font-weight:700; color:var(--muted);
+    letter-spacing:0.06em; text-transform:uppercase; margin-right:4px;
+  }
+  .tag-chip {
+    background:var(--card); border:1px solid var(--border); color:var(--text-soft);
+    border-radius:999px; padding:5px 14px; font-size:12px; font-weight:500;
+    transition:all 0.2s; cursor:pointer;
+  }
+  .tag-chip:hover { border-color:var(--text); color:var(--text); }
+  .tag-chip.active { background:var(--text); color:#fff; border-color:var(--text); }
+  .color-dot {
+    width:24px; height:24px; border-radius:50%; cursor:pointer;
+    border:2px solid transparent; transition:transform 0.15s, border-color 0.15s;
+  }
+  .color-dot:hover { transform:scale(1.15); }
+  .color-dot.active { border-color:var(--text); transform:scale(1.1); }
+  #clearFilters {
+    background:transparent; border:none; color:var(--accent);
+    font-size:12px; font-weight:600; padding:5px 10px;
+    cursor:pointer; opacity:0.8;
+  }
+  #clearFilters:hover { opacity:1; text-decoration:underline; }
 
-  #grid {
-    columns: auto;
-    column-width: 240px;
-    column-gap: 16px;
-  }
-  @media (max-width: 720px) { #grid { column-width: 160px; column-gap: 12px; } main { padding: 16px; } }
+  /* MAIN */
+  main { padding:24px; padding-bottom:120px; }
+  #grid { columns:auto; column-width:240px; column-gap:16px; }
+  @media (max-width:720px) { #grid { column-width:160px; column-gap:12px; } main { padding:16px; } }
 
   .pin {
-    break-inside: avoid;
-    margin-bottom: 16px;
-    background: var(--card);
-    border-radius: var(--radius);
-    overflow: hidden;
-    box-shadow: var(--shadow);
-    transition: box-shadow 0.3s, transform 0.3s;
-    cursor: pointer;
-    position: relative;
+    break-inside:avoid; margin-bottom:16px;
+    background:var(--card); border-radius:var(--radius); overflow:hidden;
+    box-shadow:var(--shadow); transition:box-shadow 0.3s, transform 0.3s;
+    cursor:pointer; position:relative;
   }
-  .pin:hover { box-shadow: var(--shadow-hi); transform: translateY(-2px); }
+  .pin:hover { box-shadow:var(--shadow-hi); transform:translateY(-2px); }
+  .pin.selected { box-shadow:0 0 0 3px var(--accent), var(--shadow-hi); }
+  .pin.dragging { opacity:0.4; }
 
-  .pin-img-wrap { position: relative; overflow: hidden; background: var(--border-soft); }
+  .pin-img-wrap { position:relative; overflow:hidden; background:var(--border-soft); }
   .pin-img {
-    width: 100%;
-    display: block;
-    transition: filter 0.4s, opacity 0.4s;
-    filter: blur(8px);
-    opacity: 0.7;
+    width:100%; display:block;
+    transition:filter 0.4s, opacity 0.4s;
+    filter:blur(8px); opacity:0.7;
   }
-  .pin-img.loaded { filter: blur(0); opacity: 1; }
+  .pin-img.loaded { filter:blur(0); opacity:1; }
 
   .pin-overlay {
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(to bottom, rgba(0,0,0,0.25) 0%, transparent 30%, transparent 70%, rgba(0,0,0,0.2) 100%);
-    opacity: 0;
-    transition: opacity 0.25s;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    padding: 12px;
+    position:absolute; inset:0;
+    background:linear-gradient(to bottom, rgba(0,0,0,0.25) 0%, transparent 30%, transparent 70%, rgba(0,0,0,0.2) 100%);
+    opacity:0; transition:opacity 0.25s;
+    display:flex; flex-direction:column; justify-content:space-between; padding:12px;
   }
-  .pin:hover .pin-overlay { opacity: 1; }
-
-  .pin-overlay-top, .pin-overlay-bottom {
-    display: flex;
-    gap: 6px;
-  }
-  .pin-overlay-top { justify-content: flex-end; }
+  .pin:hover .pin-overlay { opacity:1; }
+  .pin-overlay-top, .pin-overlay-bottom { display:flex; gap:6px; }
+  .pin-overlay-top { justify-content:space-between; }
 
   .icon-btn {
-    background: rgba(255,255,255,0.95);
-    backdrop-filter: blur(8px);
-    color: var(--text);
-    border: none;
-    border-radius: 999px;
-    width: 34px;
-    height: 34px;
-    font-size: 13px;
-    font-weight: 600;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    transition: background 0.2s, transform 0.2s;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    background:rgba(255,255,255,0.95); backdrop-filter:blur(8px);
+    color:var(--text); border:none; border-radius:999px;
+    width:34px; height:34px; font-size:13px; font-weight:600;
+    display:inline-flex; align-items:center; justify-content:center;
+    transition:background 0.2s, transform 0.2s;
+    box-shadow:0 2px 6px rgba(0,0,0,0.15);
   }
-  .icon-btn:hover { background: var(--text); color: #fff; transform: scale(1.06); }
-  .icon-btn.danger:hover { background: var(--accent); }
+  .icon-btn:hover { background:var(--text); color:#fff; transform:scale(1.06); }
+  .icon-btn.danger:hover { background:var(--accent); }
+  .icon-btn.checkbox {
+    background:rgba(255,255,255,0.95); width:30px; height:30px; font-size:14px;
+  }
+  .icon-btn.checkbox.checked { background:var(--accent); color:#fff; }
 
   .save-btn {
-    background: var(--accent);
-    color: #fff;
-    border: none;
-    border-radius: 999px;
-    padding: 9px 16px;
-    font-size: 13px;
-    font-weight: 700;
-    transition: background 0.2s, transform 0.2s;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    background:var(--accent); color:#fff; border:none; border-radius:999px;
+    padding:9px 16px; font-size:13px; font-weight:700;
+    transition:background 0.2s, transform 0.2s;
+    box-shadow:0 2px 6px rgba(0,0,0,0.2);
   }
-  .save-btn:hover { background: var(--accent-hi); transform: scale(1.04); }
+  .save-btn:hover { background:var(--accent-hi); transform:scale(1.04); }
 
-  .pin-meta { padding: 10px 14px 14px; }
+  .pin-meta { padding:10px 14px 14px; }
   .pin-title {
-    font-size: 13.5px;
-    font-weight: 600;
-    color: var(--text);
-    margin-bottom: 4px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
+    font-size:13.5px; font-weight:600; color:var(--text);
+    margin-bottom:4px; overflow:hidden; text-overflow:ellipsis;
+    display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;
   }
-  .pin-board-chip {
-    display: inline-block;
-    font-size: 11.5px;
-    color: var(--muted);
-    font-weight: 500;
-  }
-  .pin-board-chip::before { content: '◷ '; opacity: 0.6; }
+  .pin-board-chip { display:inline-block; font-size:11.5px; color:var(--muted); font-weight:500; }
+  .pin-board-chip::before { content:'◷ '; opacity:0.6; }
 
-  /* ── EMPTY STATE ── */
-  #emptyState {
-    text-align: center;
-    padding: 120px 20px;
-    color: var(--muted);
+  .pin-colors-strip {
+    display:flex; gap:3px; padding:0 14px 12px;
   }
-  #emptyState .big {
-    font-size: 64px;
-    color: var(--border);
-    line-height: 1;
-    margin-bottom: 16px;
+  .pin-color-mini {
+    width:14px; height:14px; border-radius:50%;
+    box-shadow:0 0 0 1px rgba(0,0,0,0.05);
   }
-  #emptyState h2 { font-weight: 600; color: var(--text-soft); margin-bottom: 8px; font-size: 18px; }
 
-  /* ── STORAGE PANEL ── */
+  /* SELECT MODE */
+  body.select-mode .pin { cursor:pointer; }
+  body.select-mode .pin-overlay { opacity:1 !important; background:none; }
+  body.select-mode .pin-overlay-bottom { display:none; }
+
+  /* EMPTY */
+  #emptyState { text-align:center; padding:120px 20px; color:var(--muted); }
+  #emptyState .big { font-size:64px; color:var(--border); line-height:1; margin-bottom:16px; }
+  #emptyState h2 { font-weight:600; color:var(--text-soft); margin-bottom:8px; font-size:18px; }
+
+  /* INFINITE SCROLL SENTINEL */
+  #scrollSentinel { height:80px; }
+  #loadingMore {
+    text-align:center; padding:20px; color:var(--muted);
+    font-size:12px; letter-spacing:0.06em;
+  }
+
+  /* SELECT BAR (bottom) */
+  #selectBar {
+    display:none;
+    position:fixed; bottom:16px; left:50%;
+    transform:translateX(-50%);
+    background:var(--text); color:#fff;
+    border-radius:999px; padding:8px 8px 8px 24px;
+    box-shadow:0 12px 32px rgba(0,0,0,0.25);
+    align-items:center; gap:16px; z-index:90; max-width:calc(100vw - 32px);
+    flex-wrap:wrap;
+  }
+  #selectBar.visible { display:flex; }
+  #selectBar .count { font-size:13.5px; font-weight:600; white-space:nowrap; }
+  #selectBar .actions { display:flex; gap:4px; }
+  #selectBar button {
+    background:rgba(255,255,255,0.1); border:none; color:#fff;
+    border-radius:999px; padding:8px 16px; font-size:12.5px; font-weight:600;
+    transition:background 0.2s; white-space:nowrap;
+  }
+  #selectBar button:hover { background:rgba(255,255,255,0.2); }
+  #selectBar button.danger:hover { background:var(--accent); }
+  #selectBar button.exit { background:#fff; color:var(--text); }
+  #selectBar button.exit:hover { background:#f0f0f0; }
+
+  /* STORAGE PANEL */
   #storagePanel {
-    display: none;
-    position: fixed;
-    bottom: 16px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: var(--card);
-    border: 1px solid var(--border);
-    box-shadow: 0 12px 32px rgba(0,0,0,0.08);
-    border-radius: 999px;
-    padding: 10px 20px;
-    align-items: center;
-    gap: 20px;
-    flex-wrap: nowrap;
-    z-index: 90;
-    max-width: calc(100vw - 32px);
+    display:none; position:fixed; bottom:16px; left:50%;
+    transform:translateX(-50%); background:var(--card);
+    border:1px solid var(--border); box-shadow:0 12px 32px rgba(0,0,0,0.08);
+    border-radius:999px; padding:10px 20px;
+    align-items:center; gap:20px; flex-wrap:nowrap;
+    z-index:80; max-width:calc(100vw - 32px);
   }
-  .storage-bar { width: 140px; height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; }
-  .storage-fill { height: 100%; background: linear-gradient(90deg, var(--accent), #E66B3D); transition: width 0.5s; width: 0%; }
-  .storage-text { font-size: 12px; color: var(--muted); font-weight: 500; }
-  .storage-text strong { color: var(--text); }
-
+  body.select-mode #storagePanel { display:none !important; }
+  .storage-bar { width:140px; height:4px; background:var(--border); border-radius:2px; overflow:hidden; }
+  .storage-fill { height:100%; background:linear-gradient(90deg, var(--accent), #E66B3D); transition:width 0.5s; width:0%; }
+  .storage-text { font-size:12px; color:var(--muted); font-weight:500; }
+  .storage-text strong { color:var(--text); }
   #recompressBtn, #storageConsoleLink {
-    background: transparent;
-    border: 1px solid var(--border);
-    border-radius: 999px;
-    padding: 5px 12px;
-    font-size: 11.5px;
-    color: var(--muted);
-    text-decoration: none;
-    white-space: nowrap;
-    transition: border-color 0.2s, color 0.2s;
-    font-weight: 500;
+    background:transparent; border:1px solid var(--border); border-radius:999px;
+    padding:5px 12px; font-size:11.5px; color:var(--muted);
+    text-decoration:none; white-space:nowrap;
+    transition:border-color 0.2s, color 0.2s; font-weight:500;
   }
-  #recompressBtn:hover, #storageConsoleLink:hover { border-color: var(--text); color: var(--text); }
-  #recompressBtn:disabled { opacity: 0.5; cursor: not-allowed; }
+  #recompressBtn:hover, #storageConsoleLink:hover { border-color:var(--text); color:var(--text); }
+  #recompressBtn:disabled { opacity:0.5; cursor:not-allowed; }
 
-  /* ── MODAL ── */
+  /* MODAL */
   .modal {
-    position: fixed;
-    inset: 0;
-    background: rgba(26,26,26,0.55);
-    backdrop-filter: blur(4px);
-    z-index: 200;
-    display: none;
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
+    position:fixed; inset:0; background:rgba(26,26,26,0.55);
+    backdrop-filter:blur(4px); z-index:200; display:none;
+    align-items:center; justify-content:center; padding:20px;
   }
-  .modal.open { display: flex; }
-
+  .modal.open { display:flex; }
   .modal-box {
-    background: var(--card);
-    border-radius: 24px;
-    padding: 32px;
-    width: 100%;
-    max-width: 480px;
-    max-height: 90vh;
-    overflow-y: auto;
-    position: relative;
-    box-shadow: 0 32px 80px rgba(0,0,0,0.3);
+    background:var(--card); border-radius:24px; padding:32px;
+    width:100%; max-width:480px; max-height:90vh; overflow-y:auto;
+    position:relative; box-shadow:0 32px 80px rgba(0,0,0,0.3);
   }
-  .modal-box.wide { max-width: 920px; padding: 0; overflow: hidden; }
-  .modal-box h2 { font-size: 22px; font-weight: 700; margin-bottom: 6px; }
-  .modal-box .subtitle { font-size: 13.5px; color: var(--muted); margin-bottom: 24px; }
-
+  .modal-box.wide { max-width:980px; padding:0; overflow:hidden; }
+  .modal-box h2 { font-size:22px; font-weight:700; margin-bottom:6px; }
+  .modal-box .subtitle { font-size:13.5px; color:var(--muted); margin-bottom:24px; }
   .modal-close {
-    position: absolute;
-    top: 16px; right: 16px;
-    background: transparent;
-    border: none;
-    width: 36px; height: 36px;
-    border-radius: 50%;
-    font-size: 22px;
-    color: var(--muted);
-    transition: background 0.2s, color 0.2s;
-    z-index: 2;
+    position:absolute; top:16px; right:16px;
+    background:transparent; border:none; width:36px; height:36px;
+    border-radius:50%; font-size:22px; color:var(--muted);
+    transition:background 0.2s, color 0.2s; z-index:2;
   }
-  .modal-close:hover { background: rgba(0,0,0,0.05); color: var(--text); }
+  .modal-close:hover { background:rgba(0,0,0,0.05); color:var(--text); }
 
-  .field { margin-bottom: 16px; }
-  .field label { display: block; font-size: 12px; font-weight: 600; letter-spacing: 0.04em; color: var(--text-soft); margin-bottom: 7px; text-transform: uppercase; }
+  .field { margin-bottom:16px; }
+  .field label {
+    display:block; font-size:12px; font-weight:600;
+    letter-spacing:0.04em; color:var(--text-soft);
+    margin-bottom:7px; text-transform:uppercase;
+  }
   .field input, .field textarea, .field select {
-    width: 100%;
-    background: #fff;
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 12px 16px;
-    font-family: inherit;
-    font-size: 14px;
-    outline: none;
-    transition: border-color 0.2s;
+    width:100%; background:#fff; border:1px solid var(--border);
+    border-radius:12px; padding:12px 16px;
+    font-family:inherit; font-size:14px; outline:none;
+    transition:border-color 0.2s;
   }
-  .field input:focus, .field textarea:focus, .field select:focus { border-color: var(--text); }
-  .field textarea { resize: vertical; min-height: 80px; }
+  .field input:focus, .field textarea:focus, .field select:focus { border-color:var(--text); }
+  .field textarea { resize:vertical; min-height:80px; }
+  .field-toggle {
+    display:flex; align-items:center; gap:12px;
+    padding:14px 16px; background:#f9f5ef;
+    border-radius:12px; cursor:pointer;
+    border:1px solid var(--border); user-select:none;
+  }
+  .field-toggle input[type="checkbox"] { width:auto; margin:0; cursor:pointer; }
+  .field-toggle .info { flex:1; }
+  .field-toggle .info-title { font-weight:600; font-size:13.5px; }
+  .field-toggle .info-sub { font-size:12px; color:var(--muted); }
 
-  /* Upload dropzone */
+  /* Upload */
   #dropZone {
-    border: 2px dashed var(--border);
-    border-radius: 16px;
-    padding: 36px 20px;
-    text-align: center;
-    color: var(--muted);
-    cursor: pointer;
-    transition: all 0.2s;
-    position: relative;
-    margin-bottom: 16px;
+    border:2px dashed var(--border); border-radius:16px;
+    padding:36px 20px; text-align:center; color:var(--muted);
+    cursor:pointer; transition:all 0.2s; position:relative; margin-bottom:16px;
   }
   #dropZone:hover, #dropZone.dragover {
-    border-color: var(--accent);
-    background: rgba(189, 31, 47, 0.02);
-    color: var(--text);
+    border-color:var(--accent); background:rgba(189,31,47,0.02); color:var(--text);
   }
-  #dropZone .big-icon { font-size: 32px; margin-bottom: 8px; color: var(--accent); }
-  #dropZone input[type="file"] {
-    position: absolute; inset: 0;
-    opacity: 0; cursor: pointer;
+  #dropZone .big-icon { font-size:32px; margin-bottom:8px; color:var(--accent); }
+  #dropZone input[type="file"] { position:absolute; inset:0; opacity:0; cursor:pointer; }
+  #dropZoneSubtext { font-size:12px; margin-top:6px; opacity:0.7; }
+  #urlAddBtn {
+    background:transparent; border:1px solid var(--border); color:var(--text);
+    border-radius:12px; padding:0 18px; font-size:13.5px; font-weight:600;
+    cursor:pointer; transition:all 0.2s; white-space:nowrap;
   }
-  #dropZoneSubtext { font-size: 12px; margin-top: 6px; opacity: 0.7; }
+  #urlAddBtn:hover { border-color:var(--text); }
 
   #uploadPreview {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(64px, 1fr));
-    gap: 8px;
-    margin-bottom: 16px;
+    display:grid; grid-template-columns:repeat(auto-fill, minmax(64px, 1fr));
+    gap:8px; margin-bottom:16px;
   }
-  .preview-item {
-    position: relative;
-    aspect-ratio: 1;
-  }
-  .preview-item img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    border-radius: 8px;
-    border: 1px solid var(--border);
-  }
+  .preview-item { position:relative; aspect-ratio:1; }
+  .preview-item img { width:100%; height:100%; object-fit:cover; border-radius:8px; border:1px solid var(--border); }
   .preview-item .badge {
-    position: absolute;
-    top: 3px; right: 3px;
-    background: rgba(0,0,0,0.72);
-    color: #fff;
-    font-size: 10px;
-    padding: 2px 5px;
-    border-radius: 5px;
-    font-weight: 600;
+    position:absolute; top:3px; right:3px;
+    background:rgba(0,0,0,0.72); color:#fff;
+    font-size:10px; padding:2px 5px; border-radius:5px; font-weight:600;
   }
   .preview-item .remove-btn {
-    position: absolute;
-    top: 3px; left: 3px;
-    background: rgba(0,0,0,0.72);
-    color: #fff;
-    width: 18px; height: 18px;
-    border: none;
-    border-radius: 50%;
-    cursor: pointer;
-    font-size: 12px;
-    line-height: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    opacity: 0;
-    transition: opacity 0.2s;
+    position:absolute; top:3px; left:3px;
+    background:rgba(0,0,0,0.72); color:#fff;
+    width:18px; height:18px; border:none; border-radius:50%;
+    cursor:pointer; font-size:12px; line-height:1;
+    display:flex; align-items:center; justify-content:center;
+    opacity:0; transition:opacity 0.2s;
   }
-  .preview-item:hover .remove-btn { opacity: 1; }
-  #uploadPreview:empty { display: none; }
+  .preview-item:hover .remove-btn { opacity:1; }
+  #uploadPreview:empty { display:none; }
 
-  #urlAddBtn:hover { border-color: var(--text) !important; }
+  #uploadStatus { font-size:12.5px; color:var(--muted); margin-bottom:12px; min-height:18px; }
+  #uploadProgress { height:4px; background:var(--border); border-radius:2px; margin-bottom:16px; overflow:hidden; display:none; }
+  #uploadProgress > div { height:100%; background:var(--accent); width:0%; transition:width 0.3s; }
 
-  #uploadStatus {
-    font-size: 12.5px;
-    color: var(--muted);
-    margin-bottom: 12px;
-    min-height: 18px;
-  }
-  #uploadProgress {
-    height: 4px;
-    background: var(--border);
-    border-radius: 2px;
-    margin-bottom: 16px;
-    overflow: hidden;
-    display: none;
-  }
-  #uploadProgress > div {
-    height: 100%;
-    background: var(--accent);
-    width: 0%;
-    transition: width 0.3s;
-  }
-
-  /* Pin detail modal */
+  /* PIN DETAIL */
   .pin-detail {
-    display: grid;
-    grid-template-columns: 1.2fr 1fr;
-    min-height: 400px;
+    display:grid; grid-template-columns:1.2fr 1fr;
+    min-height:400px; position:relative;
   }
   .pin-detail-img {
-    background: #f0eee9;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    background:#f0eee9; display:flex;
+    align-items:center; justify-content:center;
+    position:relative; overflow:hidden;
   }
   .pin-detail-img img {
-    max-width: 100%;
-    max-height: 80vh;
-    object-fit: contain;
-    display: block;
+    max-width:100%; max-height:80vh;
+    object-fit:contain; display:block;
   }
+  .pin-detail-nav {
+    position:absolute; top:50%; transform:translateY(-50%);
+    background:rgba(255,255,255,0.92); border:none; color:var(--text);
+    width:42px; height:42px; border-radius:50%; cursor:pointer;
+    box-shadow:0 4px 12px rgba(0,0,0,0.15);
+    font-size:20px; transition:all 0.2s; z-index:2;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .pin-detail-nav:hover { background:#fff; transform:translateY(-50%) scale(1.08); }
+  #detailPrev { left:16px; }
+  #detailNext { right:16px; }
+
   .pin-detail-info {
-    padding: 32px;
-    display: flex;
-    flex-direction: column;
+    padding:32px; display:flex; flex-direction:column;
+    max-height:80vh; overflow-y:auto;
   }
-  .pin-detail-info h2 {
-    font-size: 24px;
-    font-weight: 700;
-    margin-bottom: 12px;
-  }
-  .pin-detail-info p {
-    font-size: 14px;
-    color: var(--text-soft);
-    margin-bottom: 16px;
-    white-space: pre-wrap;
-  }
+  .pin-detail-info h2 { font-size:24px; font-weight:700; margin-bottom:12px; }
+  .pin-detail-info p { font-size:14px; color:var(--text-soft); margin-bottom:16px; white-space:pre-wrap; }
   .pin-detail-board {
-    font-size: 13px;
-    color: var(--muted);
-    padding: 6px 14px;
-    background: var(--border-soft);
-    border-radius: 999px;
-    display: inline-block;
-    align-self: flex-start;
-    font-weight: 500;
+    font-size:13px; color:var(--muted); padding:6px 14px;
+    background:var(--border-soft); border-radius:999px;
+    display:inline-block; align-self:flex-start; font-weight:500; margin-bottom:8px;
   }
-  .pin-detail-admin {
-    margin-top: auto;
-    padding-top: 24px;
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
+  .pin-detail-source {
+    display:inline-block; font-size:13px; color:var(--accent);
+    text-decoration:none; font-weight:500; margin-bottom:16px;
   }
-  .pin-detail-admin button {
-    background: transparent;
-    border: 1px solid var(--border);
-    border-radius: 999px;
-    padding: 9px 18px;
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--text);
-    transition: all 0.2s;
+  .pin-detail-source:hover { text-decoration:underline; }
+  .pin-detail-source::before { content:'↗ '; }
+  .pin-detail-tags {
+    display:flex; flex-wrap:wrap; gap:6px; margin-bottom:16px;
   }
-  .pin-detail-admin button:hover { border-color: var(--text); }
-  .pin-detail-admin button.danger { color: var(--accent); border-color: rgba(189,31,47,0.3); }
-  .pin-detail-admin button.danger:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .pin-detail-tag {
+    background:var(--bg); border:1px solid var(--border);
+    color:var(--text-soft); border-radius:999px;
+    padding:4px 12px; font-size:12px; font-weight:500;
+  }
+  .pin-detail-colors {
+    display:flex; gap:6px; margin-bottom:16px; align-items:center;
+  }
+  .pin-detail-color {
+    width:22px; height:22px; border-radius:50%;
+    box-shadow:0 0 0 1px rgba(0,0,0,0.08);
+    cursor:pointer; transition:transform 0.15s;
+  }
+  .pin-detail-color:hover { transform:scale(1.15); }
 
-  @media (max-width: 720px) {
-    .pin-detail { grid-template-columns: 1fr; }
-    .pin-detail-img img { max-height: 50vh; }
-    #storagePanel { gap: 12px; padding: 8px 14px; }
-    .storage-bar { width: 100px; }
+  .pin-detail-actions {
+    margin-top:auto; padding-top:24px; display:flex; gap:8px; flex-wrap:wrap;
   }
+  .pin-detail-actions button, .pin-detail-actions a {
+    background:transparent; border:1px solid var(--border); border-radius:999px;
+    padding:9px 18px; font-size:13px; font-weight:600; color:var(--text);
+    transition:all 0.2s; text-decoration:none; display:inline-flex; align-items:center; gap:6px;
+  }
+  .pin-detail-actions button:hover, .pin-detail-actions a:hover { border-color:var(--text); }
+  .pin-detail-actions button.danger { color:var(--accent); border-color:rgba(189,31,47,0.3); }
+  .pin-detail-actions button.danger:hover { background:var(--accent); color:#fff; border-color:var(--accent); }
+  .pin-detail-actions .primary {
+    background:var(--text); color:#fff; border-color:var(--text);
+  }
+  .pin-detail-actions .primary:hover { background:#000; }
 
-  /* Loading state */
-  .skeleton {
-    background: linear-gradient(90deg, var(--border-soft), var(--border), var(--border-soft));
-    background-size: 200% 100%;
-    animation: shimmer 1.5s infinite;
+  .pin-detail-related {
+    border-top:1px solid var(--border-soft);
+    padding:24px 0 0;
+    margin-top:24px;
   }
-  @keyframes shimmer {
-    to { background-position: -200% 0; }
+  .pin-detail-related h3 {
+    font-size:12px; font-weight:700; letter-spacing:0.05em;
+    color:var(--muted); text-transform:uppercase;
+    margin-bottom:14px;
+  }
+  .related-grid {
+    display:grid; grid-template-columns:repeat(3, 1fr); gap:8px;
+  }
+  .related-pin {
+    aspect-ratio:1; border-radius:10px; overflow:hidden;
+    cursor:pointer; box-shadow:var(--shadow);
+    transition:transform 0.2s;
+  }
+  .related-pin:hover { transform:scale(1.04); }
+  .related-pin img { width:100%; height:100%; object-fit:cover; display:block; }
+
+  @media (max-width:720px) {
+    .pin-detail { grid-template-columns:1fr; }
+    .pin-detail-img img { max-height:50vh; }
+    .pin-detail-info { padding:24px; max-height:none; }
+    #storagePanel { gap:12px; padding:8px 14px; }
+    .storage-bar { width:100px; }
   }
 </style>
 </head>
@@ -606,26 +475,38 @@
 
 <header>
   <div class="logo">Inspireboard</div>
-  <div class="search">
-    <input id="searchInput" type="text" placeholder="Hľadať vo všetkých pinoch..." />
-  </div>
+  <div class="search"><input id="searchInput" type="text" placeholder="Hľadať vo všetkých pinoch..." /></div>
   <div class="header-actions">
     <span id="userBadge"></span>
+    <button id="selectModeBtn" class="btn-ghost" style="display:none">Vybrať</button>
     <button id="uploadOpen" class="btn-primary" style="display:none">+ Pin</button>
     <button id="authBtn" class="btn-ghost">Prihlásiť</button>
   </div>
 </header>
 
 <nav id="boardsNav"></nav>
+<div id="filterBar"></div>
 
 <main>
   <div id="emptyState" style="display:none">
     <div class="big">◌</div>
-    <h2>Zatiaľ žiadne piny</h2>
-    <p>Pridaj prvý pin alebo si vytvor board</p>
+    <h2>Žiadne piny</h2>
+    <p>Skús zmeniť filtre alebo pridať nový pin</p>
   </div>
   <div id="grid"></div>
+  <div id="scrollSentinel"></div>
+  <div id="loadingMore" style="display:none">Načítavam...</div>
 </main>
+
+<!-- Select bar -->
+<div id="selectBar">
+  <span class="count"><span id="selectCount">0</span> vybratých</span>
+  <div class="actions">
+    <button id="selectMove">Presunúť do…</button>
+    <button id="selectDelete" class="danger">Zmazať</button>
+    <button id="selectExit" class="exit">Hotovo</button>
+  </div>
+</div>
 
 <!-- Storage panel -->
 <div id="storagePanel">
@@ -650,17 +531,15 @@
       <input type="file" id="fileInput" accept="image/*" multiple />
     </div>
 
-    <div style="display:flex; align-items:center; gap:12px; margin: 0 0 16px; color:var(--muted); font-size:11.5px; font-weight:600; letter-spacing:0.06em; text-transform:uppercase">
-      <span style="flex:1; height:1px; background:var(--border-soft)"></span>
-      ALEBO
-      <span style="flex:1; height:1px; background:var(--border-soft)"></span>
+    <div style="display:flex; align-items:center; gap:12px; margin:0 0 16px; color:var(--muted); font-size:11.5px; font-weight:600; letter-spacing:0.06em; text-transform:uppercase">
+      <span style="flex:1; height:1px; background:var(--border-soft)"></span>ALEBO<span style="flex:1; height:1px; background:var(--border-soft)"></span>
     </div>
 
-    <div class="field" style="margin-bottom: 16px">
+    <div class="field" style="margin-bottom:16px">
       <label>Vlož link na obrázok</label>
       <div style="display:flex; gap:8px">
         <input id="urlInput" type="url" placeholder="https://example.com/obrazok.jpg" style="flex:1" />
-        <button id="urlAddBtn" type="button" style="background:transparent; border:1px solid var(--border); color:var(--text); border-radius:12px; padding:0 18px; font-size:13.5px; font-weight:600; cursor:pointer; transition:all 0.2s; white-space:nowrap">+ Pridať</button>
+        <button id="urlAddBtn" type="button">+ Pridať</button>
       </div>
     </div>
 
@@ -668,19 +547,23 @@
 
     <div class="field">
       <label>Uložiť do boardu</label>
-      <select id="uploadBoard">
-        <option value="">— vyberte board —</option>
-      </select>
+      <select id="uploadBoard"><option value="">— vyberte board —</option></select>
     </div>
-
     <div class="field">
-      <label>Titulok (voliteľné, aplikuje sa na všetky)</label>
+      <label>Titulok (voliteľné, pre všetky)</label>
       <input id="uploadTitle" type="text" placeholder="Napr. Móda, jeseň 2026" />
+    </div>
+    <div class="field">
+      <label>Tagy (oddelené čiarkami, voliteľné)</label>
+      <input id="uploadTags" type="text" placeholder="napr. minimalizmus, jeseň, béžová" />
+    </div>
+    <div class="field">
+      <label>Source URL (voliteľné)</label>
+      <input id="uploadSource" type="url" placeholder="https://kde-si-to-nasiel.com" />
     </div>
 
     <div id="uploadProgress"><div></div></div>
     <div id="uploadStatus"></div>
-
     <button id="uploadBtn" class="btn-primary" style="width:100%" disabled>Pridať piny</button>
   </div>
 </div>
@@ -691,38 +574,47 @@
     <button class="modal-close" data-close="boardModal">×</button>
     <h2>Nový board</h2>
     <div class="subtitle">Pomenuj kolekciu pinov</div>
-    <div class="field">
-      <label>Názov</label>
-      <input id="boardName" type="text" placeholder="Napr. Inšpirácia, Móda, Architektúra" />
-    </div>
-    <div class="field">
-      <label>Popis (voliteľné)</label>
-      <textarea id="boardDesc" placeholder="O čom je tento board"></textarea>
+    <div class="field"><label>Názov</label><input id="boardName" type="text" placeholder="Napr. Inšpirácia" /></div>
+    <div class="field"><label>Popis (voliteľné)</label><textarea id="boardDesc"></textarea></div>
+    <div class="field-toggle" style="margin-bottom:16px">
+      <input type="checkbox" id="boardPublic" />
+      <div class="info">
+        <div class="info-title">Verejný board</div>
+        <div class="info-sub">Bude prístupný cez zdieľateľný link aj bez prihlásenia</div>
+      </div>
     </div>
     <button id="boardSaveBtn" class="btn-primary" style="width:100%">Vytvoriť board</button>
   </div>
 </div>
 
-<!-- Edit board modal -->
+<!-- Board edit modal -->
 <div class="modal" id="boardEditModal">
   <div class="modal-box">
     <button class="modal-close" data-close="boardEditModal">×</button>
     <h2>Upraviť board</h2>
-    <div class="subtitle">Premenuj alebo zmaž board</div>
-    <div class="field">
-      <label>Názov</label>
-      <input id="boardEditName" type="text" />
+    <div class="subtitle">Premenuj, nastav verejnosť alebo zmaž</div>
+    <div class="field"><label>Názov</label><input id="boardEditName" type="text" /></div>
+    <div class="field"><label>Popis</label><textarea id="boardEditDesc"></textarea></div>
+    <div class="field-toggle" style="margin-bottom:16px">
+      <input type="checkbox" id="boardEditPublic" />
+      <div class="info">
+        <div class="info-title">Verejný board</div>
+        <div class="info-sub">Bude prístupný cez zdieľateľný link aj bez prihlásenia</div>
+      </div>
     </div>
-    <div class="field">
-      <label>Popis</label>
-      <textarea id="boardEditDesc"></textarea>
+    <div id="boardShareSection" style="display:none; margin-bottom:16px; padding:12px; background:#f9f5ef; border-radius:12px; border:1px solid var(--border)">
+      <div style="font-size:11px; font-weight:700; color:var(--muted); letter-spacing:0.04em; text-transform:uppercase; margin-bottom:8px">Zdieľateľný link</div>
+      <div style="display:flex; gap:6px">
+        <input id="boardShareLink" type="text" readonly style="flex:1; background:#fff; border:1px solid var(--border); border-radius:10px; padding:8px 12px; font-size:12px; font-family:monospace" />
+        <button id="boardShareCopy" type="button" style="background:var(--text); color:#fff; border:none; border-radius:10px; padding:0 14px; font-size:12.5px; font-weight:600; cursor:pointer">Kopírovať</button>
+      </div>
     </div>
     <div style="display:flex; gap:8px; margin-top:8px">
       <button id="boardEditSaveBtn" class="btn-primary" style="flex:1">Uložiť</button>
-      <button id="boardDeleteBtn" style="background:transparent; border:1px solid rgba(189,31,47,0.3); color:var(--accent); border-radius:999px; padding:10px 22px; font-weight:600; font-size:13.5px; transition:all 0.2s">Zmazať</button>
+      <button id="boardDeleteBtn" style="background:transparent; border:1px solid rgba(189,31,47,0.3); color:var(--accent); border-radius:999px; padding:10px 22px; font-weight:600; font-size:13.5px">Zmazať</button>
     </div>
     <div style="font-size:11.5px; color:var(--muted); margin-top:12px; line-height:1.5">
-      Pri zmazaní boardu sa piny <strong>nezmažú</strong> — len stratia priradenie k boardu.
+      Pri zmazaní boardu sa piny <strong>nezmažú</strong> — len stratia priradenie.
     </div>
   </div>
 </div>
@@ -733,15 +625,26 @@
     <button class="modal-close" data-close="pinModal">×</button>
     <div class="pin-detail">
       <div class="pin-detail-img">
+        <button class="pin-detail-nav" id="detailPrev">‹</button>
         <img id="pinDetailImg" src="" alt="" />
+        <button class="pin-detail-nav" id="detailNext">›</button>
       </div>
       <div class="pin-detail-info">
-        <h2 id="pinDetailTitle">Pin</h2>
-        <p id="pinDetailDesc"></p>
         <span class="pin-detail-board" id="pinDetailBoard">—</span>
-        <div class="pin-detail-admin" id="pinDetailAdmin" style="display:none">
-          <button id="pinEditBtn">Upraviť</button>
-          <button id="pinDeleteBtn" class="danger">Zmazať pin</button>
+        <h2 id="pinDetailTitle">Pin</h2>
+        <a id="pinDetailSource" class="pin-detail-source" href="#" target="_blank" style="display:none"></a>
+        <p id="pinDetailDesc"></p>
+        <div class="pin-detail-tags" id="pinDetailTags"></div>
+        <div class="pin-detail-colors" id="pinDetailColors"></div>
+        <div class="pin-detail-actions">
+          <button id="pinDownloadBtn">↓ Stiahnuť</button>
+          <a id="pinShareBtn" href="#" style="display:none">⎘ Skopírovať link</a>
+          <button id="pinEditBtn" style="display:none">Upraviť</button>
+          <button id="pinDeleteBtn" class="danger" style="display:none">Zmazať</button>
+        </div>
+        <div class="pin-detail-related" id="pinDetailRelated" style="display:none">
+          <h3>Z toho istého boardu</h3>
+          <div class="related-grid" id="relatedGrid"></div>
         </div>
       </div>
     </div>
@@ -753,20 +656,30 @@
   <div class="modal-box">
     <button class="modal-close" data-close="editModal">×</button>
     <h2>Upraviť pin</h2>
-    <div class="subtitle">Zmeniť titulok, popis alebo board</div>
+    <div class="subtitle">Zmeniť detaily pinu</div>
     <div class="field"><label>Titulok</label><input id="editTitle" type="text" /></div>
     <div class="field"><label>Popis</label><textarea id="editDesc"></textarea></div>
-    <div class="field">
-      <label>Board</label>
-      <select id="editBoard"></select>
-    </div>
+    <div class="field"><label>Board</label><select id="editBoard"></select></div>
+    <div class="field"><label>Tagy (oddelené čiarkami)</label><input id="editTags" type="text" /></div>
+    <div class="field"><label>Source URL</label><input id="editSource" type="url" /></div>
     <button id="editSaveBtn" class="btn-primary" style="width:100%">Uložiť</button>
+  </div>
+</div>
+
+<!-- Move to board modal -->
+<div class="modal" id="moveModal">
+  <div class="modal-box">
+    <button class="modal-close" data-close="moveModal">×</button>
+    <h2>Presunúť do boardu</h2>
+    <div class="subtitle"><span id="moveCount">0</span> pinov sa presunie</div>
+    <div class="field"><label>Cieľový board</label><select id="moveBoard"></select></div>
+    <button id="moveConfirmBtn" class="btn-primary" style="width:100%">Presunúť</button>
   </div>
 </div>
 
 <!-- Login modal -->
 <div class="modal" id="loginModal">
-  <div class="modal-box" style="max-width: 380px">
+  <div class="modal-box" style="max-width:380px">
     <button class="modal-close" data-close="loginModal">×</button>
     <h2>Prihlásenie</h2>
     <div class="subtitle">Pre management pinov a boardov</div>
@@ -778,63 +691,61 @@
 </div>
 
 <script>
-// Wait for Firebase module to be ready
 window.addEventListener('fb-ready', () => {
   const { initializeApp, getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged,
-          getFirestore, collection, getDocs, getDoc, addDoc, deleteDoc, doc, updateDoc, setDoc, query, orderBy, where,
-          getStorage, ref, uploadBytesResumable, getDownloadURL, deleteObject } = window.fb;
+    getFirestore, collection, getDocs, getDoc, addDoc, deleteDoc, doc, updateDoc, setDoc, query, orderBy,
+    getStorage, ref, uploadBytesResumable, getDownloadURL, deleteObject } = window.fb;
 
-  // ─── FIREBASE INIT ───
   const firebaseConfig = {
-    apiKey:            "AIzaSyDzwgVupB_pDsoHZiG8JvQLx5QZy-BXdNY",
-    authDomain:        "kornelsson-bea69.firebaseapp.com",
-    projectId:         "kornelsson-bea69",
-    storageBucket:     "kornelsson-bea69.firebasestorage.app",
-    messagingSenderId: "129211041007",
-    appId:             "1:129211041007:web:5923134219948f8bdbc71a"
+    apiKey:"AIzaSyDzwgVupB_pDsoHZiG8JvQLx5QZy-BXdNY",
+    authDomain:"kornelsson-bea69.firebaseapp.com",
+    projectId:"kornelsson-bea69",
+    storageBucket:"kornelsson-bea69.firebasestorage.app",
+    messagingSenderId:"129211041007",
+    appId:"1:129211041007:web:5923134219948f8bdbc71a"
   };
-  const app     = initializeApp(firebaseConfig);
-  const auth    = getAuth(app);
-  const db      = getFirestore(app);
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
   const storage = getStorage(app);
 
   // ─── STATE ───
-  let pins   = [];
-  let boards = [];
-  let currentBoardId = 'all';
-  let searchTerm = '';
+  let pins = [], boards = [];
+  let currentBoardId = 'all', searchTerm = '';
+  let activeTags = new Set(), activeColor = null;
   let isAdmin = false;
-  let selectedFiles = [];
-  let selectedUrls = [];
-  let currentPin = null;
+  let selectedFiles = [], selectedUrls = [];
+  let currentPin = null, currentPinIdx = 0;
+  let selectMode = false;
+  const selectedPinIds = new Set();
+  let visibleCount = 30;
+  const PAGE = 30;
 
-  // ─── DOM ───
-  const $ = (id) => document.getElementById(id);
+  // URL routing — supports ?board=<id>
+  const urlParams = new URLSearchParams(location.search);
+  const urlBoard = urlParams.get('board');
+  if (urlBoard) currentBoardId = urlBoard;
+
+  const $ = id => document.getElementById(id);
   const grid = $('grid');
-  const boardsNav = $('boardsNav');
-  const emptyState = $('emptyState');
 
   // ─── HELPERS ───
   function formatBytes(b) {
-    if (b < 1024 * 1024) return (b / 1024).toFixed(1) + ' KB';
-    if (b < 1024 * 1024 * 1024) return (b / 1024 / 1024).toFixed(1) + ' MB';
-    return (b / 1024 / 1024 / 1024).toFixed(2) + ' GB';
+    if (b < 1024*1024) return (b/1024).toFixed(1)+' KB';
+    if (b < 1024*1024*1024) return (b/1024/1024).toFixed(1)+' MB';
+    return (b/1024/1024/1024).toFixed(2)+' GB';
   }
 
-  function compressImage(file, maxW = 1920, quality = 0.82) {
-    return new Promise((resolve) => {
+  function compressImage(file, maxW=1920, quality=0.82) {
+    return new Promise(resolve => {
       const img = new Image();
       const url = URL.createObjectURL(file);
       img.onload = () => {
         URL.revokeObjectURL(url);
         let { width, height } = img;
-        if (width > maxW) {
-          height = Math.round(height * maxW / width);
-          width = maxW;
-        }
+        if (width > maxW) { height = Math.round(height*maxW/width); width = maxW; }
         const canvas = document.createElement('canvas');
-        canvas.width = width;
-        canvas.height = height;
+        canvas.width = width; canvas.height = height;
         canvas.getContext('2d').drawImage(img, 0, 0, width, height);
         canvas.toBlob(b => resolve(b), 'image/jpeg', quality);
       };
@@ -842,33 +753,80 @@ window.addEventListener('fb-ready', () => {
     });
   }
 
+  // Color extraction: sample pixels, quantize, find dominant
+  function extractColors(file, count=5) {
+    return new Promise(resolve => {
+      const img = new Image();
+      const url = URL.createObjectURL(file);
+      img.onload = () => {
+        URL.revokeObjectURL(url);
+        const size = 80;
+        const canvas = document.createElement('canvas');
+        canvas.width = size; canvas.height = size;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, size, size);
+        const data = ctx.getImageData(0, 0, size, size).data;
+        const bucket = {};
+        for (let i = 0; i < data.length; i += 16) {
+          const r = Math.round(data[i]/40)*40;
+          const g = Math.round(data[i+1]/40)*40;
+          const b = Math.round(data[i+2]/40)*40;
+          const key = `${r},${g},${b}`;
+          bucket[key] = (bucket[key]||0) + 1;
+        }
+        const top = Object.entries(bucket).sort((a,b)=>b[1]-a[1]).slice(0, count)
+          .map(([k]) => {
+            const [r,g,b] = k.split(',').map(Number);
+            return '#' + [r,g,b].map(v => Math.min(255, v).toString(16).padStart(2,'0')).join('');
+          });
+        resolve(top);
+      };
+      img.onerror = () => resolve([]);
+      img.src = url;
+    });
+  }
+
+  // Color matching with tolerance
+  function colorMatches(pinColors, target, tol=60) {
+    if (!pinColors || !pinColors.length) return false;
+    const [tr, tg, tb] = hexToRgb(target);
+    return pinColors.some(c => {
+      const [r, g, b] = hexToRgb(c);
+      return Math.abs(r-tr)+Math.abs(g-tg)+Math.abs(b-tb) < tol*3;
+    });
+  }
+  function hexToRgb(h) {
+    h = h.replace('#','');
+    return [parseInt(h.slice(0,2),16), parseInt(h.slice(2,4),16), parseInt(h.slice(4,6),16)];
+  }
+
+  function escapeHtml(s) {
+    return String(s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+
   // ─── MODALS ───
   function openModal(id) { $(id).classList.add('open'); }
   function closeModal(id) { $(id).classList.remove('open'); }
-  document.querySelectorAll('[data-close]').forEach(b =>
-    b.addEventListener('click', () => closeModal(b.dataset.close))
-  );
-  document.querySelectorAll('.modal').forEach(m =>
-    m.addEventListener('click', e => { if (e.target === m) closeModal(m.id); })
-  );
+  document.querySelectorAll('[data-close]').forEach(b => b.addEventListener('click', () => closeModal(b.dataset.close)));
+  document.querySelectorAll('.modal').forEach(m => m.addEventListener('click', e => { if (e.target === m) closeModal(m.id); }));
 
   // ─── AUTH ───
   onAuthStateChanged(auth, (user) => {
     isAdmin = !!user;
     $('authBtn').textContent = isAdmin ? 'Odhlásiť' : 'Prihlásiť';
     $('uploadOpen').style.display = isAdmin ? 'inline-block' : 'none';
+    $('selectModeBtn').style.display = isAdmin ? 'inline-block' : 'none';
     $('userBadge').textContent = isAdmin ? user.email : '';
-    $('storagePanel').style.display = isAdmin ? 'flex' : 'none';
-    renderBoards();
-    renderPins();
+    $('storagePanel').style.display = isAdmin && !selectMode ? 'flex' : 'none';
+    if (selectMode) exitSelectMode();
+    renderBoards(); renderFilterBar(); renderPins();
     if (isAdmin) updateStorageUI();
   });
 
   $('authBtn').addEventListener('click', () => {
-    if (isAdmin) { signOut(auth); }
-    else { openModal('loginModal'); }
+    if (isAdmin) signOut(auth);
+    else openModal('loginModal');
   });
-
   $('loginBtn').addEventListener('click', async () => {
     $('loginError').textContent = '';
     try {
@@ -879,41 +837,57 @@ window.addEventListener('fb-ready', () => {
   });
   $('loginPassword').addEventListener('keydown', e => { if (e.key === 'Enter') $('loginBtn').click(); });
 
-  // ─── DATA LOAD ───
+  // ─── LOAD ───
   async function loadAll() {
     const [pinsSnap, boardsSnap] = await Promise.all([
-      getDocs(query(collection(db, 'pins'), orderBy('createdAt', 'desc'))).catch(() => null),
-      getDocs(collection(db, 'boards')).catch(() => null)
+      getDocs(query(collection(db, 'pins'), orderBy('createdAt', 'desc'))).catch(()=>null),
+      getDocs(collection(db, 'boards')).catch(()=>null)
     ]);
-    pins   = pinsSnap   ? pinsSnap.docs.map(d => ({ id: d.id, ...d.data() })) : [];
+    pins = pinsSnap ? pinsSnap.docs.map(d => ({ id: d.id, ...d.data() })) : [];
     boards = boardsSnap ? boardsSnap.docs.map(d => ({ id: d.id, ...d.data() })) : [];
-    renderBoards();
-    renderPins();
+
+    // If not admin and board filter is set, ensure it's visible (public)
+    if (!isAdmin && currentBoardId !== 'all') {
+      const b = boards.find(x => x.id === currentBoardId);
+      if (b && !b.isPublic) currentBoardId = 'all';
+    }
+    renderBoards(); renderFilterBar(); renderPins();
   }
 
-  // ─── RENDER BOARDS NAV ───
-  function renderBoards() {
-    boardsNav.innerHTML = '';
-    const allChip = makeBoardChip({ id: 'all', name: 'Všetky' }, pins.length);
-    if (currentBoardId === 'all') allChip.classList.add('active');
-    boardsNav.appendChild(allChip);
+  // ─── BOARDS ───
+  function visibleBoards() {
+    return isAdmin ? boards : boards.filter(b => b.isPublic);
+  }
 
-    boards.forEach(b => {
+  function renderBoards() {
+    const nav = $('boardsNav');
+    nav.innerHTML = '';
+    const list = visibleBoards();
+    const totalAllowed = isAdmin ? pins.length : pins.filter(p => {
+      const b = boards.find(x => x.id === p.boardId);
+      return b && b.isPublic;
+    }).length;
+
+    const allChip = makeBoardChip({ id:'all', name:'Všetky' }, totalAllowed);
+    if (currentBoardId === 'all') allChip.classList.add('active');
+    nav.appendChild(allChip);
+
+    list.forEach(b => {
       const count = pins.filter(p => p.boardId === b.id).length;
       const chip = makeBoardChip(b, count);
       if (currentBoardId === b.id) chip.classList.add('active');
-      boardsNav.appendChild(chip);
+      nav.appendChild(chip);
     });
 
     if (isAdmin) {
-      const addBtn = document.createElement('button');
-      addBtn.className = 'board-chip add';
-      addBtn.textContent = '+ Nový board';
-      addBtn.addEventListener('click', () => openModal('boardModal'));
-      boardsNav.appendChild(addBtn);
+      const add = document.createElement('button');
+      add.className = 'board-chip add';
+      add.textContent = '+ Nový board';
+      add.addEventListener('click', () => openModal('boardModal'));
+      nav.appendChild(add);
     }
 
-    populateBoardSelects();
+    populateSelects();
   }
 
   function makeBoardChip(b, count) {
@@ -921,9 +895,10 @@ window.addEventListener('fb-ready', () => {
     chip.className = 'board-chip';
     chip.dataset.id = b.id;
     const editBtn = (isAdmin && b.id !== 'all')
-      ? `<span class="board-edit-btn" data-edit="${b.id}" title="Upraviť">✎</span>`
-      : '';
-    chip.innerHTML = `<span>${escapeHtml(b.name)}</span><span class="count">${count}</span>${editBtn}`;
+      ? `<span class="board-edit-btn" data-edit="${b.id}" title="Upraviť">✎</span>` : '';
+    const publicIcon = (b.isPublic && b.id !== 'all') ? `<span class="board-public-icon" title="Verejný">◐</span>` : '';
+    chip.innerHTML = `<span>${escapeHtml(b.name)}</span>${publicIcon}<span class="count">${count}</span>${editBtn}`;
+
     chip.addEventListener('click', (e) => {
       if (e.target.closest('[data-edit]')) {
         e.stopPropagation();
@@ -931,102 +906,379 @@ window.addEventListener('fb-ready', () => {
         return;
       }
       currentBoardId = b.id;
-      renderBoards();
-      renderPins();
+      visibleCount = PAGE;
+      // Update URL without reload
+      const url = new URL(location);
+      if (b.id === 'all') url.searchParams.delete('board');
+      else url.searchParams.set('board', b.id);
+      history.replaceState({}, '', url);
+      renderBoards(); renderPins();
     });
+
+    // Drop target for drag-drop
+    if (isAdmin && b.id !== 'all') {
+      chip.addEventListener('dragover', e => { e.preventDefault(); chip.classList.add('drop-target'); });
+      chip.addEventListener('dragleave', () => chip.classList.remove('drop-target'));
+      chip.addEventListener('drop', async e => {
+        e.preventDefault();
+        chip.classList.remove('drop-target');
+        const pinId = e.dataTransfer.getData('text/pin-id');
+        if (!pinId) return;
+        await updateDoc(doc(db, 'pins', pinId), { boardId: b.id });
+        await loadAll();
+      });
+    }
     return chip;
   }
 
-  function populateBoardSelects() {
-    ['uploadBoard', 'editBoard'].forEach(id => {
+  function populateSelects() {
+    ['uploadBoard', 'editBoard', 'moveBoard'].forEach(id => {
       const sel = $(id);
       if (!sel) return;
-      const current = sel.value;
+      const cur = sel.value;
       sel.innerHTML = id === 'uploadBoard' ? '<option value="">— vyberte board —</option>' : '';
       boards.forEach(b => {
         const opt = document.createElement('option');
-        opt.value = b.id;
-        opt.textContent = b.name;
+        opt.value = b.id; opt.textContent = b.name;
         sel.appendChild(opt);
       });
-      if (current) sel.value = current;
+      if (cur) sel.value = cur;
     });
+  }
+
+  // ─── FILTER BAR ───
+  function renderFilterBar() {
+    const bar = $('filterBar');
+    bar.innerHTML = '';
+
+    // Tags (collect unique from currently filtered pins, excluding tag filter)
+    const visiblePinsForTags = applyFilters(pins, { ignoreTags: true, ignoreColor: true });
+    const allTags = new Set();
+    visiblePinsForTags.forEach(p => (p.tags || []).forEach(t => allTags.add(t)));
+
+    if (allTags.size > 0) {
+      const lbl = document.createElement('span');
+      lbl.className = 'filter-label';
+      lbl.textContent = 'Tagy:';
+      bar.appendChild(lbl);
+      [...allTags].sort().forEach(tag => {
+        const chip = document.createElement('button');
+        chip.className = 'tag-chip' + (activeTags.has(tag) ? ' active' : '');
+        chip.textContent = tag;
+        chip.addEventListener('click', () => {
+          if (activeTags.has(tag)) activeTags.delete(tag);
+          else activeTags.add(tag);
+          visibleCount = PAGE;
+          renderFilterBar(); renderPins();
+        });
+        bar.appendChild(chip);
+      });
+    }
+
+    // Colors
+    const visiblePinsForColors = applyFilters(pins, { ignoreColor: true });
+    const colorMap = {};
+    visiblePinsForColors.forEach(p => (p.colors || []).forEach(c => {
+      const key = quantizeColor(c);
+      if (!colorMap[key]) colorMap[key] = c;
+    }));
+    const colorList = Object.values(colorMap).slice(0, 12);
+
+    if (colorList.length > 0) {
+      const lbl = document.createElement('span');
+      lbl.className = 'filter-label';
+      lbl.style.marginLeft = allTags.size ? '16px' : '0';
+      lbl.textContent = 'Farby:';
+      bar.appendChild(lbl);
+      colorList.forEach(c => {
+        const dot = document.createElement('button');
+        dot.className = 'color-dot' + (activeColor === c ? ' active' : '');
+        dot.style.background = c;
+        dot.title = c;
+        dot.addEventListener('click', () => {
+          activeColor = (activeColor === c) ? null : c;
+          visibleCount = PAGE;
+          renderFilterBar(); renderPins();
+        });
+        bar.appendChild(dot);
+      });
+    }
+
+    if (activeTags.size > 0 || activeColor) {
+      const clear = document.createElement('button');
+      clear.id = 'clearFilters';
+      clear.textContent = '× Vyčistiť filter';
+      clear.addEventListener('click', () => {
+        activeTags.clear();
+        activeColor = null;
+        visibleCount = PAGE;
+        renderFilterBar(); renderPins();
+      });
+      bar.appendChild(clear);
+    }
+
+    bar.classList.toggle('has-content', allTags.size > 0 || colorList.length > 0);
+  }
+
+  function quantizeColor(hex) {
+    const [r, g, b] = hexToRgb(hex);
+    return `${Math.round(r/40)*40}-${Math.round(g/40)*40}-${Math.round(b/40)*40}`;
+  }
+
+  // ─── FILTER ───
+  function applyFilters(arr, opts = {}) {
+    let f = arr;
+    if (!isAdmin) {
+      f = f.filter(p => {
+        const b = boards.find(x => x.id === p.boardId);
+        return b && b.isPublic;
+      });
+    }
+    if (currentBoardId !== 'all') f = f.filter(p => p.boardId === currentBoardId);
+    if (searchTerm) {
+      const s = searchTerm.toLowerCase();
+      f = f.filter(p =>
+        (p.title||'').toLowerCase().includes(s) ||
+        (p.description||'').toLowerCase().includes(s) ||
+        (p.tags||[]).some(t => t.toLowerCase().includes(s))
+      );
+    }
+    if (!opts.ignoreTags && activeTags.size > 0) {
+      f = f.filter(p => {
+        const t = p.tags || [];
+        return [...activeTags].every(tag => t.includes(tag));
+      });
+    }
+    if (!opts.ignoreColor && activeColor) {
+      f = f.filter(p => colorMatches(p.colors, activeColor));
+    }
+    return f;
   }
 
   // ─── RENDER PINS ───
   function renderPins() {
     grid.innerHTML = '';
-    let filtered = currentBoardId === 'all' ? pins : pins.filter(p => p.boardId === currentBoardId);
-    if (searchTerm) {
-      const s = searchTerm.toLowerCase();
-      filtered = filtered.filter(p =>
-        (p.title || '').toLowerCase().includes(s) ||
-        (p.description || '').toLowerCase().includes(s)
-      );
-    }
+    const filtered = applyFilters(pins);
 
     if (filtered.length === 0) {
-      emptyState.style.display = 'block';
+      $('emptyState').style.display = 'block';
+      $('loadingMore').style.display = 'none';
       return;
     }
-    emptyState.style.display = 'none';
+    $('emptyState').style.display = 'none';
 
-    filtered.forEach(p => grid.appendChild(makePinCard(p)));
+    const slice = filtered.slice(0, visibleCount);
+    slice.forEach(p => grid.appendChild(makePinCard(p)));
+
+    // Loading indicator
+    if (filtered.length > visibleCount) {
+      $('loadingMore').style.display = 'block';
+      $('loadingMore').textContent = `Načítavam... (${slice.length} / ${filtered.length})`;
+    } else {
+      $('loadingMore').style.display = 'none';
+    }
   }
 
   function makePinCard(p) {
     const card = document.createElement('div');
     card.className = 'pin';
+    card.dataset.id = p.id;
+    if (selectedPinIds.has(p.id)) card.classList.add('selected');
+
     const board = boards.find(b => b.id === p.boardId);
+    const isChecked = selectedPinIds.has(p.id);
+    const colorsStrip = (p.colors && p.colors.length)
+      ? `<div class="pin-colors-strip">${p.colors.slice(0,5).map(c => `<div class="pin-color-mini" style="background:${c}"></div>`).join('')}</div>`
+      : '';
+
     card.innerHTML = `
       <div class="pin-img-wrap">
         <img class="pin-img" src="${p.url}" loading="lazy" alt="" />
         <div class="pin-overlay">
           <div class="pin-overlay-top">
-            ${isAdmin ? `<button class="icon-btn edit-btn" title="Upraviť">✎</button>
-                         <button class="icon-btn danger del-btn" title="Zmazať">×</button>` : ''}
+            ${selectMode
+              ? `<button class="icon-btn checkbox${isChecked?' checked':''}" data-act="check">${isChecked?'✓':''}</button><span></span>`
+              : (isAdmin
+                ? `<span></span><div style="display:flex;gap:6px"><button class="icon-btn" data-act="edit" title="Upraviť">✎</button><button class="icon-btn danger" data-act="del" title="Zmazať">×</button></div>`
+                : '<span></span><span></span>')}
           </div>
           <div class="pin-overlay-bottom">
-            <button class="save-btn">${isAdmin ? 'Otvoriť' : 'Pozrieť'}</button>
+            <button class="save-btn" data-act="open">${isAdmin?'Otvoriť':'Pozrieť'}</button>
           </div>
         </div>
       </div>
-      ${(p.title || board) ? `
-        <div class="pin-meta">
-          ${p.title ? `<div class="pin-title">${escapeHtml(p.title)}</div>` : ''}
-          ${board ? `<div class="pin-board-chip">${escapeHtml(board.name)}</div>` : ''}
-        </div>` : ''}
+      ${(p.title || board) ? `<div class="pin-meta">
+        ${p.title ? `<div class="pin-title">${escapeHtml(p.title)}</div>` : ''}
+        ${board ? `<div class="pin-board-chip">${escapeHtml(board.name)}</div>` : ''}
+      </div>` : ''}
+      ${colorsStrip}
     `;
+
     const imgEl = card.querySelector('img');
     if (imgEl.complete) imgEl.classList.add('loaded');
     else imgEl.addEventListener('load', () => imgEl.classList.add('loaded'));
 
+    // Drag for admin (only when not in select mode)
+    if (isAdmin && !selectMode) {
+      card.draggable = true;
+      card.addEventListener('dragstart', e => {
+        card.classList.add('dragging');
+        e.dataTransfer.setData('text/pin-id', p.id);
+      });
+      card.addEventListener('dragend', () => card.classList.remove('dragging'));
+    }
+
+    // Click handler
     card.addEventListener('click', e => {
-      if (e.target.closest('.edit-btn') || e.target.closest('.del-btn')) return;
-      openPinDetail(p);
+      const btn = e.target.closest('[data-act]');
+      const act = btn ? btn.dataset.act : null;
+      if (selectMode) {
+        toggleSelected(p.id);
+        return;
+      }
+      if (act === 'edit') { e.stopPropagation(); openEdit(p); return; }
+      if (act === 'del') {
+        e.stopPropagation();
+        if (confirm('Zmazať tento pin?')) deletePin(p);
+        return;
+      }
+      // Default → open detail
+      const filtered = applyFilters(pins);
+      const idx = filtered.findIndex(x => x.id === p.id);
+      openPinDetail(p, idx);
     });
 
-    if (isAdmin) {
-      card.querySelector('.edit-btn').addEventListener('click', e => { e.stopPropagation(); openEdit(p); });
-      card.querySelector('.del-btn').addEventListener('click', async e => {
-        e.stopPropagation();
-        if (!confirm('Zmazať tento pin?')) return;
-        await deletePin(p);
-      });
-    }
     return card;
   }
 
-  function openPinDetail(p) {
+  // ─── PIN DETAIL ───
+  function openPinDetail(p, idx=0) {
     currentPin = p;
-    $('pinDetailImg').src = p.url;
-    $('pinDetailTitle').textContent = p.title || 'Bez titulku';
-    $('pinDetailDesc').textContent  = p.description || '';
-    const board = boards.find(b => b.id === p.boardId);
-    $('pinDetailBoard').textContent = board ? board.name : 'Bez boardu';
-    $('pinDetailAdmin').style.display = isAdmin ? 'flex' : 'none';
+    currentPinIdx = idx;
+    renderDetail(p);
     openModal('pinModal');
   }
+
+  function renderDetail(p) {
+    $('pinDetailImg').src = p.url;
+    $('pinDetailTitle').textContent = p.title || 'Bez titulku';
+    $('pinDetailDesc').textContent = p.description || '';
+    const board = boards.find(b => b.id === p.boardId);
+    $('pinDetailBoard').textContent = board ? board.name : 'Bez boardu';
+
+    // Source
+    const src = $('pinDetailSource');
+    if (p.sourceUrl) {
+      src.style.display = 'inline-block';
+      src.href = p.sourceUrl;
+      try { src.textContent = new URL(p.sourceUrl).hostname; }
+      catch { src.textContent = p.sourceUrl; }
+    } else src.style.display = 'none';
+
+    // Tags
+    const tagsEl = $('pinDetailTags');
+    tagsEl.innerHTML = '';
+    (p.tags || []).forEach(t => {
+      const el = document.createElement('span');
+      el.className = 'pin-detail-tag';
+      el.textContent = t;
+      tagsEl.appendChild(el);
+    });
+
+    // Colors
+    const colorsEl = $('pinDetailColors');
+    colorsEl.innerHTML = '';
+    (p.colors || []).forEach(c => {
+      const dot = document.createElement('div');
+      dot.className = 'pin-detail-color';
+      dot.style.background = c;
+      dot.title = `Filtrovať podľa ${c}`;
+      dot.addEventListener('click', () => {
+        activeColor = c;
+        visibleCount = PAGE;
+        closeModal('pinModal');
+        renderFilterBar();
+        renderPins();
+      });
+      colorsEl.appendChild(dot);
+    });
+
+    // Share link (only for public boards)
+    const shareBtn = $('pinShareBtn');
+    if (board && board.isPublic) {
+      shareBtn.style.display = 'inline-flex';
+      shareBtn.onclick = (e) => {
+        e.preventDefault();
+        const link = `${location.origin}${location.pathname}?board=${board.id}`;
+        navigator.clipboard.writeText(link).then(() => {
+          shareBtn.textContent = '✓ Skopírované';
+          setTimeout(() => shareBtn.textContent = '⎘ Skopírovať link', 1500);
+        });
+      };
+    } else shareBtn.style.display = 'none';
+
+    // Admin
+    $('pinEditBtn').style.display = isAdmin ? 'inline-flex' : 'none';
+    $('pinDeleteBtn').style.display = isAdmin ? 'inline-flex' : 'none';
+
+    // Related pins (from same board, excluding current)
+    if (p.boardId) {
+      const related = pins.filter(x => x.boardId === p.boardId && x.id !== p.id);
+      const sample = related.sort(() => Math.random() - 0.5).slice(0, 6);
+      const rg = $('relatedGrid');
+      rg.innerHTML = '';
+      sample.forEach(rp => {
+        const div = document.createElement('div');
+        div.className = 'related-pin';
+        div.innerHTML = `<img src="${rp.url}" alt="" />`;
+        div.addEventListener('click', () => {
+          const filtered = applyFilters(pins);
+          const idx = filtered.findIndex(x => x.id === rp.id);
+          renderDetail(rp);
+          currentPin = rp;
+          if (idx >= 0) currentPinIdx = idx;
+        });
+        rg.appendChild(div);
+      });
+      $('pinDetailRelated').style.display = sample.length > 0 ? 'block' : 'none';
+    } else {
+      $('pinDetailRelated').style.display = 'none';
+    }
+  }
+
+  // Detail navigation
+  function detailNav(dir) {
+    const filtered = applyFilters(pins);
+    if (filtered.length === 0) return;
+    currentPinIdx = (currentPinIdx + dir + filtered.length) % filtered.length;
+    currentPin = filtered[currentPinIdx];
+    renderDetail(currentPin);
+  }
+  $('detailPrev').addEventListener('click', () => detailNav(-1));
+  $('detailNext').addEventListener('click', () => detailNav(1));
+  document.addEventListener('keydown', e => {
+    if (!$('pinModal').classList.contains('open')) return;
+    if (e.key === 'ArrowLeft') detailNav(-1);
+    if (e.key === 'ArrowRight') detailNav(1);
+    if (e.key === 'Escape') closeModal('pinModal');
+  });
+
+  // Download
+  $('pinDownloadBtn').addEventListener('click', async () => {
+    if (!currentPin) return;
+    try {
+      const r = await fetch(currentPin.url);
+      const blob = await r.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = (currentPin.title || 'pin') + '.jpg';
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch {
+      window.open(currentPin.url, '_blank');
+    }
+  });
 
   $('pinEditBtn').addEventListener('click', () => {
     closeModal('pinModal');
@@ -1042,16 +1294,21 @@ window.addEventListener('fb-ready', () => {
   function openEdit(p) {
     currentPin = p;
     $('editTitle').value = p.title || '';
-    $('editDesc').value  = p.description || '';
+    $('editDesc').value = p.description || '';
     $('editBoard').value = p.boardId || '';
+    $('editTags').value = (p.tags || []).join(', ');
+    $('editSource').value = p.sourceUrl || '';
     openModal('editModal');
   }
   $('editSaveBtn').addEventListener('click', async () => {
     if (!currentPin) return;
+    const tags = $('editTags').value.split(',').map(t => t.trim()).filter(Boolean);
     await updateDoc(doc(db, 'pins', currentPin.id), {
       title: $('editTitle').value.trim(),
       description: $('editDesc').value.trim(),
-      boardId: $('editBoard').value || null
+      boardId: $('editBoard').value || null,
+      tags,
+      sourceUrl: $('editSource').value.trim() || null
     });
     closeModal('editModal');
     await loadAll();
@@ -1068,20 +1325,18 @@ window.addEventListener('fb-ready', () => {
   // ─── BOARD CREATE ───
   $('boardSaveBtn').addEventListener('click', async () => {
     const name = $('boardName').value.trim();
-    if (!name) return alert('Zadaj názov boardu');
+    if (!name) return alert('Zadaj názov');
     const docRef = await addDoc(collection(db, 'boards'), {
       name,
       description: $('boardDesc').value.trim(),
+      isPublic: $('boardPublic').checked,
       createdAt: Date.now()
     });
-    $('boardName').value = '';
-    $('boardDesc').value = '';
+    $('boardName').value = ''; $('boardDesc').value = ''; $('boardPublic').checked = false;
     closeModal('boardModal');
     await loadAll();
-    // auto-select novovytvorený board
     currentBoardId = docRef.id;
-    renderBoards();
-    renderPins();
+    renderBoards(); renderPins();
   });
 
   // ─── BOARD EDIT / DELETE ───
@@ -1090,15 +1345,33 @@ window.addEventListener('fb-ready', () => {
     editingBoard = b;
     $('boardEditName').value = b.name;
     $('boardEditDesc').value = b.description || '';
+    $('boardEditPublic').checked = !!b.isPublic;
+    updateShareSection();
     openModal('boardEditModal');
   }
+  function updateShareSection() {
+    const isPublic = $('boardEditPublic').checked;
+    $('boardShareSection').style.display = isPublic ? 'block' : 'none';
+    if (isPublic && editingBoard) {
+      $('boardShareLink').value = `${location.origin}${location.pathname}?board=${editingBoard.id}`;
+    }
+  }
+  $('boardEditPublic').addEventListener('change', updateShareSection);
+  $('boardShareCopy').addEventListener('click', () => {
+    $('boardShareLink').select();
+    navigator.clipboard.writeText($('boardShareLink').value).then(() => {
+      $('boardShareCopy').textContent = 'Skopírované ✓';
+      setTimeout(() => $('boardShareCopy').textContent = 'Kopírovať', 1500);
+    });
+  });
   $('boardEditSaveBtn').addEventListener('click', async () => {
     if (!editingBoard) return;
     const name = $('boardEditName').value.trim();
     if (!name) return alert('Názov nemôže byť prázdny');
     await updateDoc(doc(db, 'boards', editingBoard.id), {
       name,
-      description: $('boardEditDesc').value.trim()
+      description: $('boardEditDesc').value.trim(),
+      isPublic: $('boardEditPublic').checked
     });
     closeModal('boardEditModal');
     await loadAll();
@@ -1110,10 +1383,8 @@ window.addEventListener('fb-ready', () => {
       ? `Zmazať board "${editingBoard.name}"?\n${pinCount} pinov stratí priradenie (nezmaže sa).`
       : `Zmazať board "${editingBoard.name}"?`;
     if (!confirm(msg)) return;
-    // Unassign pins
     const affected = pins.filter(p => p.boardId === editingBoard.id);
     await Promise.all(affected.map(p => updateDoc(doc(db, 'pins', p.id), { boardId: null })));
-    // Delete the board
     await deleteDoc(doc(db, 'boards', editingBoard.id));
     if (currentBoardId === editingBoard.id) currentBoardId = 'all';
     editingBoard = null;
@@ -1123,11 +1394,7 @@ window.addEventListener('fb-ready', () => {
 
   // ─── UPLOAD ───
   $('uploadOpen').addEventListener('click', () => {
-    if (boards.length === 0) {
-      alert('Najprv si vytvor aspoň jeden board.');
-      openModal('boardModal');
-      return;
-    }
+    if (boards.length === 0) { alert('Najprv si vytvor board.'); openModal('boardModal'); return; }
     openModal('uploadModal');
   });
 
@@ -1141,34 +1408,33 @@ window.addEventListener('fb-ready', () => {
     selectedFiles.forEach((f, i) => {
       const wrap = document.createElement('div');
       wrap.className = 'preview-item';
-      wrap.innerHTML = `
-        <img src="${URL.createObjectURL(f)}" alt="" />
-        <button class="remove-btn" data-type="file" data-idx="${i}" title="Odstrániť">×</button>
-      `;
+      wrap.innerHTML = `<img src="${URL.createObjectURL(f)}" alt="" /><button class="remove-btn" data-type="file" data-idx="${i}">×</button>`;
       uploadPreview.appendChild(wrap);
     });
     selectedUrls.forEach((u, i) => {
       const wrap = document.createElement('div');
       wrap.className = 'preview-item';
-      wrap.innerHTML = `
-        <img src="${u}" alt="" />
-        <span class="badge">URL</span>
-        <button class="remove-btn" data-type="url" data-idx="${i}" title="Odstrániť">×</button>
-      `;
+      wrap.innerHTML = `<img src="${u}" alt="" /><span class="badge">URL</span><button class="remove-btn" data-type="url" data-idx="${i}">×</button>`;
       uploadPreview.appendChild(wrap);
     });
     const total = selectedFiles.length + selectedUrls.length;
     uploadBtn.disabled = total === 0;
     $('uploadStatus').textContent = total ? `${total} pinov pripravených` : '';
   }
-
   function handleFiles(files) {
     const newFiles = Array.from(files).filter(f => f.type.startsWith('image/'));
     selectedFiles = selectedFiles.concat(newFiles);
     updateUploadPreview();
   }
-
-  uploadPreview.addEventListener('click', (e) => {
+  fileInput.addEventListener('change', () => handleFiles(fileInput.files));
+  dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('dragover'); });
+  dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+  dropZone.addEventListener('drop', e => {
+    e.preventDefault();
+    dropZone.classList.remove('dragover');
+    handleFiles(e.dataTransfer.files);
+  });
+  uploadPreview.addEventListener('click', e => {
     const btn = e.target.closest('.remove-btn');
     if (!btn) return;
     const idx = parseInt(btn.dataset.idx, 10);
@@ -1176,20 +1442,12 @@ window.addEventListener('fb-ready', () => {
     else selectedUrls.splice(idx, 1);
     updateUploadPreview();
   });
-
-  // URL add
   $('urlAddBtn').addEventListener('click', () => addUrlFromInput());
-  $('urlInput').addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') { e.preventDefault(); addUrlFromInput(); }
-  });
+  $('urlInput').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); addUrlFromInput(); } });
   function addUrlFromInput() {
     const url = $('urlInput').value.trim();
     if (!url) return;
-    if (!/^https?:\/\//i.test(url)) {
-      alert('Zadaj platnú http(s) URL');
-      return;
-    }
-    // Test if image loads
+    if (!/^https?:\/\//i.test(url)) { alert('Zadaj platnú URL'); return; }
     $('urlInput').disabled = true;
     const test = new Image();
     test.onload = () => {
@@ -1201,18 +1459,10 @@ window.addEventListener('fb-ready', () => {
     };
     test.onerror = () => {
       $('urlInput').disabled = false;
-      alert('Nepodarilo sa načítať obrázok z tejto URL. Skontroluj link.');
+      alert('Nepodarilo sa načítať obrázok z tejto URL.');
     };
     test.src = url;
   }
-  fileInput.addEventListener('change', () => handleFiles(fileInput.files));
-  dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('dragover'); });
-  dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
-  dropZone.addEventListener('drop', e => {
-    e.preventDefault();
-    dropZone.classList.remove('dragover');
-    handleFiles(e.dataTransfer.files);
-  });
 
   uploadBtn.addEventListener('click', async () => {
     const total = selectedFiles.length + selectedUrls.length;
@@ -1220,43 +1470,48 @@ window.addEventListener('fb-ready', () => {
     const boardId = $('uploadBoard').value;
     if (!boardId) { alert('Vyber board'); return; }
     const title = $('uploadTitle').value.trim();
+    const tags  = $('uploadTags').value.split(',').map(t => t.trim()).filter(Boolean);
+    const sourceUrl = $('uploadSource').value.trim() || null;
 
     uploadBtn.disabled = true;
     $('uploadProgress').style.display = 'block';
     const bar = $('uploadProgress').firstElementChild;
     let done = 0;
 
-    // Najprv spracuj URL piny (rýchle — len addDoc)
+    // URL piny
     for (const url of selectedUrls) {
-      $('uploadStatus').textContent = `Pridávam link ${done + 1}/${total}...`;
+      $('uploadStatus').textContent = `Pridávam link ${done+1}/${total}...`;
       await addDoc(collection(db, 'pins'), {
         url, storagePath: null, boardId, title, description: '',
-        external: true, createdAt: Date.now()
+        tags, sourceUrl, external: true, createdAt: Date.now()
       });
       done++;
-      bar.style.width = (done / total * 100) + '%';
+      bar.style.width = (done/total*100) + '%';
     }
 
-    // Potom súborové uploady s kompresiou
+    // Súbory
     for (const file of selectedFiles) {
-      $('uploadStatus').textContent = `Komprimujem ${done + 1}/${total}...`;
-      const compressed = await compressImage(file);
+      $('uploadStatus').textContent = `Spracovávam ${done+1}/${total}...`;
+      const [compressed, colors] = await Promise.all([
+        compressImage(file),
+        extractColors(file).catch(() => [])
+      ]);
       const path = `pins/${Date.now()}_${file.name.replace(/\.[^.]+$/, '')}.jpg`;
       const storageRef = ref(storage, path);
       await new Promise((resolve, reject) => {
         const task = uploadBytesResumable(storageRef, compressed);
         task.on('state_changed',
           snap => {
-            const pct = ((done + snap.bytesTransferred / snap.totalBytes) / total) * 100;
+            const pct = ((done + snap.bytesTransferred/snap.totalBytes) / total) * 100;
             bar.style.width = pct + '%';
-            $('uploadStatus').textContent = `Nahrávam ${done + 1}/${total}...`;
+            $('uploadStatus').textContent = `Nahrávam ${done+1}/${total}...`;
           },
           reject,
           async () => {
             const url = await getDownloadURL(task.snapshot.ref);
             await addDoc(collection(db, 'pins'), {
               url, storagePath: path, boardId, title, description: '',
-              size: compressed.size, createdAt: Date.now()
+              tags, sourceUrl, colors, size: compressed.size, createdAt: Date.now()
             });
             await addStorage(compressed.size);
             done++; resolve();
@@ -1271,9 +1526,11 @@ window.addEventListener('fb-ready', () => {
       $('uploadProgress').style.display = 'none';
       bar.style.width = '0%';
       $('uploadStatus').textContent = '';
-      selectedFiles = [];
-      selectedUrls = [];
+      selectedFiles = []; selectedUrls = [];
       fileInput.value = '';
+      $('uploadTitle').value = '';
+      $('uploadTags').value = '';
+      $('uploadSource').value = '';
       updateUploadPreview();
       closeModal('uploadModal');
     }, 800);
@@ -1281,34 +1538,123 @@ window.addEventListener('fb-ready', () => {
     await updateStorageUI();
   });
 
+  // ─── SELECT MODE ───
+  function enterSelectMode() {
+    selectMode = true;
+    document.body.classList.add('select-mode');
+    $('selectModeBtn').textContent = 'Zrušiť výber';
+    $('selectBar').classList.add('visible');
+    $('storagePanel').style.display = 'none';
+    updateSelectCount();
+    renderPins();
+  }
+  function exitSelectMode() {
+    selectMode = false;
+    document.body.classList.remove('select-mode');
+    $('selectModeBtn').textContent = 'Vybrať';
+    $('selectBar').classList.remove('visible');
+    selectedPinIds.clear();
+    if (isAdmin) $('storagePanel').style.display = 'flex';
+    renderPins();
+  }
+  $('selectModeBtn').addEventListener('click', () => { if (selectMode) exitSelectMode(); else enterSelectMode(); });
+  $('selectExit').addEventListener('click', exitSelectMode);
+
+  function toggleSelected(id) {
+    if (selectedPinIds.has(id)) selectedPinIds.delete(id);
+    else selectedPinIds.add(id);
+    updateSelectCount();
+    // Update card without full re-render
+    const card = grid.querySelector(`.pin[data-id="${id}"]`);
+    if (card) {
+      card.classList.toggle('selected', selectedPinIds.has(id));
+      const cb = card.querySelector('[data-act="check"]');
+      if (cb) {
+        cb.classList.toggle('checked', selectedPinIds.has(id));
+        cb.textContent = selectedPinIds.has(id) ? '✓' : '';
+      }
+    }
+  }
+  function updateSelectCount() {
+    $('selectCount').textContent = selectedPinIds.size;
+  }
+
+  $('selectDelete').addEventListener('click', async () => {
+    if (selectedPinIds.size === 0) return;
+    if (!confirm(`Zmazať ${selectedPinIds.size} pinov?`)) return;
+    const toDelete = pins.filter(p => selectedPinIds.has(p.id));
+    let freed = 0;
+    for (const p of toDelete) {
+      await deleteDoc(doc(db, 'pins', p.id));
+      if (p.size) freed += p.size;
+      try { await deleteObject(ref(storage, p.storagePath)); } catch (_) {}
+    }
+    if (freed > 0) await subtractStorage(freed);
+    selectedPinIds.clear();
+    await loadAll();
+    await updateStorageUI();
+    updateSelectCount();
+  });
+
+  $('selectMove').addEventListener('click', () => {
+    if (selectedPinIds.size === 0) return;
+    $('moveCount').textContent = selectedPinIds.size;
+    openModal('moveModal');
+  });
+  $('moveConfirmBtn').addEventListener('click', async () => {
+    const boardId = $('moveBoard').value;
+    if (!boardId) return alert('Vyber board');
+    const toMove = pins.filter(p => selectedPinIds.has(p.id));
+    await Promise.all(toMove.map(p => updateDoc(doc(db, 'pins', p.id), { boardId })));
+    selectedPinIds.clear();
+    closeModal('moveModal');
+    exitSelectMode();
+    await loadAll();
+  });
+
+  // ─── INFINITE SCROLL ───
+  const sentinel = $('scrollSentinel');
+  const observer = new IntersectionObserver(entries => {
+    if (entries[0].isIntersecting) {
+      const filtered = applyFilters(pins);
+      if (visibleCount < filtered.length) {
+        visibleCount += PAGE;
+        renderPins();
+      }
+    }
+  }, { rootMargin: '200px' });
+  observer.observe(sentinel);
+
   // ─── STORAGE TRACKING ───
   const TOTAL_FREE = 5 * 1024 * 1024 * 1024;
-
   async function getStorageUsed() {
     try {
       const snap = await getDoc(doc(db, 'meta', 'storage'));
       return snap.exists() ? (snap.data().usedBytes || 0) : 0;
     } catch { return 0; }
   }
-  async function addStorage(b)      { const c = await getStorageUsed(); await setDoc(doc(db, 'meta', 'storage'), { usedBytes: c + b }); }
-  async function subtractStorage(b) { const c = await getStorageUsed(); await setDoc(doc(db, 'meta', 'storage'), { usedBytes: Math.max(0, c - b) }); }
-
+  async function addStorage(b) {
+    const c = await getStorageUsed();
+    await setDoc(doc(db, 'meta', 'storage'), { usedBytes: c + b });
+  }
+  async function subtractStorage(b) {
+    const c = await getStorageUsed();
+    await setDoc(doc(db, 'meta', 'storage'), { usedBytes: Math.max(0, c - b) });
+  }
   async function updateStorageUI() {
     const used = await getStorageUsed();
-    const pct  = Math.min(100, (used / TOTAL_FREE) * 100);
-    $('statUsed').textContent  = formatBytes(used);
+    const pct = Math.min(100, (used / TOTAL_FREE) * 100);
+    $('statUsed').textContent = formatBytes(used);
     $('statCount').textContent = pins.length;
     $('storageFill').style.width = pct + '%';
   }
 
   $('recompressBtn').addEventListener('click', async () => {
-    if (!confirm('Prepočítať celkové využitie storage (piny + portfolio obrázky)?')) return;
+    if (!confirm('Prepočítať celkové využitie (piny + portfolio)?')) return;
     $('recompressBtn').disabled = true;
     let total = 0;
-
-    // Piny (preskočiť URL piny — tie nemajú storage)
     for (const p of pins) {
-      if (!p.storagePath) continue; // external URL pin
+      if (!p.storagePath) continue;
       try {
         const r = await fetch(p.url);
         const blob = await r.blob();
@@ -1318,8 +1664,6 @@ window.addEventListener('fb-ready', () => {
         }
       } catch (_) {}
     }
-
-    // Portfolio obrázky
     try {
       const imgSnap = await getDocs(collection(db, 'images'));
       for (const d of imgSnap.docs) {
@@ -1334,7 +1678,6 @@ window.addEventListener('fb-ready', () => {
         } catch (_) {}
       }
     } catch (_) {}
-
     await setDoc(doc(db, 'meta', 'storage'), { usedBytes: total });
     await loadAll();
     await updateStorageUI();
@@ -1344,13 +1687,9 @@ window.addEventListener('fb-ready', () => {
   // ─── SEARCH ───
   $('searchInput').addEventListener('input', e => {
     searchTerm = e.target.value;
+    visibleCount = PAGE;
     renderPins();
   });
-
-  // ─── UTIL ───
-  function escapeHtml(s) {
-    return String(s || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  }
 
   // ─── INIT ───
   loadAll();

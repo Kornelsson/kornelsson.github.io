@@ -142,25 +142,20 @@
   .pin {
     break-inside:avoid; margin-bottom:16px;
     background:var(--card); border-radius:var(--radius); overflow:hidden;
-    box-shadow:var(--shadow); transition:box-shadow 0.3s, transform 0.3s;
+    box-shadow:var(--shadow); transition:box-shadow 0.2s;
     cursor:pointer; position:relative;
   }
-  .pin:hover { box-shadow:var(--shadow-hi); transform:translateY(-2px); }
+  .pin:hover { box-shadow:var(--shadow-hi); }
   .pin.selected { box-shadow:0 0 0 3px var(--accent), var(--shadow-hi); }
   .pin.dragging { opacity:0.4; }
 
   .pin-img-wrap { position:relative; overflow:hidden; background:var(--border-soft); }
-  .pin-img {
-    width:100%; display:block;
-    transition:filter 0.4s, opacity 0.4s;
-    filter:blur(8px); opacity:0.7;
-  }
-  .pin-img.loaded { filter:blur(0); opacity:1; }
+  .pin-img { width:100%; display:block; }
 
   .pin-overlay {
     position:absolute; inset:0;
-    background:linear-gradient(to bottom, rgba(0,0,0,0.25) 0%, transparent 30%, transparent 70%, rgba(0,0,0,0.2) 100%);
-    opacity:0; transition:opacity 0.25s;
+    background:linear-gradient(to bottom, transparent 0%, transparent 70%, rgba(0,0,0,0.18) 100%);
+    opacity:0; transition:opacity 0.2s;
     display:flex; flex-direction:column; justify-content:space-between; padding:12px;
   }
   .pin:hover .pin-overlay { opacity:1; }
@@ -1140,8 +1135,6 @@ window.addEventListener('fb-ready', () => {
     `;
 
     const imgEl = card.querySelector('img');
-    if (imgEl.complete) imgEl.classList.add('loaded');
-    else imgEl.addEventListener('load', () => imgEl.classList.add('loaded'));
 
     // Drag for admin (only when not in select mode)
     if (isAdmin && !selectMode) {

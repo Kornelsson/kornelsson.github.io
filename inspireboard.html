@@ -165,8 +165,17 @@
   .pin:hover { box-shadow:var(--shadow-hi); }
   .pin.selected { box-shadow:0 0 0 3px var(--accent), var(--shadow-hi); }
   .pin.dragging { opacity:0.4; }
-  .pin.drop-before { box-shadow:-4px 0 0 -1px var(--accent), var(--shadow); }
-  .pin.drop-after  { box-shadow:4px 0 0 -1px var(--accent), var(--shadow); }
+  .pin.drop-swap { box-shadow:0 0 0 3px var(--accent), var(--shadow-hi); }
+  .pin.drop-swap .pin-img-wrap::after {
+    content:'⇆'; position:absolute; top:50%; left:50%;
+    transform:translate(-50%, -50%);
+    width:54px; height:54px; border-radius:50%;
+    background:var(--accent); color:#fff;
+    font-size:24px; font-weight:700;
+    display:flex; align-items:center; justify-content:center;
+    box-shadow:0 4px 16px rgba(0,0,0,0.3);
+    pointer-events:none;
+  }
 
   .pin-img-wrap { position:relative; overflow:hidden; background:var(--border-soft); }
   .pin-img { width:100%; display:block; transform:translateZ(0); }
@@ -609,14 +618,6 @@
     <div class="field">
       <label>Tagy (oddelené čiarkami, voliteľné)</label>
       <input id="uploadTags" type="text" placeholder="napr. minimalizmus, jeseň, béžová" />
-    </div>
-    <div class="field">
-      <label>Source URL (voliteľné)</label>
-      <input id="uploadSource" type="url" placeholder="https://kde-si-to-nasiel.com" />
-    </div>
-    <div class="field">
-      <label>🔒 Moje poznámky (súkromné, len pre teba)</label>
-      <textarea id="uploadNotes" placeholder="Napr. použiť pre projekt X, podobné ako Y..."></textarea>
     </div>
 
     <div id="uploadProgress"><div></div></div>
@@ -1283,32 +1284,28 @@ window.addEventListener('fb-ready', () => {
       });
       card.addEventListener('dragend', () => {
         card.classList.remove('dragging');
-        document.querySelectorAll('.pin').forEach(el => el.classList.remove('drop-before', 'drop-after'));
+        document.querySelectorAll('.pin').forEach(el => el.classList.remove('drop-swap'));
       });
 
-      // Reorder: drop on another pin only in specific board view
+      // Swap: drop on another pin in specific board view
       if (currentBoardId !== 'all') {
         card.addEventListener('dragover', e => {
           if (card.classList.contains('dragging')) return;
           e.preventDefault();
           e.dataTransfer.dropEffect = 'move';
-          const rect = card.getBoundingClientRect();
-          const before = e.clientY < rect.top + rect.height / 2;
-          document.querySelectorAll('.pin').forEach(el => el.classList.remove('drop-before', 'drop-after'));
-          card.classList.add(before ? 'drop-before' : 'drop-after');
+          document.querySelectorAll('.pin').forEach(el => el.classList.remove('drop-swap'));
+          card.classList.add('drop-swap');
         });
         card.addEventListener('dragleave', () => {
-          card.classList.remove('drop-before', 'drop-after');
+          card.classList.remove('drop-swap');
         });
         card.addEventListener('drop', async e => {
           e.preventDefault();
           e.stopPropagation();
           const draggedId = e.dataTransfer.getData('text/pin-id');
+          card.classList.remove('drop-swap');
           if (!draggedId || draggedId === p.id) return;
-          const rect = card.getBoundingClientRect();
-          const before = e.clientY < rect.top + rect.height / 2;
-          card.classList.remove('drop-before', 'drop-after');
-          await reorderPin(draggedId, p.id, before);
+          await swapPins(draggedId, p.id);
         });
       }
     }
@@ -1519,28 +1516,19 @@ window.addEventListener('fb-ready', () => {
     await updateStorageUI();
   }
 
-  // ─── REORDER PINS WITHIN BOARD ───
-  async function reorderPin(draggedId, targetId, insertBefore) {
-    const boardPins = applyFilters(pins);
-    const targetIdx = boardPins.findIndex(p => p.id === targetId);
-    if (targetIdx < 0) return;
+  // ─── SWAP PINS WITHIN BOARD ───
+  async function swapPins(draggedId, targetId) {
+    const a = pins.find(p => p.id === draggedId);
+    const b = pins.find(p => p.id === targetId);
+    if (!a || !b) return;
 
-    let newOrder;
-    if (insertBefore) {
-      const prev = boardPins[targetIdx - 1];
-      const target = boardPins[targetIdx];
-      const prevOrder = prev ? ((prev.order ?? -prev.createdAt)) : null;
-      const targetOrder = target.order ?? -target.createdAt;
-      newOrder = prevOrder !== null ? (prevOrder + targetOrder) / 2 : targetOrder - 1000;
-    } else {
-      const target = boardPins[targetIdx];
-      const next = boardPins[targetIdx + 1];
-      const targetOrder = target.order ?? -target.createdAt;
-      const nextOrder = next ? (next.order ?? -next.createdAt) : null;
-      newOrder = nextOrder !== null ? (targetOrder + nextOrder) / 2 : targetOrder + 1000;
-    }
+    const aOrder = (a.order !== undefined && a.order !== null) ? a.order : -a.createdAt;
+    const bOrder = (b.order !== undefined && b.order !== null) ? b.order : -b.createdAt;
 
-    await updateDoc(doc(db, 'pins', draggedId), { order: newOrder });
+    await Promise.all([
+      updateDoc(doc(db, 'pins', a.id), { order: bOrder }),
+      updateDoc(doc(db, 'pins', b.id), { order: aOrder })
+    ]);
     await loadAll();
   }
 
@@ -1743,8 +1731,6 @@ window.addEventListener('fb-ready', () => {
     if (!boardId) { alert('Vyber board'); return; }
     const title = $('uploadTitle').value.trim();
     const tags  = $('uploadTags').value.split(',').map(t => t.trim()).filter(Boolean);
-    const sourceUrl = $('uploadSource').value.trim() || null;
-    const notes = $('uploadNotes').value.trim() || null;
 
     uploadBtn.disabled = true;
     $('uploadProgress').style.display = 'block';
@@ -1756,7 +1742,7 @@ window.addEventListener('fb-ready', () => {
       $('uploadStatus').textContent = `Pridávam link ${done+1}/${total}...`;
       await addDoc(collection(db, 'pins'), {
         url, storagePath: null, boardId, title, description: '',
-        tags, sourceUrl, notes, external: true, createdAt: Date.now()
+        tags, external: true, createdAt: Date.now()
       });
       done++;
       bar.style.width = (done/total*100) + '%';
@@ -1795,7 +1781,7 @@ window.addEventListener('fb-ready', () => {
             const url = await getDownloadURL(task.snapshot.ref);
             await addDoc(collection(db, 'pins'), {
               url, storagePath: path, boardId, title, description: '',
-              tags, sourceUrl, notes, colors, fingerprint,
+              tags, colors, fingerprint,
               size: compressed.size, createdAt: Date.now()
             });
             await addStorage(compressed.size);
@@ -1815,8 +1801,6 @@ window.addEventListener('fb-ready', () => {
       fileInput.value = '';
       $('uploadTitle').value = '';
       $('uploadTags').value = '';
-      $('uploadSource').value = '';
-      $('uploadNotes').value = '';
       updateUploadPreview();
       closeModal('uploadModal');
     }, 800);

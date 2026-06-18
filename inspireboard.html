@@ -287,6 +287,7 @@
   }
   body.select-mode #storagePanel { display:none !important; }
   @media (display-mode: standalone) { #storagePanel { display:none !important; } }
+  @media (max-width: 768px) { #storagePanel { display:none !important; } }
   .storage-bar { width:140px; height:4px; background:var(--border); border-radius:2px; overflow:hidden; }
   .storage-fill { height:100%; background:linear-gradient(90deg, var(--accent), #E66B3D); transition:width 0.5s; width:0%; }
   .storage-text { font-size:12px; color:var(--muted); font-weight:500; }
@@ -998,7 +999,8 @@ window.addEventListener('fb-ready', () => {
     $('selectModeBtn').style.display = isAdmin ? 'inline-block' : 'none';
     $('bookmarkletBtn').style.display = isAdmin ? 'inline-block' : 'none';
     $('userBadge').textContent = isAdmin ? user.email : '';
-    $('storagePanel').style.display = isAdmin && !selectMode ? 'flex' : 'none';
+    const isPWA = window.matchMedia('(display-mode: standalone)').matches;
+    $('storagePanel').style.display = (isAdmin && !selectMode && !isPWA) ? 'flex' : 'none';
     if (selectMode) exitSelectMode();
     renderBoards(); renderFilterBar(); renderPins();
     if (isAdmin) {
@@ -1862,7 +1864,8 @@ window.addEventListener('fb-ready', () => {
     $('selectModeBtn').textContent = 'Vybrať';
     $('selectBar').classList.remove('visible');
     selectedPinIds.clear();
-    if (isAdmin) $('storagePanel').style.display = 'flex';
+    const isPWA = window.matchMedia('(display-mode: standalone)').matches;
+    if (isAdmin && !isPWA) $('storagePanel').style.display = 'flex';
     renderPins();
   }
   $('selectModeBtn').addEventListener('click', () => { if (selectMode) exitSelectMode(); else enterSelectMode(); });

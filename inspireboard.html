@@ -1978,16 +1978,34 @@ window.addEventListener('fb-ready', () => {
   });
 
   // Handle ?ib_upload= URL param from bookmarklet
-  function handleUploadParam() {
+  let uploadParamHandled = false;
+  async function handleUploadParam() {
+    if (uploadParamHandled) return;
     const ibUpload = new URLSearchParams(location.search).get('ib_upload');
     if (!ibUpload) return;
+    uploadParamHandled = true;
     // URLSearchParams.get už raz dekóduje, takže ďalej len split
     const urls = ibUpload.split('|').filter(Boolean);
     if (urls.length === 0) return;
+
+    // Počkaj kým sa naložia boardy (max 5s)
+    let attempts = 0;
+    while (boards.length === 0 && attempts < 50) {
+      await new Promise(r => setTimeout(r, 100));
+      attempts++;
+    }
+
+    if (boards.length === 0) {
+      alert('Nepodarilo sa načítať boardy. Obnov stránku a skús znova.');
+      return;
+    }
+
     selectedUrls = selectedUrls.concat(urls);
     updateUploadPreview();
-    if (boards.length > 0) openModal('uploadModal');
-    // Clean URL
+    populateSelects(); // naplň selecty tesne pred otvorením
+    openModal('uploadModal');
+
+    // Clean URL až po úspechu
     const u = new URL(location);
     u.searchParams.delete('ib_upload');
     history.replaceState({}, '', u);

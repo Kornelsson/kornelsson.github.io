@@ -1,0 +1,22 @@
+{
+  "name": "Inspireboard",
+  "short_name": "Inspireboard",
+  "description": "Tvoja osobná inšpiračná nástěnka",
+  "start_url": "/inspireboard.html",
+  "display": "standalone",
+  "background_color": "#FAF6F0",
+  "theme_color": "#BD1F2F",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect width='192' height='192' rx='40' fill='%23BD1F2F'/><text x='96' y='130' font-size='110' text-anchor='middle' fill='white'>◉</text></svg>",
+      "sizes": "192x192",
+      "type": "image/svg+xml"
+    },
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='100' fill='%23BD1F2F'/><text x='256' y='360' font-size='300' text-anchor='middle' fill='white'>◉</text></svg>",
+      "sizes": "512x512",
+      "type": "image/svg+xml"
+    }
+  ]
+}

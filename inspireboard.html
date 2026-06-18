@@ -28,6 +28,15 @@
     --shadow:0 1px 3px rgba(0,0,0,0.04), 0 4px 16px rgba(0,0,0,0.04);
     --shadow-hi:0 4px 8px rgba(0,0,0,0.06), 0 12px 32px rgba(0,0,0,0.1);
     --radius:16px; --radius-sm:10px;
+    color-scheme: light;
+  }
+  body[data-theme="dark"] {
+    --bg:#0E0D0B; --card:#1A1814; --text:#F0E9DD; --text-soft:#C8C0B2;
+    --muted:#857D72; --border:#2D2820; --border-soft:#1F1C17;
+    --accent:#E8526F; --accent-hi:#FF6B85;
+    --shadow:0 1px 3px rgba(0,0,0,0.3), 0 4px 16px rgba(0,0,0,0.3);
+    --shadow-hi:0 4px 8px rgba(0,0,0,0.4), 0 12px 32px rgba(0,0,0,0.5);
+    color-scheme: dark;
   }
   body {
     background:var(--bg); color:var(--text);
@@ -82,6 +91,11 @@
     border-radius:999px; padding:8px 18px; margin-right:8px;
     font-size:13.5px; font-weight:600;
     display:inline-flex; align-items:center; gap:8px; transition:all 0.2s;
+  }
+  .board-chip.has-cover { padding-left:4px; }
+  .board-chip-cover {
+    width:24px; height:24px; border-radius:50%;
+    object-fit:cover; display:block;
   }
   .board-chip:hover { border-color:var(--text); }
   .board-chip.active { background:var(--text); color:#fff; border-color:var(--text); }
@@ -151,6 +165,8 @@
   .pin:hover { box-shadow:var(--shadow-hi); }
   .pin.selected { box-shadow:0 0 0 3px var(--accent), var(--shadow-hi); }
   .pin.dragging { opacity:0.4; }
+  .pin.drop-before { box-shadow:-4px 0 0 -1px var(--accent), var(--shadow); }
+  .pin.drop-after  { box-shadow:4px 0 0 -1px var(--accent), var(--shadow); }
 
   .pin-img-wrap { position:relative; overflow:hidden; background:var(--border-soft); }
   .pin-img { width:100%; display:block; transform:translateZ(0); }
@@ -444,6 +460,19 @@
   }
   .pin-detail-color:hover { transform:scale(1.18); }
 
+  .pin-detail-notes {
+    background:#fff9eb; border:1px solid #f5e7c4;
+    border-radius:12px; padding:14px 16px; margin-bottom:18px;
+  }
+  .notes-label {
+    font-size:11px; font-weight:700; letter-spacing:0.05em;
+    text-transform:uppercase; color:#b8902a; margin-bottom:6px;
+  }
+  .notes-content {
+    font-size:13.5px; color:var(--text-soft);
+    white-space:pre-wrap; line-height:1.5;
+  }
+
   .pin-detail-actions {
     margin-top:auto; padding-top:24px; display:flex; gap:8px; flex-wrap:wrap;
   }
@@ -501,6 +530,7 @@
   <div class="search"><input id="searchInput" type="text" placeholder="Hľadať vo všetkých pinoch..." /></div>
   <div class="header-actions">
     <span id="userBadge"></span>
+    <button id="bookmarkletBtn" class="btn-ghost" style="display:none" title="Save z webu">★</button>
     <button id="selectModeBtn" class="btn-ghost" style="display:none">Vybrať</button>
     <button id="uploadOpen" class="btn-primary" style="display:none">+ Pin</button>
     <button id="authBtn" class="btn-ghost">Prihlásiť</button>
@@ -584,6 +614,10 @@
       <label>Source URL (voliteľné)</label>
       <input id="uploadSource" type="url" placeholder="https://kde-si-to-nasiel.com" />
     </div>
+    <div class="field">
+      <label>🔒 Moje poznámky (súkromné, len pre teba)</label>
+      <textarea id="uploadNotes" placeholder="Napr. použiť pre projekt X, podobné ako Y..."></textarea>
+    </div>
 
     <div id="uploadProgress"><div></div></div>
     <div id="uploadStatus"></div>
@@ -618,6 +652,15 @@
     <div class="subtitle">Premenuj, nastav verejnosť alebo zmaž</div>
     <div class="field"><label>Názov</label><input id="boardEditName" type="text" /></div>
     <div class="field"><label>Popis</label><textarea id="boardEditDesc"></textarea></div>
+    <div class="field">
+      <label>Cover obrázok</label>
+      <div id="coverPickerCurrent" style="margin-bottom:10px; display:flex; align-items:center; gap:12px">
+        <div id="coverThumb" style="width:48px; height:48px; border-radius:50%; background:var(--border-soft); display:flex; align-items:center; justify-content:center; color:var(--muted); font-size:18px; flex-shrink:0">∅</div>
+        <span id="coverLabel" style="font-size:13px; color:var(--text-soft)">Nezvolený</span>
+        <button type="button" id="coverClearBtn" style="margin-left:auto; background:transparent; border:none; color:var(--accent); font-size:12.5px; font-weight:600; cursor:pointer; display:none">Vyčistiť</button>
+      </div>
+      <div id="coverPickerGrid" style="display:grid; grid-template-columns:repeat(6, 1fr); gap:6px; max-height:180px; overflow-y:auto; padding:6px; background:var(--bg); border-radius:10px; border:1px solid var(--border)"></div>
+    </div>
     <div class="field-toggle" style="margin-bottom:16px">
       <input type="checkbox" id="boardEditPublic" />
       <div class="info">
@@ -657,6 +700,10 @@
         <h2 id="pinDetailTitle">Pin</h2>
         <a id="pinDetailSource" class="pin-detail-source" href="#" target="_blank" style="display:none"></a>
         <p id="pinDetailDesc"></p>
+        <div id="pinDetailNotes" class="pin-detail-notes" style="display:none">
+          <div class="notes-label">🔒 Moje poznámky</div>
+          <div class="notes-content" id="pinNotesContent"></div>
+        </div>
         <div class="pin-detail-tags" id="pinDetailTags"></div>
         <div class="pin-detail-colors" id="pinDetailColors"></div>
         <div class="pin-detail-actions">
@@ -685,6 +732,7 @@
     <div class="field"><label>Board</label><select id="editBoard"></select></div>
     <div class="field"><label>Tagy (oddelené čiarkami)</label><input id="editTags" type="text" /></div>
     <div class="field"><label>Source URL</label><input id="editSource" type="url" /></div>
+    <div class="field"><label>🔒 Moje poznámky (súkromné)</label><textarea id="editNotes"></textarea></div>
     <button id="editSaveBtn" class="btn-primary" style="width:100%">Uložiť</button>
   </div>
 </div>
@@ -710,6 +758,38 @@
     <div class="field"><label>Heslo</label><input id="loginPassword" type="password" /></div>
     <button id="loginBtn" class="btn-primary" style="width:100%">Prihlásiť sa</button>
     <div id="loginError" style="color:var(--accent); font-size:12.5px; margin-top:10px; min-height:18px"></div>
+  </div>
+</div>
+
+<!-- Bookmarklet modal -->
+<div class="modal" id="bookmarkletModal">
+  <div class="modal-box" style="max-width:520px">
+    <button class="modal-close" data-close="bookmarkletModal">×</button>
+    <h2>Save to Inspireboard</h2>
+    <div class="subtitle">Pridaj si tlačidlo do prehliadača pre rýchle ukladanie obrázkov z akejkoľvek stránky.</div>
+
+    <div style="background:var(--bg); border:1px solid var(--border); border-radius:12px; padding:20px; margin-bottom:16px; text-align:center">
+      <a id="bookmarkletLink" href="#" style="display:inline-block; background:var(--accent); color:#fff; text-decoration:none; padding:10px 22px; border-radius:999px; font-weight:700; font-size:14px; cursor:grab">
+        ★ Save to Inspireboard
+      </a>
+      <div style="font-size:11.5px; color:var(--muted); margin-top:12px">↑ Pretiahni do bookmark baru</div>
+    </div>
+
+    <div style="font-size:13px; color:var(--text-soft); line-height:1.6">
+      <strong>Ako to funguje:</strong>
+      <ol style="padding-left:20px; margin-top:8px">
+        <li>Pretiahni červené tlačidlo do bookmark baru tvojho prehliadača</li>
+        <li>Na hocijakej stránke s obrázkami klikni na bookmark</li>
+        <li>Zobrazí sa picker — vyber obrázky ktoré chceš uložiť</li>
+        <li>Otvorí sa Inspireboard s pripravenými URL pinmi</li>
+      </ol>
+    </div>
+
+    <details style="margin-top:14px; font-size:12px; color:var(--muted)">
+      <summary style="cursor:pointer; font-weight:600">Ak drag nefunguje (alternatíva)</summary>
+      <p style="margin-top:8px">Skopíruj kód nižšie. Vytvor novú záložku v prehliadači a vlož kód do URL:</p>
+      <textarea id="bookmarkletCode" readonly style="width:100%; min-height:80px; font-family:monospace; font-size:11px; background:#fff; border:1px solid var(--border); border-radius:8px; padding:8px; resize:vertical; margin-top:6px"></textarea>
+    </details>
   </div>
 </div>
 
@@ -823,6 +903,45 @@ window.addEventListener('fb-ready', () => {
     return [parseInt(h.slice(0,2),16), parseInt(h.slice(2,4),16), parseInt(h.slice(4,6),16)];
   }
 
+  // ─── PERCEPTUAL HASH (dhash) PRE DUPLICATE DETECTION ───
+  function computeFingerprint(file) {
+    return new Promise((resolve) => {
+      const img = new Image();
+      const url = URL.createObjectURL(file);
+      img.onload = () => {
+        URL.revokeObjectURL(url);
+        const canvas = document.createElement('canvas');
+        canvas.width = 9; canvas.height = 8;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, 9, 8);
+        const data = ctx.getImageData(0, 0, 9, 8).data;
+        let hash = '';
+        for (let y = 0; y < 8; y++) {
+          for (let x = 0; x < 8; x++) {
+            const i1 = (y * 9 + x) * 4;
+            const i2 = (y * 9 + x + 1) * 4;
+            const g1 = (data[i1] + data[i1+1] + data[i1+2]) / 3;
+            const g2 = (data[i2] + data[i2+1] + data[i2+2]) / 3;
+            hash += (g1 < g2) ? '1' : '0';
+          }
+        }
+        resolve(hash);
+      };
+      img.onerror = () => resolve(null);
+      img.src = url;
+    });
+  }
+  function hammingDistance(a, b) {
+    if (!a || !b || a.length !== b.length) return Infinity;
+    let d = 0;
+    for (let i = 0; i < a.length; i++) if (a[i] !== b[i]) d++;
+    return d;
+  }
+  function findDuplicate(fingerprint) {
+    if (!fingerprint) return null;
+    return pins.find(p => p.fingerprint && hammingDistance(p.fingerprint, fingerprint) < 8);
+  }
+
   function escapeHtml(s) {
     return String(s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   }
@@ -839,11 +958,15 @@ window.addEventListener('fb-ready', () => {
     $('authBtn').textContent = isAdmin ? 'Odhlásiť' : 'Prihlásiť';
     $('uploadOpen').style.display = isAdmin ? 'inline-block' : 'none';
     $('selectModeBtn').style.display = isAdmin ? 'inline-block' : 'none';
+    $('bookmarkletBtn').style.display = isAdmin ? 'inline-block' : 'none';
     $('userBadge').textContent = isAdmin ? user.email : '';
     $('storagePanel').style.display = isAdmin && !selectMode ? 'flex' : 'none';
     if (selectMode) exitSelectMode();
     renderBoards(); renderFilterBar(); renderPins();
-    if (isAdmin) updateStorageUI();
+    if (isAdmin) {
+      updateStorageUI();
+      handleUploadParam();
+    }
   });
 
   $('authBtn').addEventListener('click', () => {
@@ -920,7 +1043,9 @@ window.addEventListener('fb-ready', () => {
     const editBtn = (isAdmin && b.id !== 'all')
       ? `<span class="board-edit-btn" data-edit="${b.id}" title="Upraviť">✎</span>` : '';
     const publicIcon = (b.isPublic && b.id !== 'all') ? `<span class="board-public-icon" title="Verejný">◐</span>` : '';
-    chip.innerHTML = `<span>${escapeHtml(b.name)}</span>${publicIcon}<span class="count">${count}</span>${editBtn}`;
+    const cover = (b.coverUrl && b.id !== 'all') ? `<img class="board-chip-cover" src="${b.coverUrl}" alt="" />` : '';
+    if (cover) chip.classList.add('has-cover');
+    chip.innerHTML = `${cover}<span>${escapeHtml(b.name)}</span>${publicIcon}<span class="count">${count}</span>${editBtn}`;
 
     chip.addEventListener('click', (e) => {
       if (e.target.closest('[data-edit]')) {
@@ -1075,6 +1200,15 @@ window.addEventListener('fb-ready', () => {
     if (!opts.ignoreColor && activeColor) {
       f = f.filter(p => colorMatches(p.colors, activeColor));
     }
+
+    // Custom poradie len v konkrétnom boarde
+    if (currentBoardId !== 'all') {
+      f = [...f].sort((a, b) => {
+        const ao = (a.order !== undefined && a.order !== null) ? a.order : -a.createdAt;
+        const bo = (b.order !== undefined && b.order !== null) ? b.order : -b.createdAt;
+        return ao - bo;
+      });
+    }
     return f;
   }
 
@@ -1145,8 +1279,38 @@ window.addEventListener('fb-ready', () => {
       card.addEventListener('dragstart', e => {
         card.classList.add('dragging');
         e.dataTransfer.setData('text/pin-id', p.id);
+        e.dataTransfer.effectAllowed = 'move';
       });
-      card.addEventListener('dragend', () => card.classList.remove('dragging'));
+      card.addEventListener('dragend', () => {
+        card.classList.remove('dragging');
+        document.querySelectorAll('.pin').forEach(el => el.classList.remove('drop-before', 'drop-after'));
+      });
+
+      // Reorder: drop on another pin only in specific board view
+      if (currentBoardId !== 'all') {
+        card.addEventListener('dragover', e => {
+          if (card.classList.contains('dragging')) return;
+          e.preventDefault();
+          e.dataTransfer.dropEffect = 'move';
+          const rect = card.getBoundingClientRect();
+          const before = e.clientY < rect.top + rect.height / 2;
+          document.querySelectorAll('.pin').forEach(el => el.classList.remove('drop-before', 'drop-after'));
+          card.classList.add(before ? 'drop-before' : 'drop-after');
+        });
+        card.addEventListener('dragleave', () => {
+          card.classList.remove('drop-before', 'drop-after');
+        });
+        card.addEventListener('drop', async e => {
+          e.preventDefault();
+          e.stopPropagation();
+          const draggedId = e.dataTransfer.getData('text/pin-id');
+          if (!draggedId || draggedId === p.id) return;
+          const rect = card.getBoundingClientRect();
+          const before = e.clientY < rect.top + rect.height / 2;
+          card.classList.remove('drop-before', 'drop-after');
+          await reorderPin(draggedId, p.id, before);
+        });
+      }
     }
 
     // Click handler
@@ -1184,6 +1348,16 @@ window.addEventListener('fb-ready', () => {
     $('pinDetailImg').src = p.url;
     $('pinDetailTitle').textContent = p.title || 'Bez titulku';
     $('pinDetailDesc').textContent = p.description || '';
+
+    // Notes (admin only)
+    const notesEl = $('pinDetailNotes');
+    if (isAdmin && p.notes) {
+      notesEl.style.display = 'block';
+      $('pinNotesContent').textContent = p.notes;
+    } else {
+      notesEl.style.display = 'none';
+    }
+
     const board = boards.find(b => b.id === p.boardId);
     $('pinDetailBoard').textContent = board ? board.name : 'Bez boardu';
 
@@ -1319,6 +1493,7 @@ window.addEventListener('fb-ready', () => {
     $('editBoard').value = p.boardId || '';
     $('editTags').value = (p.tags || []).join(', ');
     $('editSource').value = p.sourceUrl || '';
+    $('editNotes').value = p.notes || '';
     openModal('editModal');
   }
   $('editSaveBtn').addEventListener('click', async () => {
@@ -1329,7 +1504,8 @@ window.addEventListener('fb-ready', () => {
       description: $('editDesc').value.trim(),
       boardId: $('editBoard').value || null,
       tags,
-      sourceUrl: $('editSource').value.trim() || null
+      sourceUrl: $('editSource').value.trim() || null,
+      notes: $('editNotes').value.trim() || null
     });
     closeModal('editModal');
     await loadAll();
@@ -1341,6 +1517,31 @@ window.addEventListener('fb-ready', () => {
     try { await deleteObject(ref(storage, p.storagePath)); } catch (_) {}
     await loadAll();
     await updateStorageUI();
+  }
+
+  // ─── REORDER PINS WITHIN BOARD ───
+  async function reorderPin(draggedId, targetId, insertBefore) {
+    const boardPins = applyFilters(pins);
+    const targetIdx = boardPins.findIndex(p => p.id === targetId);
+    if (targetIdx < 0) return;
+
+    let newOrder;
+    if (insertBefore) {
+      const prev = boardPins[targetIdx - 1];
+      const target = boardPins[targetIdx];
+      const prevOrder = prev ? ((prev.order ?? -prev.createdAt)) : null;
+      const targetOrder = target.order ?? -target.createdAt;
+      newOrder = prevOrder !== null ? (prevOrder + targetOrder) / 2 : targetOrder - 1000;
+    } else {
+      const target = boardPins[targetIdx];
+      const next = boardPins[targetIdx + 1];
+      const targetOrder = target.order ?? -target.createdAt;
+      const nextOrder = next ? (next.order ?? -next.createdAt) : null;
+      newOrder = nextOrder !== null ? (targetOrder + nextOrder) / 2 : targetOrder + 1000;
+    }
+
+    await updateDoc(doc(db, 'pins', draggedId), { order: newOrder });
+    await loadAll();
   }
 
   // ─── BOARD CREATE ───
@@ -1362,14 +1563,63 @@ window.addEventListener('fb-ready', () => {
 
   // ─── BOARD EDIT / DELETE ───
   let editingBoard = null;
+  let pendingCoverUrl = null;
   function openBoardEdit(b) {
     editingBoard = b;
+    pendingCoverUrl = b.coverUrl || null;
     $('boardEditName').value = b.name;
     $('boardEditDesc').value = b.description || '';
     $('boardEditPublic').checked = !!b.isPublic;
+    updateCoverUI();
+    renderCoverPicker(b.id);
     updateShareSection();
     openModal('boardEditModal');
   }
+
+  function updateCoverUI() {
+    const thumb = $('coverThumb');
+    const label = $('coverLabel');
+    const clearBtn = $('coverClearBtn');
+    if (pendingCoverUrl) {
+      thumb.innerHTML = `<img src="${pendingCoverUrl}" style="width:100%; height:100%; object-fit:cover; border-radius:50%" alt="" />`;
+      thumb.style.background = 'transparent';
+      label.textContent = 'Vybraný';
+      clearBtn.style.display = 'inline';
+    } else {
+      thumb.innerHTML = '∅';
+      thumb.style.background = 'var(--border-soft)';
+      label.textContent = 'Nezvolený';
+      clearBtn.style.display = 'none';
+    }
+  }
+
+  function renderCoverPicker(boardId) {
+    const grid = $('coverPickerGrid');
+    grid.innerHTML = '';
+    const boardPins = pins.filter(p => p.boardId === boardId);
+    if (boardPins.length === 0) {
+      grid.innerHTML = '<div style="grid-column:1/-1; padding:20px; text-align:center; font-size:12px; color:var(--muted)">Žiadne piny v tomto boarde</div>';
+      return;
+    }
+    boardPins.forEach(p => {
+      const div = document.createElement('div');
+      const isSelected = pendingCoverUrl === p.url;
+      div.style.cssText = `aspect-ratio:1; border-radius:6px; overflow:hidden; cursor:pointer; border:2px solid ${isSelected ? 'var(--accent)' : 'transparent'}; transition:transform 0.15s`;
+      div.innerHTML = `<img src="${p.url}" style="width:100%; height:100%; object-fit:cover; display:block" alt="" />`;
+      div.addEventListener('click', () => {
+        pendingCoverUrl = p.url;
+        updateCoverUI();
+        renderCoverPicker(boardId);
+      });
+      grid.appendChild(div);
+    });
+  }
+
+  $('coverClearBtn').addEventListener('click', () => {
+    pendingCoverUrl = null;
+    updateCoverUI();
+    if (editingBoard) renderCoverPicker(editingBoard.id);
+  });
   function updateShareSection() {
     const isPublic = $('boardEditPublic').checked;
     $('boardShareSection').style.display = isPublic ? 'block' : 'none';
@@ -1392,7 +1642,8 @@ window.addEventListener('fb-ready', () => {
     await updateDoc(doc(db, 'boards', editingBoard.id), {
       name,
       description: $('boardEditDesc').value.trim(),
-      isPublic: $('boardEditPublic').checked
+      isPublic: $('boardEditPublic').checked,
+      coverUrl: pendingCoverUrl
     });
     closeModal('boardEditModal');
     await loadAll();
@@ -1493,6 +1744,7 @@ window.addEventListener('fb-ready', () => {
     const title = $('uploadTitle').value.trim();
     const tags  = $('uploadTags').value.split(',').map(t => t.trim()).filter(Boolean);
     const sourceUrl = $('uploadSource').value.trim() || null;
+    const notes = $('uploadNotes').value.trim() || null;
 
     uploadBtn.disabled = true;
     $('uploadProgress').style.display = 'block';
@@ -1504,7 +1756,7 @@ window.addEventListener('fb-ready', () => {
       $('uploadStatus').textContent = `Pridávam link ${done+1}/${total}...`;
       await addDoc(collection(db, 'pins'), {
         url, storagePath: null, boardId, title, description: '',
-        tags, sourceUrl, external: true, createdAt: Date.now()
+        tags, sourceUrl, notes, external: true, createdAt: Date.now()
       });
       done++;
       bar.style.width = (done/total*100) + '%';
@@ -1513,6 +1765,17 @@ window.addEventListener('fb-ready', () => {
     // Súbory
     for (const file of selectedFiles) {
       $('uploadStatus').textContent = `Spracovávam ${done+1}/${total}...`;
+
+      // Skontroluj duplikát PRED kompresiou
+      const fingerprint = await computeFingerprint(file);
+      const dup = findDuplicate(fingerprint);
+      if (dup) {
+        const dupBoard = boards.find(b => b.id === dup.boardId);
+        const boardName = dupBoard ? dupBoard.name : '—';
+        const skip = !confirm(`Podobný obrázok už existuje v boarde "${boardName}".\n\nKliknite OK pre nahranie aj tak, Cancel pre preskočenie.`);
+        if (skip) { done++; bar.style.width = (done/total*100) + '%'; continue; }
+      }
+
       const [compressed, colors] = await Promise.all([
         compressImage(file),
         extractColors(file).catch(() => [])
@@ -1532,7 +1795,8 @@ window.addEventListener('fb-ready', () => {
             const url = await getDownloadURL(task.snapshot.ref);
             await addDoc(collection(db, 'pins'), {
               url, storagePath: path, boardId, title, description: '',
-              tags, sourceUrl, colors, size: compressed.size, createdAt: Date.now()
+              tags, sourceUrl, notes, colors, fingerprint,
+              size: compressed.size, createdAt: Date.now()
             });
             await addStorage(compressed.size);
             done++; resolve();
@@ -1552,6 +1816,7 @@ window.addEventListener('fb-ready', () => {
       $('uploadTitle').value = '';
       $('uploadTags').value = '';
       $('uploadSource').value = '';
+      $('uploadNotes').value = '';
       updateUploadPreview();
       closeModal('uploadModal');
     }, 800);
@@ -1711,6 +1976,37 @@ window.addEventListener('fb-ready', () => {
     visibleCount = PAGE;
     renderPins();
   });
+
+  // ─── BOOKMARKLET ───
+  function getBookmarkletCode() {
+    const targetUrl = location.origin + location.pathname;
+    // Bookmarklet picker code (compact, IIFE)
+    const code = `javascript:(function(){if(document.getElementById('__ib_picker'))return;var imgs=[].slice.call(document.querySelectorAll('img')).filter(function(i){return i.naturalWidth>250&&i.naturalHeight>250&&i.src&&i.src.indexOf('http')===0}).slice(0,40);if(!imgs.length){alert('Žiadne dostatočne veľké obrázky.');return}var o=document.createElement('div');o.id='__ib_picker';o.style.cssText='position:fixed;top:20px;right:20px;width:360px;max-height:82vh;overflow-y:auto;background:#fff;border-radius:18px;padding:18px;box-shadow:0 20px 60px rgba(0,0,0,.35);z-index:2147483647;font-family:system-ui,sans-serif;color:#1a1a1a';o.innerHTML='<div style="font-weight:700;font-size:15px;margin-bottom:10px">Save to Inspireboard</div><div style="font-size:11.5px;color:#888;margin-bottom:10px">Klikni obrázky pre výber</div><div id="__ib_grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px"></div><div style="margin-top:14px;display:flex;gap:6px"><button id="__ib_save" style="flex:1;background:#BD1F2F;color:#fff;border:none;padding:10px;border-radius:10px;font-weight:700;cursor:pointer;font-size:13px">Uložiť (0)</button><button id="__ib_close" style="background:#eee;border:none;padding:10px 16px;border-radius:10px;cursor:pointer;font-size:13px">Zrušiť</button></div>';document.body.appendChild(o);var sel=[];var g=document.getElementById('__ib_grid');imgs.forEach(function(img){var d=document.createElement('div');d.style.cssText='aspect-ratio:1;border-radius:8px;overflow:hidden;border:2px solid transparent;cursor:pointer;transition:all .15s';d.innerHTML='<img src="'+img.src+'" style="width:100%;height:100%;object-fit:cover;display:block;pointer-events:none">';d.onclick=function(){var i=sel.indexOf(img.src);if(i>=0){sel.splice(i,1);d.style.borderColor='transparent'}else{sel.push(img.src);d.style.borderColor='#BD1F2F'}document.getElementById('__ib_save').textContent='Uložiť ('+sel.length+')'};g.appendChild(d)});document.getElementById('__ib_close').onclick=function(){o.remove()};document.getElementById('__ib_save').onclick=function(){if(!sel.length)return;window.open('${targetUrl}?ib_upload='+encodeURIComponent(sel.join('|')),'_blank');o.remove()}})();`;
+    return code;
+  }
+
+  $('bookmarkletBtn').addEventListener('click', () => {
+    const code = getBookmarkletCode();
+    const link = $('bookmarkletLink');
+    link.href = code;
+    $('bookmarkletCode').value = code;
+    openModal('bookmarkletModal');
+  });
+
+  // Handle ?ib_upload= URL param from bookmarklet
+  function handleUploadParam() {
+    const ibUpload = new URLSearchParams(location.search).get('ib_upload');
+    if (!ibUpload) return;
+    const urls = decodeURIComponent(ibUpload).split('|').filter(Boolean);
+    if (urls.length === 0) return;
+    selectedUrls = selectedUrls.concat(urls);
+    updateUploadPreview();
+    if (boards.length > 0) openModal('uploadModal');
+    // Clean URL
+    const u = new URL(location);
+    u.searchParams.delete('ib_upload');
+    history.replaceState({}, '', u);
+  }
 
   // ─── INIT ───
   loadAll();

@@ -286,6 +286,7 @@
     z-index:80; max-width:calc(100vw - 32px);
   }
   body.select-mode #storagePanel { display:none !important; }
+  @media (display-mode: standalone) { #storagePanel { display:none !important; } }
   .storage-bar { width:140px; height:4px; background:var(--border); border-radius:2px; overflow:hidden; }
   .storage-fill { height:100%; background:linear-gradient(90deg, var(--accent), #E66B3D); transition:width 0.5s; width:0%; }
   .storage-text { font-size:12px; color:var(--muted); font-weight:500; }

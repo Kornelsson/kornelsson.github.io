@@ -911,36 +911,67 @@ window.addEventListener('fb-ready', () => {
       const url = URL.createObjectURL(file);
       img.onload = () => {
         URL.revokeObjectURL(url);
-        const canvas = document.createElement('canvas');
-        canvas.width = 9; canvas.height = 8;
-        const ctx = canvas.getContext('2d');
-        ctx.drawImage(img, 0, 0, 9, 8);
-        const data = ctx.getImageData(0, 0, 9, 8).data;
-        let hash = '';
-        for (let y = 0; y < 8; y++) {
-          for (let x = 0; x < 8; x++) {
-            const i1 = (y * 9 + x) * 4;
-            const i2 = (y * 9 + x + 1) * 4;
-            const g1 = (data[i1] + data[i1+1] + data[i1+2]) / 3;
-            const g2 = (data[i2] + data[i2+1] + data[i2+2]) / 3;
-            hash += (g1 < g2) ? '1' : '0';
-          }
-        }
-        resolve(hash);
+        resolve(hashFromImage(img));
       };
       img.onerror = () => resolve(null);
       img.src = url;
     });
   }
+
+  function computeFingerprintFromUrl(url) {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload = () => resolve(hashFromImage(img));
+      img.onerror = () => resolve(null);
+      img.src = url;
+    });
+  }
+
+  function hashFromImage(img) {
+    const canvas = document.createElement('canvas');
+    canvas.width = 9; canvas.height = 8;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(img, 0, 0, 9, 8);
+    let data;
+    try { data = ctx.getImageData(0, 0, 9, 8).data; }
+    catch { return null; }
+    let hash = '';
+    for (let y = 0; y < 8; y++) {
+      for (let x = 0; x < 8; x++) {
+        const i1 = (y * 9 + x) * 4;
+        const i2 = (y * 9 + x + 1) * 4;
+        const g1 = (data[i1] + data[i1+1] + data[i1+2]) / 3;
+        const g2 = (data[i2] + data[i2+1] + data[i2+2]) / 3;
+        hash += (g1 < g2) ? '1' : '0';
+      }
+    }
+    return hash;
+  }
+
   function hammingDistance(a, b) {
     if (!a || !b || a.length !== b.length) return Infinity;
     let d = 0;
     for (let i = 0; i < a.length; i++) if (a[i] !== b[i]) d++;
     return d;
   }
-  function findDuplicate(fingerprint) {
+
+  async function findDuplicate(fingerprint) {
     if (!fingerprint) return null;
-    return pins.find(p => p.fingerprint && hammingDistance(p.fingerprint, fingerprint) < 8);
+    // Najprv skús piny ktoré už majú uložený fingerprint
+    const stored = pins.find(p => p.fingerprint && hammingDistance(p.fingerprint, fingerprint) < 8);
+    if (stored) return stored;
+    // Pre piny bez fingerprintu vypočítaj z URL (Firebase Storage povolí, externé môžu byť CORS blocked)
+    for (const p of pins) {
+      if (p.fingerprint) continue;
+      const pf = await computeFingerprintFromUrl(p.url).catch(() => null);
+      if (pf && hammingDistance(pf, fingerprint) < 8) {
+        // Ulož fingerprint pre budúce použitie
+        updateDoc(doc(db, 'pins', p.id), { fingerprint: pf }).catch(() => {});
+        return p;
+      }
+    }
+    return null;
   }
 
   function escapeHtml(s) {
@@ -1753,8 +1784,9 @@ window.addEventListener('fb-ready', () => {
       $('uploadStatus').textContent = `Spracovávam ${done+1}/${total}...`;
 
       // Skontroluj duplikát PRED kompresiou
+      $('uploadStatus').textContent = `Kontrolujem duplikáty ${done+1}/${total}...`;
       const fingerprint = await computeFingerprint(file);
-      const dup = findDuplicate(fingerprint);
+      const dup = await findDuplicate(fingerprint);
       if (dup) {
         const dupBoard = boards.find(b => b.id === dup.boardId);
         const boardName = dupBoard ? dupBoard.name : '—';
@@ -1965,7 +1997,7 @@ window.addEventListener('fb-ready', () => {
   function getBookmarkletCode() {
     const targetUrl = location.origin + location.pathname;
     // Bookmarklet picker code (compact, IIFE)
-    const code = `javascript:(function(){if(document.getElementById('__ib_picker'))return;var imgs=[].slice.call(document.querySelectorAll('img')).map(function(i){var src=i.src||i.dataset.src||'';if(!src&&i.srcset){src=i.srcset.split(',')[0].trim().split(' ')[0]}return{el:i,src:src}}).filter(function(o){return o.src&&o.src.indexOf('http')===0&&(o.el.naturalWidth>100||o.el.width>100||o.el.offsetWidth>100)}).slice(0,60);if(!imgs.length){alert('Žiadne obrázky. Skús scrollovať stránku a spustiť znova.');return}var o=document.createElement('div');o.id='__ib_picker';o.style.cssText='position:fixed;top:20px;right:20px;width:360px;max-height:82vh;overflow-y:auto;background:#fff;border-radius:18px;padding:18px;box-shadow:0 20px 60px rgba(0,0,0,.35);z-index:2147483647;font-family:system-ui,sans-serif;color:#1a1a1a';o.innerHTML='<div style="font-weight:700;font-size:15px;margin-bottom:10px">Save to Inspireboard</div><div style="font-size:11.5px;color:#888;margin-bottom:10px">Klikni obrázky pre výber</div><div id="__ib_grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px"></div><div style="margin-top:14px;display:flex;gap:6px"><button id="__ib_save" style="flex:1;background:#BD1F2F;color:#fff;border:none;padding:10px;border-radius:10px;font-weight:700;cursor:pointer;font-size:13px">Uložiť (0)</button><button id="__ib_close" style="background:#eee;border:none;padding:10px 16px;border-radius:10px;cursor:pointer;font-size:13px">Zrušiť</button></div>';document.body.appendChild(o);var sel=[];var g=document.getElementById('__ib_grid');imgs.forEach(function(item){var d=document.createElement('div');d.style.cssText='aspect-ratio:1;border-radius:8px;overflow:hidden;border:2px solid transparent;cursor:pointer;transition:all .15s';d.innerHTML='<img src="'+item.src+'" style="width:100%;height:100%;object-fit:cover;display:block;pointer-events:none" crossorigin="anonymous">';d.onclick=function(){var i=sel.indexOf(item.src);if(i>=0){sel.splice(i,1);d.style.borderColor='transparent'}else{sel.push(item.src);d.style.borderColor='#BD1F2F'}document.getElementById('__ib_save').textContent='Uložiť ('+sel.length+')'};g.appendChild(d)});document.getElementById('__ib_close').onclick=function(){o.remove()};document.getElementById('__ib_save').onclick=function(){if(!sel.length)return;var u='${targetUrl}?ib_upload='+encodeURIComponent(sel.join('|'));window.open(u,'_inspireboard','noopener');o.remove()}})();`;
+    const code = `javascript:(function(){if(document.getElementById('__ib_picker'))return;var imgs=[].slice.call(document.querySelectorAll('img')).map(function(i){var src=i.src||i.dataset.src||'';if(!src&&i.srcset){src=i.srcset.split(',')[0].trim().split(' ')[0]}return{el:i,src:src}}).filter(function(o){return o.src&&o.src.indexOf('http')===0&&(o.el.naturalWidth>100||o.el.width>100||o.el.offsetWidth>100)}).slice(0,60);if(!imgs.length){alert('Žiadne obrázky. Skús scrollovať stránku a spustiť znova.');return}var o=document.createElement('div');o.id='__ib_picker';o.style.cssText='position:fixed;top:20px;right:20px;width:360px;max-height:82vh;overflow-y:auto;background:#fff;border-radius:18px;padding:18px;box-shadow:0 20px 60px rgba(0,0,0,.35);z-index:2147483647;font-family:system-ui,sans-serif;color:#1a1a1a';o.innerHTML='<div style="font-weight:700;font-size:15px;margin-bottom:10px">Save to Inspireboard</div><div style="font-size:11.5px;color:#888;margin-bottom:10px">Klikni obrázky pre výber</div><div id="__ib_grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px"></div><div style="margin-top:14px;display:flex;gap:6px"><button id="__ib_save" style="flex:1;background:#BD1F2F;color:#fff;border:none;padding:10px;border-radius:10px;font-weight:700;cursor:pointer;font-size:13px">Uložiť (0)</button><button id="__ib_close" style="background:#eee;border:none;padding:10px 16px;border-radius:10px;cursor:pointer;font-size:13px">Zrušiť</button></div>';document.body.appendChild(o);var sel=[];var g=document.getElementById('__ib_grid');imgs.forEach(function(item){var d=document.createElement('div');d.style.cssText='aspect-ratio:1;border-radius:8px;overflow:hidden;border:2px solid transparent;cursor:pointer;transition:all .15s';d.innerHTML='<img src="'+item.src+'" style="width:100%;height:100%;object-fit:cover;display:block;pointer-events:none" crossorigin="anonymous">';d.onclick=function(){var i=sel.indexOf(item.src);if(i>=0){sel.splice(i,1);d.style.borderColor='transparent'}else{sel.push(item.src);d.style.borderColor='#BD1F2F'}document.getElementById('__ib_save').textContent='Uložiť ('+sel.length+')'};g.appendChild(d)});document.getElementById('__ib_close').onclick=function(){o.remove()};document.getElementById('__ib_save').onclick=function(){if(!sel.length)return;var u='${targetUrl}?ib_upload='+encodeURIComponent(sel.join('|'));o.remove();location.href=u}})();`;
     return code;
   }
 

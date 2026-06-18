@@ -39,7 +39,7 @@
   /* HEADER */
   header {
     position:sticky; top:0; z-index:100;
-    background:rgba(250,246,240,0.92); backdrop-filter:blur(12px);
+    background:var(--bg);
     border-bottom:1px solid var(--border-soft);
     padding:0 24px; height:64px; display:flex; align-items:center; gap:18px;
   }
@@ -144,13 +144,16 @@
     background:var(--card); border-radius:var(--radius); overflow:hidden;
     box-shadow:var(--shadow); transition:box-shadow 0.2s;
     cursor:pointer; position:relative;
+    transform:translateZ(0);
+    backface-visibility:hidden;
+    contain:layout paint;
   }
   .pin:hover { box-shadow:var(--shadow-hi); }
   .pin.selected { box-shadow:0 0 0 3px var(--accent), var(--shadow-hi); }
   .pin.dragging { opacity:0.4; }
 
   .pin-img-wrap { position:relative; overflow:hidden; background:var(--border-soft); }
-  .pin-img { width:100%; display:block; }
+  .pin-img { width:100%; display:block; transform:translateZ(0); }
 
   .pin-overlay {
     position:absolute; inset:0;

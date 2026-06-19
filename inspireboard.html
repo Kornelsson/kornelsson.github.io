@@ -163,8 +163,13 @@
   }
   #clearFilters:hover { opacity:1; text-decoration:underline; }
   main { padding:24px; padding-bottom:120px; }
-  #grid { columns:auto; column-width:240px; column-gap:16px; }
+  #grid{columns:auto;column-width:var(--grid-col-w,240px);column-gap:16px}
+  #grid[data-size="S"]{--grid-col-w:140px}#grid[data-size="M"]{--grid-col-w:190px}#grid[data-size="L"]{--grid-col-w:260px}#grid[data-size="XL"]{--grid-col-w:340px}
   @media (max-width:720px) { #grid { column-width:160px; column-gap:12px; } main { padding:16px; } }
+  .grid-sizer{display:inline-flex;align-items:center;gap:4px;background:var(--card);border:1px solid var(--border);border-radius:999px;padding:4px 6px;font-size:11.5px;font-weight:600}
+  .grid-sizer button{background:transparent;border:none;color:var(--muted);padding:3px 7px;border-radius:999px;font-size:11px;font-weight:700;transition:all .15s}
+  .grid-sizer button.active{background:var(--text);color:#fff}
+  .grid-sizer button:hover:not(.active){background:var(--border-soft);color:var(--text)}
   .pin {
     break-inside:avoid; margin-bottom:16px;
     background:var(--card); border-radius:var(--radius); overflow:hidden;
@@ -238,6 +243,8 @@
   body.select-mode .pin { cursor:pointer; }
   body.select-mode .pin-overlay { opacity:1 !important; background:none; }
   body.select-mode .pin-overlay-bottom { display:none; }
+  .pin-ctrl-hint{position:fixed;bottom:72px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.72);color:#fff;border-radius:999px;padding:7px 18px;font-size:12px;pointer-events:none;opacity:0;transition:opacity .3s;z-index:89;white-space:nowrap}
+  .pin-ctrl-hint.show{opacity:1}
   #emptyState { text-align:center; padding:120px 20px; color:var(--muted); }
   #emptyState .big { font-size:64px; color:var(--border); line-height:1; margin-bottom:16px; }
   #emptyState h2 { font-weight:600; color:var(--text-soft); margin-bottom:8px; font-size:18px; }
@@ -518,160 +525,54 @@
 </head>
 <body>
 
-<header>
-  <div class="logo">Inspireboard</div>
-  <div class="search"><input id="searchInput" type="text" placeholder="Hľadať vo všetkých pinoch..." /></div>
-  <div class="header-actions">
-    <span id="userBadge"></span>
-    <button id="darkToggle" class="theme-toggle" title="Prepnúť tému" aria-label="Prepnúť tému">
-      <span class="theme-toggle-icon">☀️</span>
-      <span class="theme-toggle-icon">🌙</span>
-      <span class="theme-toggle-thumb"></span>
-    </button>
-    <button id="bookmarkletBtn" class="btn-ghost" style="display:none" title="Save z webu">★</button>
-    <button id="selectModeBtn" class="btn-ghost" style="display:none">Vybrať</button>
-    <button id="uploadOpen" class="btn-primary" style="display:none">+ Pin</button>
-    <button id="authBtn" class="btn-ghost">Prihlásiť</button>
-  </div>
-</header>
+<header><div class="logo">Inspireboard</div><div class="search"><input id="searchInput" type="text" placeholder="Hľadať vo všetkých pinoch..." /></div><div class="header-actions"><span id="userBadge"></span><div class="grid-sizer" id="gridSizer"><button data-sz="S">S</button><button data-sz="M">M</button><button data-sz="L" class="active">L</button><button data-sz="XL">XL</button></div><button id="darkToggle" class="theme-toggle" title="Prepnúť tému" aria-label="Prepnúť tému"><span class="theme-toggle-icon">☀️</span><span class="theme-toggle-icon">🌙</span><span class="theme-toggle-thumb"></span></button><button id="bookmarkletBtn" class="btn-ghost" style="display:none" title="Save z webu">★</button><button id="selectModeBtn" class="btn-ghost" style="display:none">Vybrať</button><button id="uploadOpen" class="btn-primary" style="display:none">+ Pin</button><button id="authBtn" class="btn-ghost">Prihlásiť</button></div></header>
 
-<nav id="boardsNav"></nav>
-<div id="filterBar"></div>
+<nav id="boardsNav"></nav><div id="filterBar"></div>
 
-<main>
-  <div id="emptyState" style="display:none">
-    <div class="big">◌</div>
-    <h2>Žiadne piny</h2>
-    <p>Skús zmeniť filtre alebo pridať nový pin</p>
-  </div>
-  <div id="grid"></div>
-  <div id="scrollSentinel"></div>
-  <div id="loadingMore" style="display:none">Načítavam...</div>
-</main>
+<main><div id="emptyState" style="display:none"><div class="big">◌</div><h2>Žiadne piny</h2><p>Skús zmeniť filtre alebo pridať nový pin</p></div><div id="grid"></div><div id="scrollSentinel"></div><div id="loadingMore" style="display:none">Načítavam...</div></main>
 
 <!-- Select bar -->
-<div id="selectBar">
-  <span class="count"><span id="selectCount">0</span> vybratých</span>
-  <div class="actions">
-    <button id="selectMove">Presunúť do…</button>
-    <button id="selectDelete" class="danger">Zmazať</button>
-    <button id="selectExit" class="exit">Hotovo</button>
-  </div>
-</div>
+<div id="selectBar"><span class="count"><span id="selectCount">0</span> vybratých</span><div class="actions"><button id="selectMove">Presunúť do…</button><button id="selectDelete" class="danger">Zmazať</button><button id="selectExit" class="exit">Hotovo</button></div></div>
 
 <!-- Storage panel -->
 <div id="storagePanel">
-  <span class="storage-text" title="Spoločné s portfoliom"><strong id="statUsed">0 MB</strong> / 5 GB</span>
-  <div class="storage-bar"><div class="storage-fill" id="storageFill"></div></div>
-  <span class="storage-text"><span id="statCount">0</span> pinov</span>
-  <button id="recompressBtn">↺ Prepočítať</button>
-  <a id="storageConsoleLink" href="https://console.firebase.google.com/project/kornelsson-bea69/storage" target="_blank">→ Konzola</a>
+  <span class="storage-text" title="Spoločné s portfoliom"><strong id="statUsed">0 MB</strong> / 5 GB</span><div class="storage-bar"><div class="storage-fill" id="storageFill"></div></div><span class="storage-text"><span id="statCount">0</span> pinov</span><button id="recompressBtn">↺ Prepočítať</button><a id="storageConsoleLink" href="https://console.firebase.google.com/project/kornelsson-bea69/storage" target="_blank">→ Konzola</a>
 </div>
 
 <!-- Upload modal -->
 <div class="modal" id="uploadModal">
-  <div class="modal-box">
-    <button class="modal-close" data-close="uploadModal">×</button>
-    <h2>Pridať pin</h2>
-    <div class="subtitle">Pretiahni obrázky alebo klikni</div>
+  <div class="modal-box"><button class="modal-close" data-close="uploadModal">×</button><h2>Pridať pin</h2><div class="subtitle">Pretiahni obrázky alebo klikni</div>
 
-    <div id="dropZone">
-      <div class="big-icon">↑</div>
-      <div>Pretiahni obrázky sem alebo klikni</div>
-      <div id="dropZoneSubtext">PNG, JPG, WEBP — bez obmedzenia počtu</div>
-      <input type="file" id="fileInput" accept="image/*" multiple />
-    </div>
+    <div id="dropZone"><div class="big-icon">↑</div><div>Pretiahni obrázky sem alebo klikni</div><div id="dropZoneSubtext">PNG, JPG, WEBP — bez obmedzenia počtu</div><input type="file" id="fileInput" accept="image/*" multiple /></div>
 
-    <div style="display:flex; align-items:center; gap:12px; margin:0 0 16px; color:var(--muted); font-size:11.5px; font-weight:600; letter-spacing:0.06em; text-transform:uppercase">
-      <span style="flex:1; height:1px; background:var(--border-soft)"></span>ALEBO<span style="flex:1; height:1px; background:var(--border-soft)"></span>
-    </div>
+    <div style="display:flex;align-items:center;gap:12px;margin:0 0 16px;color:var(--muted);font-size:11.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase"><span style="flex:1;height:1px;background:var(--border-soft)"></span>ALEBO<span style="flex:1;height:1px;background:var(--border-soft)"></span></div>
 
-    <div class="field" style="margin-bottom:16px">
-      <label>Vlož link na obrázok</label>
-      <div style="display:flex; gap:8px">
-        <input id="urlInput" type="url" placeholder="https://example.com/obrazok.jpg" style="flex:1" />
-        <button id="urlAddBtn" type="button">+ Pridať</button>
-      </div>
-    </div>
+    <div class="field" style="margin-bottom:16px"><label>Vlož link na obrázok</label><div style="display:flex;gap:8px"><input id="urlInput" type="url" placeholder="https://example.com/obrazok.jpg" style="flex:1" /><button id="urlAddBtn" type="button">+ Pridať</button></div></div>
 
     <div id="uploadPreview"></div>
 
-    <div class="field">
-      <label>Uložiť do boardu</label>
-      <select id="uploadBoard"><option value="">— vyberte board —</option></select>
-    </div>
-    <div class="field">
-      <label>Titulok (voliteľné, pre všetky)</label>
-      <input id="uploadTitle" type="text" placeholder="Napr. Móda, jeseň 2026" />
-    </div>
-    <div class="field">
-      <label>Tagy (oddelené čiarkami, voliteľné)</label>
-      <input id="uploadTags" type="text" placeholder="napr. minimalizmus, jeseň, béžová" />
-    </div>
+    <div class="field"><label>Uložiť do boardu</label><select id="uploadBoard"><option value="">— vyberte board —</option></select></div><div class="field"><label>Titulok (voliteľné, pre všetky)</label><input id="uploadTitle" type="text" placeholder="Napr. Móda, jeseň 2026" /></div><div class="field"><label>Tagy (oddelené čiarkami, voliteľné)</label><input id="uploadTags" type="text" placeholder="napr. minimalizmus, jeseň, béžová" /></div>
 
-    <div id="uploadProgress"><div></div></div>
-    <div id="uploadStatus"></div>
-    <button id="uploadBtn" class="btn-primary" style="width:100%" disabled>Pridať piny</button>
+    <div id="uploadProgress"><div></div></div><div id="uploadStatus"></div><button id="uploadBtn" class="btn-primary" style="width:100%" disabled>Pridať piny</button>
   </div>
 </div>
 
 <!-- Board modal -->
 <div class="modal" id="boardModal">
-  <div class="modal-box">
-    <button class="modal-close" data-close="boardModal">×</button>
-    <h2>Nový board</h2>
-    <div class="subtitle">Pomenuj kolekciu pinov</div>
-    <div class="field"><label>Názov</label><input id="boardName" type="text" placeholder="Napr. Inšpirácia" /></div>
-    <div class="field"><label>Popis (voliteľné)</label><textarea id="boardDesc"></textarea></div>
-    <div class="field-toggle" style="margin-bottom:16px">
-      <input type="checkbox" id="boardPublic" />
-      <div class="info">
-        <div class="info-title">Verejný board</div>
-        <div class="info-sub">Bude prístupný cez zdieľateľný link aj bez prihlásenia</div>
-      </div>
-    </div>
-    <button id="boardSaveBtn" class="btn-primary" style="width:100%">Vytvoriť board</button>
+  <div class="modal-box"><button class="modal-close" data-close="boardModal">×</button><h2>Nový board</h2><div class="subtitle">Pomenuj kolekciu pinov</div>
+    <div class="field"><label>Názov</label><input id="boardName" type="text" placeholder="Napr. Inšpirácia" /></div><div class="field"><label>Popis (voliteľné)</label><textarea id="boardDesc"></textarea></div><div class="field-toggle" style="margin-bottom:16px"><input type="checkbox" id="boardPublic" /><div class="info"><div class="info-title">Verejný board</div><div class="info-sub">Bude prístupný cez zdieľateľný link aj bez prihlásenia</div></div></div><button id="boardSaveBtn" class="btn-primary" style="width:100%">Vytvoriť board</button>
   </div>
 </div>
 
 <!-- Board edit modal -->
 <div class="modal" id="boardEditModal">
-  <div class="modal-box">
-    <button class="modal-close" data-close="boardEditModal">×</button>
-    <h2>Upraviť board</h2>
-    <div class="subtitle">Premenuj, nastav verejnosť alebo zmaž</div>
-    <div class="field"><label>Názov</label><input id="boardEditName" type="text" /></div>
-    <div class="field"><label>Popis</label><textarea id="boardEditDesc"></textarea></div>
-    <div class="field">
-      <label>Cover obrázok</label>
-      <div id="coverPickerCurrent" style="margin-bottom:10px; display:flex; align-items:center; gap:12px">
-        <div id="coverThumb" style="width:48px; height:48px; border-radius:50%; background:var(--border-soft); display:flex; align-items:center; justify-content:center; color:var(--muted); font-size:18px; flex-shrink:0">∅</div>
-        <span id="coverLabel" style="font-size:13px; color:var(--text-soft)">Nezvolený</span>
-        <button type="button" id="coverClearBtn" style="margin-left:auto; background:transparent; border:none; color:var(--accent); font-size:12.5px; font-weight:600; cursor:pointer; display:none">Vyčistiť</button>
-      </div>
-      <div id="coverPickerGrid" style="display:grid; grid-template-columns:repeat(6, 1fr); gap:6px; max-height:180px; overflow-y:auto; padding:6px; background:var(--bg); border-radius:10px; border:1px solid var(--border)"></div>
-    </div>
-    <div class="field-toggle" style="margin-bottom:16px">
-      <input type="checkbox" id="boardEditPublic" />
-      <div class="info">
-        <div class="info-title">Verejný board</div>
-        <div class="info-sub">Bude prístupný cez zdieľateľný link aj bez prihlásenia</div>
-      </div>
-    </div>
-    <div id="boardShareSection" style="display:none; margin-bottom:16px; padding:12px; background:#f9f5ef; border-radius:12px; border:1px solid var(--border)">
-      <div style="font-size:11px; font-weight:700; color:var(--muted); letter-spacing:0.04em; text-transform:uppercase; margin-bottom:8px">Zdieľateľný link</div>
-      <div style="display:flex; gap:6px">
-        <input id="boardShareLink" type="text" readonly style="flex:1; background:#fff; border:1px solid var(--border); border-radius:10px; padding:8px 12px; font-size:12px; font-family:monospace" />
-        <button id="boardShareCopy" type="button" style="background:var(--text); color:#fff; border:none; border-radius:10px; padding:0 14px; font-size:12.5px; font-weight:600; cursor:pointer">Kopírovať</button>
-      </div>
-    </div>
-    <div style="display:flex; gap:8px; margin-top:8px">
-      <button id="boardEditSaveBtn" class="btn-primary" style="flex:1">Uložiť</button>
-      <button id="boardDeleteBtn" style="background:transparent; border:1px solid rgba(189,31,47,0.3); color:var(--accent); border-radius:999px; padding:10px 22px; font-weight:600; font-size:13.5px">Zmazať</button>
-    </div>
-    <div style="font-size:11.5px; color:var(--muted); margin-top:12px; line-height:1.5">
-      Pri zmazaní boardu sa piny <strong>nezmažú</strong> — len stratia priradenie.
-    </div>
+  <div class="modal-box"><button class="modal-close" data-close="boardEditModal">×</button><h2>Upraviť board</h2><div class="subtitle">Premenuj, nastav verejnosť alebo zmaž</div>
+    <div class="field"><label>Názov</label><input id="boardEditName" type="text" /></div><div class="field"><label>Popis</label><textarea id="boardEditDesc"></textarea></div>
+    <div class="field"><label>Cover obrázok</label><div id="coverPickerCurrent" style="margin-bottom:10px;display:flex;align-items:center;gap:12px"><div id="coverThumb" style="width:48px;height:48px;border-radius:50%;background:var(--border-soft);display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:18px;flex-shrink:0">∅</div><span id="coverLabel" style="font-size:13px;color:var(--text-soft)">Nezvolený</span><button type="button" id="coverClearBtn" style="margin-left:auto;background:transparent;border:none;color:var(--accent);font-size:12.5px;font-weight:600;cursor:pointer;display:none">Vyčistiť</button></div><div id="coverPickerGrid" style="display:grid;grid-template-columns:repeat(6,1fr);gap:6px;max-height:180px;overflow-y:auto;padding:6px;background:var(--bg);border-radius:10px;border:1px solid var(--border)"></div></div>
+    <div class="field-toggle" style="margin-bottom:16px"><input type="checkbox" id="boardEditPublic" /><div class="info"><div class="info-title">Verejný board</div><div class="info-sub">Bude prístupný cez zdieľateľný link aj bez prihlásenia</div></div></div>
+    <div id="boardShareSection" style="display:none;margin-bottom:16px;padding:12px;background:#f9f5ef;border-radius:12px;border:1px solid var(--border)"><div style="font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.04em;text-transform:uppercase;margin-bottom:8px">Zdieľateľný link</div><div style="display:flex;gap:6px"><input id="boardShareLink" type="text" readonly style="flex:1;background:#fff;border:1px solid var(--border);border-radius:10px;padding:8px 12px;font-size:12px;font-family:monospace" /><button id="boardShareCopy" type="button" style="background:var(--text);color:#fff;border:none;border-radius:10px;padding:0 14px;font-size:12.5px;font-weight:600;cursor:pointer">Kopírovať</button></div></div>
+    <div style="display:flex;gap:8px;margin-top:8px"><button id="boardEditSaveBtn" class="btn-primary" style="flex:1">Uložiť</button><button id="boardDeleteBtn" style="background:transparent;border:1px solid rgba(189,31,47,0.3);color:var(--accent);border-radius:999px;padding:10px 22px;font-weight:600;font-size:13.5px">Zmazať</button></div>
+    <div style="font-size:11.5px;color:var(--muted);margin-top:12px;line-height:1.5">Pri zmazaní boardu sa piny <strong>nezmažú</strong> — len stratia priradenie.</div>
   </div>
 </div>
 
@@ -697,10 +598,7 @@
         <div class="pin-detail-tags" id="pinDetailTags"></div>
         <div class="pin-detail-colors" id="pinDetailColors"></div>
         <div class="pin-detail-actions">
-          <button id="pinDownloadBtn">↓ Stiahnuť</button>
-          <a id="pinShareBtn" href="#" style="display:none">⎘ Skopírovať link</a>
-          <button id="pinEditBtn" style="display:none">Upraviť</button>
-          <button id="pinDeleteBtn" class="danger" style="display:none">Zmazať</button>
+          <button id="pinDownloadBtn">↓ Stiahnuť</button><a id="pinShareBtn" href="#" style="display:none">⎘ Skopírovať link</a><button id="pinEditBtn" style="display:none">Upraviť</button><button id="pinDeleteBtn" class="danger" style="display:none">Zmazať</button>
         </div>
         <div class="pin-detail-related" id="pinDetailRelated" style="display:none">
           <h3>Z toho istého boardu</h3>
@@ -713,76 +611,38 @@
 
 <!-- Edit pin modal -->
 <div class="modal" id="editModal">
-  <div class="modal-box">
-    <button class="modal-close" data-close="editModal">×</button>
-    <h2>Upraviť pin</h2>
-    <div class="subtitle">Zmeniť detaily pinu</div>
-    <div class="field"><label>Titulok</label><input id="editTitle" type="text" /></div>
-    <div class="field"><label>Popis</label><textarea id="editDesc"></textarea></div>
-    <div class="field"><label>Board</label><select id="editBoard"></select></div>
-    <div class="field"><label>Tagy (oddelené čiarkami)</label><input id="editTags" type="text" /></div>
-    <div class="field"><label>Source URL</label><input id="editSource" type="url" /></div>
-    <div class="field"><label>🔒 Moje poznámky (súkromné)</label><textarea id="editNotes"></textarea></div>
-    <button id="editSaveBtn" class="btn-primary" style="width:100%">Uložiť</button>
+  <div class="modal-box"><button class="modal-close" data-close="editModal">×</button><h2>Upraviť pin</h2><div class="subtitle">Zmeniť detaily pinu</div>
+    <div class="field"><label>Titulok</label><input id="editTitle" type="text" /></div><div class="field"><label>Popis</label><textarea id="editDesc"></textarea></div><div class="field"><label>Board</label><select id="editBoard"></select></div><div class="field"><label>Tagy (oddelené čiarkami)</label><input id="editTags" type="text" /></div><div class="field"><label>Source URL</label><input id="editSource" type="url" /></div><div class="field"><label>🔒 Moje poznámky (súkromné)</label><textarea id="editNotes"></textarea></div><button id="editSaveBtn" class="btn-primary" style="width:100%">Uložiť</button>
   </div>
 </div>
 
 <!-- Move to board modal -->
 <div class="modal" id="moveModal">
-  <div class="modal-box">
-    <button class="modal-close" data-close="moveModal">×</button>
-    <h2>Presunúť do boardu</h2>
-    <div class="subtitle"><span id="moveCount">0</span> pinov sa presunie</div>
-    <div class="field"><label>Cieľový board</label><select id="moveBoard"></select></div>
-    <button id="moveConfirmBtn" class="btn-primary" style="width:100%">Presunúť</button>
+  <div class="modal-box"><button class="modal-close" data-close="moveModal">×</button><h2>Presunúť do boardu</h2><div class="subtitle"><span id="moveCount">0</span> pinov sa presunie</div>
+    <div class="field"><label>Cieľový board</label><select id="moveBoard"></select></div><button id="moveConfirmBtn" class="btn-primary" style="width:100%">Presunúť</button>
   </div>
 </div>
 
 <!-- Login modal -->
 <div class="modal" id="loginModal">
-  <div class="modal-box" style="max-width:380px">
-    <button class="modal-close" data-close="loginModal">×</button>
-    <h2>Prihlásenie</h2>
-    <div class="subtitle">Pre management pinov a boardov</div>
-    <div class="field"><label>Email</label><input id="loginEmail" type="email" /></div>
-    <div class="field"><label>Heslo</label><input id="loginPassword" type="password" /></div>
-    <button id="loginBtn" class="btn-primary" style="width:100%">Prihlásiť sa</button>
-    <div id="loginError" style="color:var(--accent); font-size:12.5px; margin-top:10px; min-height:18px"></div>
+  <div class="modal-box" style="max-width:380px"><button class="modal-close" data-close="loginModal">×</button><h2>Prihlásenie</h2><div class="subtitle">Pre management pinov a boardov</div>
+    <div class="field"><label>Email</label><input id="loginEmail" type="email" /></div><div class="field"><label>Heslo</label><input id="loginPassword" type="password" /></div><button id="loginBtn" class="btn-primary" style="width:100%">Prihlásiť sa</button><div id="loginError" style="color:var(--accent);font-size:12.5px;margin-top:10px;min-height:18px"></div>
   </div>
 </div>
 
 <!-- Bookmarklet modal -->
 <div class="modal" id="bookmarkletModal">
-  <div class="modal-box" style="max-width:520px">
-    <button class="modal-close" data-close="bookmarkletModal">×</button>
-    <h2>Save to Inspireboard</h2>
-    <div class="subtitle">Pridaj si tlačidlo do prehliadača pre rýchle ukladanie obrázkov z akejkoľvek stránky.</div>
+  <div class="modal-box" style="max-width:520px"><button class="modal-close" data-close="bookmarkletModal">×</button><h2>Save to Inspireboard</h2><div class="subtitle">Pridaj si tlačidlo do prehliadača pre rýchle ukladanie obrázkov z akejkoľvek stránky.</div>
 
-    <div style="background:var(--bg); border:1px solid var(--border); border-radius:12px; padding:20px; margin-bottom:16px; text-align:center">
-      <a id="bookmarkletLink" href="#" style="display:inline-block; background:var(--accent); color:#fff; text-decoration:none; padding:10px 22px; border-radius:999px; font-weight:700; font-size:14px; cursor:grab">
-        ★ Save to Inspireboard
-      </a>
-      <div style="font-size:11.5px; color:var(--muted); margin-top:12px">↑ Pretiahni do bookmark baru</div>
-    </div>
+    <div style="background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:16px;text-align:center"><a id="bookmarkletLink" href="#" style="display:inline-block;background:var(--accent);color:#fff;text-decoration:none;padding:10px 22px;border-radius:999px;font-weight:700;font-size:14px;cursor:grab">★ Save to Inspireboard</a><div style="font-size:11.5px;color:var(--muted);margin-top:12px">↑ Pretiahni do bookmark baru</div></div>
 
-    <div style="font-size:13px; color:var(--text-soft); line-height:1.6">
-      <strong>Ako to funguje:</strong>
-      <ol style="padding-left:20px; margin-top:8px">
-        <li>Pretiahni červené tlačidlo do bookmark baru tvojho prehliadača</li>
-        <li>Na hocijakej stránke s obrázkami klikni na bookmark</li>
-        <li>Zobrazí sa picker — vyber obrázky ktoré chceš uložiť</li>
-        <li>Otvorí sa Inspireboard s pripravenými URL pinmi</li>
-      </ol>
-    </div>
+    <div style="font-size:13px;color:var(--text-soft);line-height:1.6"><strong>Ako to funguje:</strong><ol style="padding-left:20px;margin-top:8px"><li>Pretiahni červené tlačidlo do bookmark baru tvojho prehliadača</li><li>Na hocijakej stránke s obrázkami klikni na bookmark</li><li>Zobrazí sa picker — vyber obrázky ktoré chceš uložiť</li><li>Otvorí sa Inspireboard s pripravenými URL pinmi</li></ol></div>
 
-    <details style="margin-top:14px; font-size:12px; color:var(--muted)">
-      <summary style="cursor:pointer; font-weight:600">Ak drag nefunguje (alternatíva)</summary>
-      <p style="margin-top:8px">Skopíruj kód nižšie. Vytvor novú záložku v prehliadači a vlož kód do URL:</p>
-      <textarea id="bookmarkletCode" readonly style="width:100%; min-height:80px; font-family:monospace; font-size:11px; background:#fff; border:1px solid var(--border); border-radius:8px; padding:8px; resize:vertical; margin-top:6px"></textarea>
-    </details>
+    <details style="margin-top:14px;font-size:12px;color:var(--muted)"><summary style="cursor:pointer;font-weight:600">Ak drag nefunguje (alternatíva)</summary><p style="margin-top:8px">Skopíruj kód nižšie. Vytvor novú záložku v prehliadači a vlož kód do URL:</p><textarea id="bookmarkletCode" readonly style="width:100%;min-height:80px;font-family:monospace;font-size:11px;background:#fff;border:1px solid var(--border);border-radius:8px;padding:8px;resize:vertical;margin-top:6px"></textarea></details>
   </div>
 </div>
 
+<div id="ctrlHint" class="pin-ctrl-hint">Ctrl+klik = vybrať pin</div>
 <script>window.addEventListener('fb-ready', () => {
   const { initializeApp, getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged,
     getFirestore, collection, getDocs, getDoc, addDoc, deleteDoc, doc, updateDoc, setDoc, query, orderBy,
@@ -814,6 +674,29 @@
   if (urlBoard) currentBoardId = urlBoard;
   const $ = id => document.getElementById(id);
   const grid = $('grid');
+  function getBoardSize(boardId) {
+    return localStorage.getItem('ib-grid-' + boardId) || 'L';
+  }
+  function setBoardSize(boardId, sz) {
+    localStorage.setItem('ib-grid-' + boardId, sz);
+    applyGridSize(sz);
+  }
+  function applyGridSize(sz) {
+    grid.dataset.size = sz;
+    $('gridSizer').querySelectorAll('button').forEach(b => b.classList.toggle('active', b.dataset.sz === sz));
+  }
+  $('gridSizer').addEventListener('click', e => {
+    const btn = e.target.closest('[data-sz]');
+    if (!btn) return;
+    setBoardSize(currentBoardId, btn.dataset.sz);
+  });
+  let ctrlHintTimer = null;
+  function showCtrlHint() {
+    const h = $('ctrlHint');
+    h.classList.add('show');
+    clearTimeout(ctrlHintTimer);
+    ctrlHintTimer = setTimeout(() => h.classList.remove('show'), 2000);
+  }
   function formatBytes(b) {
     if (b < 1024*1024) return (b/1024).toFixed(1)+' KB';
     if (b < 1024*1024*1024) return (b/1024/1024).toFixed(1)+' MB';
@@ -956,8 +839,8 @@
     const isPWA = window.matchMedia('(display-mode: standalone)').matches;
     $('storagePanel').style.display = (isAdmin && !selectMode && !isPWA) ? 'flex' : 'none';
     if (selectMode) exitSelectMode();
-    renderBoards(); renderFilterBar(); renderPins();
-    if (isAdmin) {
+    renderBoards();renderFilterBar();renderPins();applyGridSize(getBoardSize(currentBoardId));
+    if(isAdmin){
       updateStorageUI();
       handleUploadParam();
     }
@@ -1035,7 +918,7 @@
       }
       currentBoardId = b.id;
       visibleCount = PAGE;
-      const url = new URL(location);
+      applyGridSize(getBoardSize(b.id));const url=new URL(location);
       if (b.id === 'all') url.searchParams.delete('board');
       else url.searchParams.set('board', b.id);
       history.replaceState({}, '', url);
@@ -1258,6 +1141,7 @@
     card.addEventListener('click', e => {
       const btn = e.target.closest('[data-act]');
       const act = btn ? btn.dataset.act : null;
+      if(e.ctrlKey||e.metaKey){e.preventDefault();if(!selectMode)enterSelectMode();toggleSelected(p.id);showCtrlHint();return;}
       if (selectMode) {
         toggleSelected(p.id);
         return;

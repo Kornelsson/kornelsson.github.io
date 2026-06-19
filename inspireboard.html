@@ -115,7 +115,7 @@
     object-fit:cover; display:block;
   }
   .board-chip:hover { border-color:var(--text); }
-  .board-chip.active { background:var(--card); color:var(--accent); border:2px solid var(--accent); font-weight:700; }
+  .board-chip.active { background:var(--card); color:var(--accent); border-color:var(--accent); box-shadow:inset 0 0 0 1px var(--accent); font-weight:700; }
   .board-chip.drop-target { border-color:var(--accent); border-style:dashed; background:rgba(189,31,47,0.05); }
   .board-chip .count {
     background:rgba(0,0,0,0.06); color:inherit; border-radius:999px;
@@ -1379,7 +1379,7 @@
   $('pinDownloadBtn').addEventListener('click', async () => {
     if (!currentPin) return;
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-    if (isIOS) {
+    if (!currentPin.storagePath || isIOS) {
       window.open(currentPin.url, '_blank');
       return;
     }

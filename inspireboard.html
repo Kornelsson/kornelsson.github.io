@@ -11,8 +11,7 @@
 <meta name="theme-color" content="#BD1F2F" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+<script type="module">  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
   import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged }
     from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
   import { getFirestore, collection, getDocs, getDoc, addDoc, deleteDoc, doc, updateDoc, setDoc, query, orderBy, where }
@@ -22,8 +21,7 @@
   window.fb = { initializeApp, getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged,
     getFirestore, collection, getDocs, getDoc, addDoc, deleteDoc, doc, updateDoc, setDoc, query, orderBy, where,
     getStorage, ref, uploadBytesResumable, getDownloadURL, deleteObject };
-  window.dispatchEvent(new Event('fb-ready'));
-</script>
+  window.dispatchEvent(new Event('fb-ready'));</script>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   :root {
@@ -49,8 +47,6 @@
     font-size:14px; font-weight:400; min-height:100vh; line-height:1.5;
   }
   button { font-family:inherit; cursor:pointer; }
-
-  /* HEADER */
   header {
     position:sticky; top:0; z-index:100;
     background:var(--bg);
@@ -83,9 +79,25 @@
     padding:10px 18px; font-size:13.5px; font-weight:600; transition:background 0.2s;
   }
   .btn-ghost:hover { background:rgba(0,0,0,0.05); }
+  .theme-toggle {
+    position:relative; width:54px; height:28px;
+    background:var(--border-soft); border:1px solid var(--border);
+    border-radius:999px; padding:0 7px;
+    display:inline-flex; align-items:center; justify-content:space-between;
+    cursor:pointer; transition:background 0.25s;
+  }
+  .theme-toggle-icon { font-size:11px; line-height:1; opacity:0.75; z-index:1; }
+  .theme-toggle-thumb {
+    position:absolute; top:2px; left:2px;
+    width:22px; height:22px;
+    background:var(--card);
+    border-radius:50%;
+    box-shadow:0 1px 4px rgba(0,0,0,0.18);
+    transition:transform 0.25s ease;
+  }
+  body[data-theme="dark"] .theme-toggle { background:#1F1C17; }
+  body[data-theme="dark"] .theme-toggle-thumb { transform:translateX(26px); background:#2D2820; }
   #userBadge { font-size:12.5px; color:var(--muted); padding:0 6px; }
-
-  /* BOARDS NAV */
   #boardsNav {
     background:var(--bg); border-bottom:1px solid var(--border-soft);
     padding:14px 24px; overflow-x:auto; white-space:nowrap; scrollbar-width:none;
@@ -121,8 +133,6 @@
   .board-edit-btn:hover { opacity:1; background:rgba(255,255,255,0.15); }
   .board-chip:not(.active) .board-edit-btn:hover { background:rgba(0,0,0,0.08); }
   .board-public-icon { opacity:0.6; font-size:10px; margin-left:2px; }
-
-  /* FILTER BAR */
   #filterBar {
     background:var(--bg); padding:0 24px 14px; display:none;
     border-bottom:1px solid var(--border-soft);
@@ -152,12 +162,9 @@
     cursor:pointer; opacity:0.8;
   }
   #clearFilters:hover { opacity:1; text-decoration:underline; }
-
-  /* MAIN */
   main { padding:24px; padding-bottom:120px; }
   #grid { columns:auto; column-width:240px; column-gap:16px; }
   @media (max-width:720px) { #grid { column-width:160px; column-gap:12px; } main { padding:16px; } }
-
   .pin {
     break-inside:avoid; margin-bottom:16px;
     background:var(--card); border-radius:var(--radius); overflow:hidden;
@@ -181,10 +188,8 @@
     box-shadow:0 4px 16px rgba(0,0,0,0.3);
     pointer-events:none;
   }
-
   .pin-img-wrap { position:relative; overflow:hidden; background:var(--border-soft); }
   .pin-img { width:100%; display:block; transform:translateZ(0); }
-
   .pin-overlay {
     position:absolute; inset:0;
     background:linear-gradient(to bottom, transparent 0%, transparent 70%, rgba(0,0,0,0.18) 100%);
@@ -194,7 +199,6 @@
   .pin:hover .pin-overlay { opacity:1; }
   .pin-overlay-top, .pin-overlay-bottom { display:flex; gap:6px; }
   .pin-overlay-top { justify-content:space-between; }
-
   .icon-btn {
     background:rgba(255,255,255,0.95); backdrop-filter:blur(8px);
     color:var(--text); border:none; border-radius:999px;
@@ -209,7 +213,6 @@
     background:rgba(255,255,255,0.95); width:30px; height:30px; font-size:14px;
   }
   .icon-btn.checkbox.checked { background:var(--accent); color:#fff; }
-
   .save-btn {
     background:var(--accent); color:#fff; border:none; border-radius:999px;
     padding:9px 16px; font-size:13px; font-weight:700;
@@ -217,7 +220,6 @@
     box-shadow:0 2px 6px rgba(0,0,0,0.2);
   }
   .save-btn:hover { background:var(--accent-hi); transform:scale(1.04); }
-
   .pin-meta { padding:10px 14px 14px; }
   .pin-title {
     font-size:13.5px; font-weight:600; color:var(--text);
@@ -226,7 +228,6 @@
   }
   .pin-board-chip { display:inline-block; font-size:11.5px; color:var(--muted); font-weight:500; }
   .pin-board-chip::before { content:'◷ '; opacity:0.6; }
-
   .pin-colors-strip {
     display:flex; gap:3px; padding:0 14px 12px;
   }
@@ -234,25 +235,17 @@
     width:14px; height:14px; border-radius:50%;
     box-shadow:0 0 0 1px rgba(0,0,0,0.05);
   }
-
-  /* SELECT MODE */
   body.select-mode .pin { cursor:pointer; }
   body.select-mode .pin-overlay { opacity:1 !important; background:none; }
   body.select-mode .pin-overlay-bottom { display:none; }
-
-  /* EMPTY */
   #emptyState { text-align:center; padding:120px 20px; color:var(--muted); }
   #emptyState .big { font-size:64px; color:var(--border); line-height:1; margin-bottom:16px; }
   #emptyState h2 { font-weight:600; color:var(--text-soft); margin-bottom:8px; font-size:18px; }
-
-  /* INFINITE SCROLL SENTINEL */
   #scrollSentinel { height:80px; }
   #loadingMore {
     text-align:center; padding:20px; color:var(--muted);
     font-size:12px; letter-spacing:0.06em;
   }
-
-  /* SELECT BAR (bottom) */
   #selectBar {
     display:none;
     position:fixed; bottom:16px; left:50%;
@@ -275,8 +268,6 @@
   #selectBar button.danger:hover { background:var(--accent); }
   #selectBar button.exit { background:#fff; color:var(--text); }
   #selectBar button.exit:hover { background:#f0f0f0; }
-
-  /* STORAGE PANEL */
   #storagePanel {
     display:none; position:fixed; bottom:16px; left:50%;
     transform:translateX(-50%); background:var(--card);
@@ -300,8 +291,6 @@
   }
   #recompressBtn:hover, #storageConsoleLink:hover { border-color:var(--text); color:var(--text); }
   #recompressBtn:disabled { opacity:0.5; cursor:not-allowed; }
-
-  /* MODAL */
   .modal {
     position:fixed; inset:0; background:rgba(26,26,26,0.55);
     backdrop-filter:blur(4px); z-index:200; display:none;
@@ -332,7 +321,6 @@
     box-shadow:0 2px 8px rgba(0,0,0,0.1);
   }
   .modal-close:hover { background:#fff; transform:scale(1.08); }
-
   .field { margin-bottom:16px; }
   .field label {
     display:block; font-size:12px; font-weight:600;
@@ -357,8 +345,6 @@
   .field-toggle .info { flex:1; }
   .field-toggle .info-title { font-weight:600; font-size:13.5px; }
   .field-toggle .info-sub { font-size:12px; color:var(--muted); }
-
-  /* Upload */
   #dropZone {
     border:2px dashed var(--border); border-radius:16px;
     padding:36px 20px; text-align:center; color:var(--muted);
@@ -376,7 +362,6 @@
     cursor:pointer; transition:all 0.2s; white-space:nowrap;
   }
   #urlAddBtn:hover { border-color:var(--text); }
-
   #uploadPreview {
     display:grid; grid-template-columns:repeat(auto-fill, minmax(64px, 1fr));
     gap:8px; margin-bottom:16px;
@@ -398,12 +383,9 @@
   }
   .preview-item:hover .remove-btn { opacity:1; }
   #uploadPreview:empty { display:none; }
-
   #uploadStatus { font-size:12.5px; color:var(--muted); margin-bottom:12px; min-height:18px; }
   #uploadProgress { height:4px; background:var(--border); border-radius:2px; margin-bottom:16px; overflow:hidden; display:none; }
   #uploadProgress > div { height:100%; background:var(--accent); width:0%; transition:width 0.3s; }
-
-  /* PIN DETAIL */
   .pin-detail {
     display:grid; grid-template-columns:1fr 1fr;
     min-height:600px; max-height:92vh; position:relative;
@@ -429,7 +411,6 @@
   .pin-detail-nav:hover { transform:translateY(-50%) scale(1.1); box-shadow:0 6px 18px rgba(0,0,0,0.25); }
   #detailPrev { left:20px; }
   #detailNext { right:20px; }
-
   .pin-detail-info {
     padding:40px 36px 32px; display:flex; flex-direction:column;
     max-height:92vh; overflow-y:auto;
@@ -475,7 +456,6 @@
     cursor:pointer; transition:transform 0.15s;
   }
   .pin-detail-color:hover { transform:scale(1.18); }
-
   .pin-detail-notes {
     background:#fff9eb; border:1px solid #f5e7c4;
     border-radius:12px; padding:14px 16px; margin-bottom:18px;
@@ -488,7 +468,6 @@
     font-size:13.5px; color:var(--text-soft);
     white-space:pre-wrap; line-height:1.5;
   }
-
   .pin-detail-actions {
     margin-top:auto; padding-top:24px; display:flex; gap:8px; flex-wrap:wrap;
   }
@@ -504,7 +483,6 @@
     background:var(--text); color:#fff; border-color:var(--text);
   }
   .pin-detail-actions .primary:hover { background:#000; }
-
   .pin-detail-related {
     border-top:1px solid var(--border-soft);
     padding:24px 0 0;
@@ -525,7 +503,6 @@
   }
   .related-pin:hover { transform:scale(1.04); }
   .related-pin img { width:100%; height:100%; object-fit:cover; display:block; }
-
   @media (max-width:900px) {
     .modal-box.wide { width:96vw; max-height:94vh; }
     .pin-detail { grid-template-columns:1fr; max-height:none; }
@@ -546,7 +523,11 @@
   <div class="search"><input id="searchInput" type="text" placeholder="Hľadať vo všetkých pinoch..." /></div>
   <div class="header-actions">
     <span id="userBadge"></span>
-    <button id="darkToggle" title="Prepnúť tému" style="background:transparent; border:1px solid var(--border); border-radius:999px; padding:6px 12px; font-size:16px; cursor:pointer; line-height:1; transition:background 0.2s">☀️</button>
+    <button id="darkToggle" class="theme-toggle" title="Prepnúť tému" aria-label="Prepnúť tému">
+      <span class="theme-toggle-icon">☀️</span>
+      <span class="theme-toggle-icon">🌙</span>
+      <span class="theme-toggle-thumb"></span>
+    </button>
     <button id="bookmarkletBtn" class="btn-ghost" style="display:none" title="Save z webu">★</button>
     <button id="selectModeBtn" class="btn-ghost" style="display:none">Vybrať</button>
     <button id="uploadOpen" class="btn-primary" style="display:none">+ Pin</button>
@@ -802,12 +783,10 @@
   </div>
 </div>
 
-<script>
-window.addEventListener('fb-ready', () => {
+<script>window.addEventListener('fb-ready', () => {
   const { initializeApp, getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged,
     getFirestore, collection, getDocs, getDoc, addDoc, deleteDoc, doc, updateDoc, setDoc, query, orderBy,
     getStorage, ref, uploadBytesResumable, getDownloadURL, deleteObject } = window.fb;
-
   const firebaseConfig = {
     apiKey:"AIzaSyDzwgVupB_pDsoHZiG8JvQLx5QZy-BXdNY",
     authDomain:"kornelsson-bea69.firebaseapp.com",
@@ -820,8 +799,6 @@ window.addEventListener('fb-ready', () => {
   const auth = getAuth(app);
   const db = getFirestore(app);
   const storage = getStorage(app);
-
-  // ─── STATE ───
   let pins = [], boards = [];
   let currentBoardId = 'all', searchTerm = '';
   let activeTags = new Set(), activeColor = null;
@@ -832,22 +809,16 @@ window.addEventListener('fb-ready', () => {
   const selectedPinIds = new Set();
   let visibleCount = 30;
   const PAGE = 30;
-
-  // URL routing — supports ?board=<id>
   const urlParams = new URLSearchParams(location.search);
   const urlBoard = urlParams.get('board');
   if (urlBoard) currentBoardId = urlBoard;
-
   const $ = id => document.getElementById(id);
   const grid = $('grid');
-
-  // ─── HELPERS ───
   function formatBytes(b) {
     if (b < 1024*1024) return (b/1024).toFixed(1)+' KB';
     if (b < 1024*1024*1024) return (b/1024/1024).toFixed(1)+' MB';
     return (b/1024/1024/1024).toFixed(2)+' GB';
   }
-
   function compressImage(file, maxW=1920, quality=0.82) {
     return new Promise(resolve => {
       const img = new Image();
@@ -864,8 +835,6 @@ window.addEventListener('fb-ready', () => {
       img.src = url;
     });
   }
-
-  // Color extraction: sample pixels, quantize, find dominant
   function extractColors(file, count=5) {
     return new Promise(resolve => {
       const img = new Image();
@@ -897,8 +866,6 @@ window.addEventListener('fb-ready', () => {
       img.src = url;
     });
   }
-
-  // Color matching with tolerance
   function colorMatches(pinColors, target, tol=60) {
     if (!pinColors || !pinColors.length) return false;
     const [tr, tg, tb] = hexToRgb(target);
@@ -911,8 +878,6 @@ window.addEventListener('fb-ready', () => {
     h = h.replace('#','');
     return [parseInt(h.slice(0,2),16), parseInt(h.slice(2,4),16), parseInt(h.slice(4,6),16)];
   }
-
-  // ─── PERCEPTUAL HASH (dhash) PRE DUPLICATE DETECTION ───
   function computeFingerprint(file) {
     return new Promise((resolve) => {
       const img = new Image();
@@ -925,7 +890,6 @@ window.addEventListener('fb-ready', () => {
       img.src = url;
     });
   }
-
   function computeFingerprintFromUrl(url) {
     return new Promise((resolve) => {
       const img = new Image();
@@ -935,7 +899,6 @@ window.addEventListener('fb-ready', () => {
       img.src = url;
     });
   }
-
   function hashFromImage(img) {
     const canvas = document.createElement('canvas');
     canvas.width = 9; canvas.height = 8;
@@ -956,43 +919,33 @@ window.addEventListener('fb-ready', () => {
     }
     return hash;
   }
-
   function hammingDistance(a, b) {
     if (!a || !b || a.length !== b.length) return Infinity;
     let d = 0;
     for (let i = 0; i < a.length; i++) if (a[i] !== b[i]) d++;
     return d;
   }
-
   async function findDuplicate(fingerprint) {
     if (!fingerprint) return null;
-    // Najprv skús piny ktoré už majú uložený fingerprint
     const stored = pins.find(p => p.fingerprint && hammingDistance(p.fingerprint, fingerprint) < 8);
     if (stored) return stored;
-    // Pre piny bez fingerprintu vypočítaj z URL (Firebase Storage povolí, externé môžu byť CORS blocked)
     for (const p of pins) {
       if (p.fingerprint) continue;
       const pf = await computeFingerprintFromUrl(p.url).catch(() => null);
       if (pf && hammingDistance(pf, fingerprint) < 8) {
-        // Ulož fingerprint pre budúce použitie
         updateDoc(doc(db, 'pins', p.id), { fingerprint: pf }).catch(() => {});
         return p;
       }
     }
     return null;
   }
-
   function escapeHtml(s) {
     return String(s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   }
-
-  // ─── MODALS ───
   function openModal(id) { $(id).classList.add('open'); }
   function closeModal(id) { $(id).classList.remove('open'); }
   document.querySelectorAll('[data-close]').forEach(b => b.addEventListener('click', () => closeModal(b.dataset.close)));
   document.querySelectorAll('.modal').forEach(m => m.addEventListener('click', e => { if (e.target === m) closeModal(m.id); }));
-
-  // ─── AUTH ───
   onAuthStateChanged(auth, (user) => {
     isAdmin = !!user;
     $('authBtn').textContent = isAdmin ? 'Odhlásiť' : 'Prihlásiť';
@@ -1009,7 +962,6 @@ window.addEventListener('fb-ready', () => {
       handleUploadParam();
     }
   });
-
   $('authBtn').addEventListener('click', () => {
     if (isAdmin) signOut(auth);
     else openModal('loginModal');
@@ -1023,8 +975,6 @@ window.addEventListener('fb-ready', () => {
     } catch { $('loginError').textContent = 'Nesprávny email alebo heslo.'; }
   });
   $('loginPassword').addEventListener('keydown', e => { if (e.key === 'Enter') $('loginBtn').click(); });
-
-  // ─── LOAD ───
   async function loadAll() {
     const [pinsSnap, boardsSnap] = await Promise.all([
       getDocs(query(collection(db, 'pins'), orderBy('createdAt', 'desc'))).catch(()=>null),
@@ -1032,20 +982,15 @@ window.addEventListener('fb-ready', () => {
     ]);
     pins = pinsSnap ? pinsSnap.docs.map(d => ({ id: d.id, ...d.data() })) : [];
     boards = boardsSnap ? boardsSnap.docs.map(d => ({ id: d.id, ...d.data() })) : [];
-
-    // If not admin and board filter is set, ensure it's visible (public)
     if (!isAdmin && currentBoardId !== 'all') {
       const b = boards.find(x => x.id === currentBoardId);
       if (b && !b.isPublic) currentBoardId = 'all';
     }
     renderBoards(); renderFilterBar(); renderPins();
   }
-
-  // ─── BOARDS ───
   function visibleBoards() {
     return isAdmin ? boards : boards.filter(b => b.isPublic);
   }
-
   function renderBoards() {
     const nav = $('boardsNav');
     nav.innerHTML = '';
@@ -1054,18 +999,15 @@ window.addEventListener('fb-ready', () => {
       const b = boards.find(x => x.id === p.boardId);
       return b && b.isPublic;
     }).length;
-
     const allChip = makeBoardChip({ id:'all', name:'Všetky' }, totalAllowed);
     if (currentBoardId === 'all') allChip.classList.add('active');
     nav.appendChild(allChip);
-
     list.forEach(b => {
       const count = pins.filter(p => p.boardId === b.id).length;
       const chip = makeBoardChip(b, count);
       if (currentBoardId === b.id) chip.classList.add('active');
       nav.appendChild(chip);
     });
-
     if (isAdmin) {
       const add = document.createElement('button');
       add.className = 'board-chip add';
@@ -1073,10 +1015,8 @@ window.addEventListener('fb-ready', () => {
       add.addEventListener('click', () => openModal('boardModal'));
       nav.appendChild(add);
     }
-
     populateSelects();
   }
-
   function makeBoardChip(b, count) {
     const chip = document.createElement('button');
     chip.className = 'board-chip';
@@ -1087,7 +1027,6 @@ window.addEventListener('fb-ready', () => {
     const cover = (b.coverUrl && b.id !== 'all') ? `<img class="board-chip-cover" src="${b.coverUrl}" alt="" />` : '';
     if (cover) chip.classList.add('has-cover');
     chip.innerHTML = `${cover}<span>${escapeHtml(b.name)}</span>${publicIcon}<span class="count">${count}</span>${editBtn}`;
-
     chip.addEventListener('click', (e) => {
       if (e.target.closest('[data-edit]')) {
         e.stopPropagation();
@@ -1096,15 +1035,12 @@ window.addEventListener('fb-ready', () => {
       }
       currentBoardId = b.id;
       visibleCount = PAGE;
-      // Update URL without reload
       const url = new URL(location);
       if (b.id === 'all') url.searchParams.delete('board');
       else url.searchParams.set('board', b.id);
       history.replaceState({}, '', url);
       renderBoards(); renderPins();
     });
-
-    // Drop target for drag-drop
     if (isAdmin && b.id !== 'all') {
       chip.addEventListener('dragover', e => { e.preventDefault(); chip.classList.add('drop-target'); });
       chip.addEventListener('dragleave', () => chip.classList.remove('drop-target'));
@@ -1119,7 +1055,6 @@ window.addEventListener('fb-ready', () => {
     }
     return chip;
   }
-
   function populateSelects() {
     ['uploadBoard', 'editBoard', 'moveBoard'].forEach(id => {
       const sel = $(id);
@@ -1134,17 +1069,12 @@ window.addEventListener('fb-ready', () => {
       if (cur) sel.value = cur;
     });
   }
-
-  // ─── FILTER BAR ───
   function renderFilterBar() {
     const bar = $('filterBar');
     bar.innerHTML = '';
-
-    // Tags (collect unique from currently filtered pins, excluding tag filter)
     const visiblePinsForTags = applyFilters(pins, { ignoreTags: true, ignoreColor: true });
     const allTags = new Set();
     visiblePinsForTags.forEach(p => (p.tags || []).forEach(t => allTags.add(t)));
-
     if (allTags.size > 0) {
       const lbl = document.createElement('span');
       lbl.className = 'filter-label';
@@ -1163,8 +1093,6 @@ window.addEventListener('fb-ready', () => {
         bar.appendChild(chip);
       });
     }
-
-    // Colors
     const visiblePinsForColors = applyFilters(pins, { ignoreColor: true });
     const colorMap = {};
     visiblePinsForColors.forEach(p => (p.colors || []).forEach(c => {
@@ -1172,7 +1100,6 @@ window.addEventListener('fb-ready', () => {
       if (!colorMap[key]) colorMap[key] = c;
     }));
     const colorList = Object.values(colorMap).slice(0, 12);
-
     if (colorList.length > 0) {
       const lbl = document.createElement('span');
       lbl.className = 'filter-label';
@@ -1192,7 +1119,6 @@ window.addEventListener('fb-ready', () => {
         bar.appendChild(dot);
       });
     }
-
     if (activeTags.size > 0 || activeColor) {
       const clear = document.createElement('button');
       clear.id = 'clearFilters';
@@ -1205,16 +1131,12 @@ window.addEventListener('fb-ready', () => {
       });
       bar.appendChild(clear);
     }
-
     bar.classList.toggle('has-content', allTags.size > 0 || colorList.length > 0);
   }
-
   function quantizeColor(hex) {
     const [r, g, b] = hexToRgb(hex);
     return `${Math.round(r/40)*40}-${Math.round(g/40)*40}-${Math.round(b/40)*40}`;
   }
-
-  // ─── FILTER ───
   function applyFilters(arr, opts = {}) {
     let f = arr;
     if (!isAdmin) {
@@ -1241,8 +1163,6 @@ window.addEventListener('fb-ready', () => {
     if (!opts.ignoreColor && activeColor) {
       f = f.filter(p => colorMatches(p.colors, activeColor));
     }
-
-    // Custom poradie len v konkrétnom boarde
     if (currentBoardId !== 'all') {
       f = [...f].sort((a, b) => {
         const ao = (a.order !== undefined && a.order !== null) ? a.order : -a.createdAt;
@@ -1252,23 +1172,17 @@ window.addEventListener('fb-ready', () => {
     }
     return f;
   }
-
-  // ─── RENDER PINS ───
   function renderPins() {
     grid.innerHTML = '';
     const filtered = applyFilters(pins);
-
     if (filtered.length === 0) {
       $('emptyState').style.display = 'block';
       $('loadingMore').style.display = 'none';
       return;
     }
     $('emptyState').style.display = 'none';
-
     const slice = filtered.slice(0, visibleCount);
     slice.forEach(p => grid.appendChild(makePinCard(p)));
-
-    // Loading indicator
     if (filtered.length > visibleCount) {
       $('loadingMore').style.display = 'block';
       $('loadingMore').textContent = `Načítavam... (${slice.length} / ${filtered.length})`;
@@ -1276,19 +1190,16 @@ window.addEventListener('fb-ready', () => {
       $('loadingMore').style.display = 'none';
     }
   }
-
   function makePinCard(p) {
     const card = document.createElement('div');
     card.className = 'pin';
     card.dataset.id = p.id;
     if (selectedPinIds.has(p.id)) card.classList.add('selected');
-
     const board = boards.find(b => b.id === p.boardId);
     const isChecked = selectedPinIds.has(p.id);
     const colorsStrip = (p.colors && p.colors.length)
       ? `<div class="pin-colors-strip">${p.colors.slice(0,5).map(c => `<div class="pin-color-mini" style="background:${c}"></div>`).join('')}</div>`
       : '';
-
     card.innerHTML = `
       <div class="pin-img-wrap">
         <img class="pin-img" src="${p.url}" loading="lazy" alt="" />
@@ -1311,10 +1222,7 @@ window.addEventListener('fb-ready', () => {
       </div>` : ''}
       ${colorsStrip}
     `;
-
     const imgEl = card.querySelector('img');
-
-    // Drag for admin (only when not in select mode)
     if (isAdmin && !selectMode) {
       card.draggable = true;
       card.addEventListener('dragstart', e => {
@@ -1326,8 +1234,6 @@ window.addEventListener('fb-ready', () => {
         card.classList.remove('dragging');
         document.querySelectorAll('.pin').forEach(el => el.classList.remove('drop-swap'));
       });
-
-      // Swap: drop on another pin in specific board view
       if (currentBoardId !== 'all') {
         card.addEventListener('dragover', e => {
           if (card.classList.contains('dragging')) return;
@@ -1349,8 +1255,6 @@ window.addEventListener('fb-ready', () => {
         });
       }
     }
-
-    // Click handler
     card.addEventListener('click', e => {
       const btn = e.target.closest('[data-act]');
       const act = btn ? btn.dataset.act : null;
@@ -1364,29 +1268,22 @@ window.addEventListener('fb-ready', () => {
         if (confirm('Zmazať tento pin?')) deletePin(p);
         return;
       }
-      // Default → open detail
       const filtered = applyFilters(pins);
       const idx = filtered.findIndex(x => x.id === p.id);
       openPinDetail(p, idx);
     });
-
     return card;
   }
-
-  // ─── PIN DETAIL ───
   function openPinDetail(p, idx=0) {
     currentPin = p;
     currentPinIdx = idx;
     renderDetail(p);
     openModal('pinModal');
   }
-
   function renderDetail(p) {
     $('pinDetailImg').src = p.url;
     $('pinDetailTitle').textContent = p.title || 'Bez titulku';
     $('pinDetailDesc').textContent = p.description || '';
-
-    // Notes (admin only)
     const notesEl = $('pinDetailNotes');
     if (isAdmin && p.notes) {
       notesEl.style.display = 'block';
@@ -1394,11 +1291,8 @@ window.addEventListener('fb-ready', () => {
     } else {
       notesEl.style.display = 'none';
     }
-
     const board = boards.find(b => b.id === p.boardId);
     $('pinDetailBoard').textContent = board ? board.name : 'Bez boardu';
-
-    // Source
     const src = $('pinDetailSource');
     if (p.sourceUrl) {
       src.style.display = 'inline-block';
@@ -1406,8 +1300,6 @@ window.addEventListener('fb-ready', () => {
       try { src.textContent = new URL(p.sourceUrl).hostname; }
       catch { src.textContent = p.sourceUrl; }
     } else src.style.display = 'none';
-
-    // Tags
     const tagsEl = $('pinDetailTags');
     tagsEl.innerHTML = '';
     (p.tags || []).forEach(t => {
@@ -1416,8 +1308,6 @@ window.addEventListener('fb-ready', () => {
       el.textContent = t;
       tagsEl.appendChild(el);
     });
-
-    // Colors
     const colorsEl = $('pinDetailColors');
     colorsEl.innerHTML = '';
     (p.colors || []).forEach(c => {
@@ -1434,8 +1324,6 @@ window.addEventListener('fb-ready', () => {
       });
       colorsEl.appendChild(dot);
     });
-
-    // Share link (only for public boards)
     const shareBtn = $('pinShareBtn');
     if (board && board.isPublic) {
       shareBtn.style.display = 'inline-flex';
@@ -1448,12 +1336,8 @@ window.addEventListener('fb-ready', () => {
         });
       };
     } else shareBtn.style.display = 'none';
-
-    // Admin
     $('pinEditBtn').style.display = isAdmin ? 'inline-flex' : 'none';
     $('pinDeleteBtn').style.display = isAdmin ? 'inline-flex' : 'none';
-
-    // Related pins (from same board, excluding current)
     if (p.boardId) {
       const related = pins.filter(x => x.boardId === p.boardId && x.id !== p.id);
       const sample = related.sort(() => Math.random() - 0.5).slice(0, 6);
@@ -1477,8 +1361,6 @@ window.addEventListener('fb-ready', () => {
       $('pinDetailRelated').style.display = 'none';
     }
   }
-
-  // Detail navigation
   function detailNav(dir) {
     const filtered = applyFilters(pins);
     if (filtered.length === 0) return;
@@ -1494,24 +1376,39 @@ window.addEventListener('fb-ready', () => {
     if (e.key === 'ArrowRight') detailNav(1);
     if (e.key === 'Escape') closeModal('pinModal');
   });
-
-  // Download
   $('pinDownloadBtn').addEventListener('click', async () => {
     if (!currentPin) return;
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+    if (isIOS) {
+      window.open(currentPin.url, '_blank');
+      return;
+    }
     try {
       const r = await fetch(currentPin.url);
+      if (!r.ok) throw new Error('fetch failed: ' + r.status);
       const blob = await r.blob();
+      let ext = 'jpg';
+      if (blob.type.includes('png')) ext = 'png';
+      else if (blob.type.includes('webp')) ext = 'webp';
+      else if (blob.type.includes('gif')) ext = 'gif';
+      else if (blob.type.includes('jpeg') || blob.type.includes('jpg')) ext = 'jpg';
+      else if (!blob.type.startsWith('image/')) throw new Error('not an image: ' + blob.type);
+      const safe = (currentPin.title || 'pin').replace(/[^a-zA-Z0-9_-]+/g, '_').slice(0, 60) || 'pin';
+      const filename = safe + '.' + ext;
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = (currentPin.title || 'pin') + '.jpg';
+      a.download = filename;
+      a.rel = 'noopener';
+      document.body.appendChild(a);
       a.click();
-      URL.revokeObjectURL(url);
-    } catch {
+      document.body.removeChild(a);
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    } catch (err) {
+      console.error('Download zlyhalo:', err);
       window.open(currentPin.url, '_blank');
     }
   });
-
   $('pinEditBtn').addEventListener('click', () => {
     closeModal('pinModal');
     openEdit(currentPin);
@@ -1521,8 +1418,6 @@ window.addEventListener('fb-ready', () => {
     closeModal('pinModal');
     await deletePin(currentPin);
   });
-
-  // ─── EDIT PIN ───
   function openEdit(p) {
     currentPin = p;
     $('editTitle').value = p.title || '';
@@ -1547,7 +1442,6 @@ window.addEventListener('fb-ready', () => {
     closeModal('editModal');
     await loadAll();
   });
-
   async function deletePin(p) {
     await deleteDoc(doc(db, 'pins', p.id));
     if (p.size) await subtractStorage(p.size);
@@ -1555,24 +1449,18 @@ window.addEventListener('fb-ready', () => {
     await loadAll();
     await updateStorageUI();
   }
-
-  // ─── SWAP PINS WITHIN BOARD ───
   async function swapPins(draggedId, targetId) {
     const a = pins.find(p => p.id === draggedId);
     const b = pins.find(p => p.id === targetId);
     if (!a || !b) return;
-
     const aOrder = (a.order !== undefined && a.order !== null) ? a.order : -a.createdAt;
     const bOrder = (b.order !== undefined && b.order !== null) ? b.order : -b.createdAt;
-
     await Promise.all([
       updateDoc(doc(db, 'pins', a.id), { order: bOrder }),
       updateDoc(doc(db, 'pins', b.id), { order: aOrder })
     ]);
     await loadAll();
   }
-
-  // ─── BOARD CREATE ───
   $('boardSaveBtn').addEventListener('click', async () => {
     const name = $('boardName').value.trim();
     if (!name) return alert('Zadaj názov');
@@ -1588,8 +1476,6 @@ window.addEventListener('fb-ready', () => {
     currentBoardId = docRef.id;
     renderBoards(); renderPins();
   });
-
-  // ─── BOARD EDIT / DELETE ───
   let editingBoard = null;
   let pendingCoverUrl = null;
   function openBoardEdit(b) {
@@ -1603,7 +1489,6 @@ window.addEventListener('fb-ready', () => {
     updateShareSection();
     openModal('boardEditModal');
   }
-
   function updateCoverUI() {
     const thumb = $('coverThumb');
     const label = $('coverLabel');
@@ -1620,7 +1505,6 @@ window.addEventListener('fb-ready', () => {
       clearBtn.style.display = 'none';
     }
   }
-
   function renderCoverPicker(boardId) {
     const grid = $('coverPickerGrid');
     grid.innerHTML = '';
@@ -1642,7 +1526,6 @@ window.addEventListener('fb-ready', () => {
       grid.appendChild(div);
     });
   }
-
   $('coverClearBtn').addEventListener('click', () => {
     pendingCoverUrl = null;
     updateCoverUI();
@@ -1691,18 +1574,14 @@ window.addEventListener('fb-ready', () => {
     closeModal('boardEditModal');
     await loadAll();
   });
-
-  // ─── UPLOAD ───
   $('uploadOpen').addEventListener('click', () => {
     if (boards.length === 0) { alert('Najprv si vytvor board.'); openModal('boardModal'); return; }
     openModal('uploadModal');
   });
-
   const dropZone = $('dropZone');
   const fileInput = $('fileInput');
   const uploadBtn = $('uploadBtn');
   const uploadPreview = $('uploadPreview');
-
   function updateUploadPreview() {
     uploadPreview.innerHTML = '';
     selectedFiles.forEach((f, i) => {
@@ -1763,7 +1642,6 @@ window.addEventListener('fb-ready', () => {
     };
     test.src = url;
   }
-
   uploadBtn.addEventListener('click', async () => {
     const total = selectedFiles.length + selectedUrls.length;
     if (!total) return;
@@ -1771,13 +1649,10 @@ window.addEventListener('fb-ready', () => {
     if (!boardId) { alert('Vyber board'); return; }
     const title = $('uploadTitle').value.trim();
     const tags  = $('uploadTags').value.split(',').map(t => t.trim()).filter(Boolean);
-
     uploadBtn.disabled = true;
     $('uploadProgress').style.display = 'block';
     const bar = $('uploadProgress').firstElementChild;
     let done = 0;
-
-    // URL piny
     for (const url of selectedUrls) {
       $('uploadStatus').textContent = `Pridávam link ${done+1}/${total}...`;
       await addDoc(collection(db, 'pins'), {
@@ -1787,12 +1662,8 @@ window.addEventListener('fb-ready', () => {
       done++;
       bar.style.width = (done/total*100) + '%';
     }
-
-    // Súbory
     for (const file of selectedFiles) {
       $('uploadStatus').textContent = `Spracovávam ${done+1}/${total}...`;
-
-      // Skontroluj duplikát PRED kompresiou
       $('uploadStatus').textContent = `Kontrolujem duplikáty ${done+1}/${total}...`;
       const fingerprint = await computeFingerprint(file);
       const dup = await findDuplicate(fingerprint);
@@ -1802,7 +1673,6 @@ window.addEventListener('fb-ready', () => {
         const skip = !confirm(`Podobný obrázok už existuje v boarde "${boardName}".\n\nKliknite OK pre nahranie aj tak, Cancel pre preskočenie.`);
         if (skip) { done++; bar.style.width = (done/total*100) + '%'; continue; }
       }
-
       const [compressed, colors] = await Promise.all([
         compressImage(file),
         extractColors(file).catch(() => [])
@@ -1831,7 +1701,6 @@ window.addEventListener('fb-ready', () => {
         );
       });
     }
-
     $('uploadStatus').textContent = '✓ Hotovo!';
     bar.style.width = '100%';
     setTimeout(() => {
@@ -1848,8 +1717,6 @@ window.addEventListener('fb-ready', () => {
     await loadAll();
     await updateStorageUI();
   });
-
-  // ─── SELECT MODE ───
   function enterSelectMode() {
     selectMode = true;
     document.body.classList.add('select-mode');
@@ -1871,12 +1738,10 @@ window.addEventListener('fb-ready', () => {
   }
   $('selectModeBtn').addEventListener('click', () => { if (selectMode) exitSelectMode(); else enterSelectMode(); });
   $('selectExit').addEventListener('click', exitSelectMode);
-
   function toggleSelected(id) {
     if (selectedPinIds.has(id)) selectedPinIds.delete(id);
     else selectedPinIds.add(id);
     updateSelectCount();
-    // Update card without full re-render
     const card = grid.querySelector(`.pin[data-id="${id}"]`);
     if (card) {
       card.classList.toggle('selected', selectedPinIds.has(id));
@@ -1890,7 +1755,6 @@ window.addEventListener('fb-ready', () => {
   function updateSelectCount() {
     $('selectCount').textContent = selectedPinIds.size;
   }
-
   $('selectDelete').addEventListener('click', async () => {
     if (selectedPinIds.size === 0) return;
     if (!confirm(`Zmazať ${selectedPinIds.size} pinov?`)) return;
@@ -1907,7 +1771,6 @@ window.addEventListener('fb-ready', () => {
     await updateStorageUI();
     updateSelectCount();
   });
-
   $('selectMove').addEventListener('click', () => {
     if (selectedPinIds.size === 0) return;
     $('moveCount').textContent = selectedPinIds.size;
@@ -1923,8 +1786,6 @@ window.addEventListener('fb-ready', () => {
     exitSelectMode();
     await loadAll();
   });
-
-  // ─── INFINITE SCROLL ───
   const sentinel = $('scrollSentinel');
   const observer = new IntersectionObserver(entries => {
     if (entries[0].isIntersecting) {
@@ -1936,8 +1797,6 @@ window.addEventListener('fb-ready', () => {
     }
   }, { rootMargin: '200px' });
   observer.observe(sentinel);
-
-  // ─── STORAGE TRACKING ───
   const TOTAL_FREE = 5 * 1024 * 1024 * 1024;
   async function getStorageUsed() {
     try {
@@ -1960,7 +1819,6 @@ window.addEventListener('fb-ready', () => {
     $('statCount').textContent = pins.length;
     $('storageFill').style.width = pct + '%';
   }
-
   $('recompressBtn').addEventListener('click', async () => {
     if (!confirm('Prepočítať celkové využitie (piny + portfolio)?')) return;
     $('recompressBtn').disabled = true;
@@ -1995,22 +1853,16 @@ window.addEventListener('fb-ready', () => {
     await updateStorageUI();
     $('recompressBtn').disabled = false;
   });
-
-  // ─── SEARCH ───
   $('searchInput').addEventListener('input', e => {
     searchTerm = e.target.value;
     visibleCount = PAGE;
     renderPins();
   });
-
-  // ─── BOOKMARKLET ───
   function getBookmarkletCode() {
     const targetUrl = location.origin + location.pathname;
-    // Bookmarklet picker code (compact, IIFE)
     const code = `javascript:(function(){if(document.getElementById('__ib_picker'))return;var imgs=[].slice.call(document.querySelectorAll('img')).map(function(i){var src=i.src||i.dataset.src||'';if(!src&&i.srcset){src=i.srcset.split(',')[0].trim().split(' ')[0]}return{el:i,src:src}}).filter(function(o){return o.src&&o.src.indexOf('http')===0&&(o.el.naturalWidth>100||o.el.width>100||o.el.offsetWidth>100)}).slice(0,60);if(!imgs.length){alert('Žiadne obrázky. Skús scrollovať stránku a spustiť znova.');return}var o=document.createElement('div');o.id='__ib_picker';o.style.cssText='position:fixed;top:20px;right:20px;width:360px;max-height:82vh;overflow-y:auto;background:#fff;border-radius:18px;padding:18px;box-shadow:0 20px 60px rgba(0,0,0,.35);z-index:2147483647;font-family:system-ui,sans-serif;color:#1a1a1a';o.innerHTML='<div style="font-weight:700;font-size:15px;margin-bottom:10px">Save to Inspireboard</div><div style="font-size:11.5px;color:#888;margin-bottom:10px">Klikni obrázky pre výber</div><div id="__ib_grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px"></div><div style="margin-top:14px;display:flex;gap:6px"><button id="__ib_save" style="flex:1;background:#BD1F2F;color:#fff;border:none;padding:10px;border-radius:10px;font-weight:700;cursor:pointer;font-size:13px">Uložiť (0)</button><button id="__ib_close" style="background:#eee;border:none;padding:10px 16px;border-radius:10px;cursor:pointer;font-size:13px">Zrušiť</button></div>';document.body.appendChild(o);var sel=[];var g=document.getElementById('__ib_grid');imgs.forEach(function(item){var d=document.createElement('div');d.style.cssText='aspect-ratio:1;border-radius:8px;overflow:hidden;border:2px solid transparent;cursor:pointer;transition:all .15s';d.innerHTML='<img src="'+item.src+'" style="width:100%;height:100%;object-fit:cover;display:block;pointer-events:none" crossorigin="anonymous">';d.onclick=function(){var i=sel.indexOf(item.src);if(i>=0){sel.splice(i,1);d.style.borderColor='transparent'}else{sel.push(item.src);d.style.borderColor='#BD1F2F'}document.getElementById('__ib_save').textContent='Uložiť ('+sel.length+')'};g.appendChild(d)});document.getElementById('__ib_close').onclick=function(){o.remove()};document.getElementById('__ib_save').onclick=function(){if(!sel.length)return;var u='${targetUrl}?ib_upload='+encodeURIComponent(sel.join('|'));o.remove();location.href=u}})();`;
     return code;
   }
-
   $('bookmarkletBtn').addEventListener('click', () => {
     const code = getBookmarkletCode();
     const link = $('bookmarkletLink');
@@ -2018,67 +1870,49 @@ window.addEventListener('fb-ready', () => {
     $('bookmarkletCode').value = code;
     openModal('bookmarkletModal');
   });
-
-  // Handle ?ib_upload= URL param from bookmarklet
   let uploadParamHandled = false;
   async function handleUploadParam() {
     if (uploadParamHandled) return;
     const ibUpload = new URLSearchParams(location.search).get('ib_upload');
     if (!ibUpload) return;
     uploadParamHandled = true;
-    // URLSearchParams.get už raz dekóduje, takže ďalej len split
     const urls = ibUpload.split('|').filter(Boolean);
     if (urls.length === 0) return;
-
-    // Počkaj kým sa naložia boardy (max 5s)
     let attempts = 0;
     while (boards.length === 0 && attempts < 50) {
       await new Promise(r => setTimeout(r, 100));
       attempts++;
     }
-
     if (boards.length === 0) {
       alert('Nepodarilo sa načítať boardy. Obnov stránku a skús znova.');
       return;
     }
-
     selectedUrls = selectedUrls.concat(urls);
     updateUploadPreview();
     populateSelects(); // naplň selecty tesne pred otvorením
     openModal('uploadModal');
-
-    // Clean URL až po úspechu
     const u = new URL(location);
     u.searchParams.delete('ib_upload');
     history.replaceState({}, '', u);
   }
-
-  // ─── DARK MODE ───
   function applyTheme(dark) {
     document.body.dataset.theme = dark ? 'dark' : '';
-    $('darkToggle').textContent = dark ? '🌙' : '☀️';
     $('darkToggle').title = dark ? 'Svetlý režim' : 'Tmavý režim';
   }
   const savedTheme = localStorage.getItem('ib-theme');
   const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
   applyTheme(savedTheme ? savedTheme === 'dark' : prefersDark);
-
   $('darkToggle').addEventListener('click', () => {
     const isDark = document.body.dataset.theme === 'dark';
     applyTheme(!isDark);
     localStorage.setItem('ib-theme', !isDark ? 'dark' : 'light');
   });
-
-  // ─── INIT ───
   loadAll();
 });
-
-// Service Worker registrácia
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/sw.js').catch(() => {});
   });
-}
-</script>
+}</script>
 </body>
 </html>

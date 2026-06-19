@@ -66,7 +66,7 @@
     font-family:inherit; font-size:14px; outline:none;
     transition:border-color 0.2s, background 0.2s;
   }
-  .search input:focus { border-color:var(--text); background:#fff; }
+  .search input:focus { border-color:var(--text); background:var(--card); }
   .search::before {
     content:'⌕'; position:absolute; left:16px; top:50%;
     transform:translateY(-50%); color:var(--muted); font-size:16px;
@@ -340,7 +340,7 @@
     margin-bottom:7px; text-transform:uppercase;
   }
   .field input, .field textarea, .field select {
-    width:100%; background:#fff; border:1px solid var(--border);
+    width:100%; background:var(--card); border:1px solid var(--border);
     border-radius:12px; padding:12px 16px;
     font-family:inherit; font-size:14px; outline:none;
     transition:border-color 0.2s;
@@ -546,6 +546,7 @@
   <div class="search"><input id="searchInput" type="text" placeholder="Hľadať vo všetkých pinoch..." /></div>
   <div class="header-actions">
     <span id="userBadge"></span>
+    <button id="darkToggle" class="btn-ghost" title="Prepnúť tému">☀️</button>
     <button id="bookmarkletBtn" class="btn-ghost" style="display:none" title="Save z webu">★</button>
     <button id="selectModeBtn" class="btn-ghost" style="display:none">Vybrať</button>
     <button id="uploadOpen" class="btn-primary" style="display:none">+ Pin</button>
@@ -2051,6 +2052,22 @@ window.addEventListener('fb-ready', () => {
     u.searchParams.delete('ib_upload');
     history.replaceState({}, '', u);
   }
+
+  // ─── DARK MODE ───
+  function applyTheme(dark) {
+    document.body.dataset.theme = dark ? 'dark' : '';
+    $('darkToggle').textContent = dark ? '🌙' : '☀️';
+    $('darkToggle').title = dark ? 'Svetlý režim' : 'Tmavý režim';
+  }
+  const savedTheme = localStorage.getItem('ib-theme');
+  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  applyTheme(savedTheme ? savedTheme === 'dark' : prefersDark);
+
+  $('darkToggle').addEventListener('click', () => {
+    const isDark = document.body.dataset.theme === 'dark';
+    applyTheme(!isDark);
+    localStorage.setItem('ib-theme', !isDark ? 'dark' : 'light');
+  });
 
   // ─── INIT ───
   loadAll();

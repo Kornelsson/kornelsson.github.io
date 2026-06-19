@@ -103,13 +103,13 @@
     object-fit:cover; display:block;
   }
   .board-chip:hover { border-color:var(--text); }
-  .board-chip.active { background:var(--text); color:#fff; border-color:var(--text); }
+  .board-chip.active { background:var(--card); color:var(--accent); border:2px solid var(--accent); font-weight:700; }
   .board-chip.drop-target { border-color:var(--accent); border-style:dashed; background:rgba(189,31,47,0.05); }
   .board-chip .count {
     background:rgba(0,0,0,0.06); color:inherit; border-radius:999px;
     padding:1px 8px; font-size:11.5px; font-weight:500; opacity:0.7;
   }
-  .board-chip.active .count { background:rgba(255,255,255,0.18); }
+  .board-chip.active .count { background:rgba(189,31,47,0.1); color:var(--accent); }
   .board-chip.add { color:var(--muted); border-style:dashed; }
   .board-chip.add:hover { color:var(--text); border-color:var(--text); }
   .board-edit-btn {

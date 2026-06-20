@@ -487,7 +487,7 @@
 
 <nav id="boardsNav"></nav><div id="filterBar"></div>
 
-<main><div id="emptyState" style="display:none"><div class="big">◌</div><h2>Žiadne piny</h2><p>Skús zmeniť filtre alebo pridať nový pin</p></div><div id="grid"></div><div id="scrollSentinel"></div><div id="loadingMore" style="display:none">Načítavam...</div></main>
+<main><div id="emptyState" style="display:none"><div class="big">◌</div><h2>Žiadne piny</h2><p>Skús zmeniť filtre alebo pridať nový pin</p></div><div id="grid"></div><div id="loadingMore" style="display:none">Načítavam...</div><div id="scrollSentinel"></div></main>
 
 <!-- Select bar -->
 <div id="selectBar"><span class="count"><span id="selectCount">0</span> vybratých</span><div class="actions"><button id="selectMove">Presunúť do…</button><button id="selectDelete" class="danger">Zmazať</button><button id="selectExit" class="exit">Hotovo</button></div></div>
@@ -1629,16 +1629,10 @@
     await loadAll();
   });
   const sentinel = $('scrollSentinel');
-  const observer = new IntersectionObserver(entries => {
-    if (entries[0].isIntersecting) {
-      const filtered = applyFilters(pins);
-      if (visibleCount < filtered.length) {
-        visibleCount += PAGE;
-        renderPins();
-      }
-    }
-  }, { rootMargin: '200px' });
+  function loadMore(){const f=applyFilters(pins);if(visibleCount<f.length){visibleCount+=PAGE;renderPins();}}
+  const observer=new IntersectionObserver(e=>{if(e[0].isIntersecting)loadMore();},{rootMargin:'300px'});
   observer.observe(sentinel);
+  window.addEventListener('scroll',()=>{const{scrollTop:st,scrollHeight:sh,clientHeight:ch}=document.documentElement;if(sh-st-ch<400)loadMore();},{passive:true});
   const TOTAL_FREE = 5 * 1024 * 1024 * 1024;
   async function getStorageUsed() {
     try {

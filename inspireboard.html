@@ -102,18 +102,21 @@
   #boardsNav {
     background:var(--bg); border-bottom:1px solid var(--border-soft);
     padding:14px 24px; overflow-x:auto; white-space:nowrap; scrollbar-width:none;
+    display:flex; align-items:center; gap:0;
   }
   #boardsNav::-webkit-scrollbar { display:none; }
   .board-chip {
     background:var(--card); border:1px solid var(--border); color:var(--text);
-    border-radius:999px; padding:8px 18px; margin-right:8px;
+    border-radius:999px; padding:0 18px; margin-right:8px;
+    height:40px; min-height:40px;
     font-size:13.5px; font-weight:600;
     display:inline-flex; align-items:center; gap:8px; transition:all 0.2s;
+    flex-shrink:0; vertical-align:middle; white-space:nowrap;
   }
-  .board-chip.has-cover { padding-left:4px; }
+  .board-chip.has-cover { padding-left:6px; }
   .board-chip-cover {
-    width:24px; height:24px; border-radius:50%;
-    object-fit:cover; display:block;
+    width:28px; height:28px; border-radius:50%;
+    object-fit:cover; display:block; flex-shrink:0;
   }
   .board-chip:hover { border-color:var(--text); }
   .board-chip.active { background:var(--card); color:var(--accent); border-color:var(--accent); box-shadow:inset 0 0 0 1px var(--accent); font-weight:700; }

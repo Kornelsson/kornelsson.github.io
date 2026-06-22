@@ -89,17 +89,20 @@
   #userBadge { font-size:12.5px; color:var(--muted); padding:0 6px; }
   #boardsNav {
     background:var(--bg); border-bottom:1px solid var(--border-soft);
-    padding:14px 24px; overflow-x:auto; white-space:nowrap; scrollbar-width:none;
-    display:flex; align-items:center; gap:0;
+    padding:12px 24px; display:flex; flex-wrap:wrap; align-items:center; gap:8px 0;
+    max-height:124px; overflow-y:auto; scrollbar-width:thin;
+    scrollbar-color:var(--border) transparent;
   }
-  #boardsNav::-webkit-scrollbar { display:none; }
+  #boardsNav::-webkit-scrollbar { width:4px; height:4px; }
+  #boardsNav::-webkit-scrollbar-track { background:transparent; }
+  #boardsNav::-webkit-scrollbar-thumb { background:var(--border); border-radius:2px; }
   .board-chip {
     background:var(--card); border:1px solid var(--border); color:var(--text);
     border-radius:999px; padding:0 18px; margin-right:8px;
     height:40px; min-height:40px;
     font-size:13.5px; font-weight:600;
     display:inline-flex; align-items:center; gap:8px; transition:all 0.2s;
-    flex-shrink:0; vertical-align:middle; white-space:nowrap;
+    flex-shrink:0; vertical-align:middle;
   }
   .board-chip.has-cover { padding-left:6px; }
   .board-chip-cover {

@@ -74,6 +74,7 @@
   .hl-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px 16px;box-shadow:var(--shadow);display:flex;gap:12px;align-items:flex-start}
   .hl-card.low{border-left:3px solid var(--bad)}
   .hl-card.high{border-left:3px solid var(--good)}
+  .hl-card.reco{border-left:3px solid var(--accent)}
   .hl-emoji{font-size:20px;line-height:1.3}
   .hl-title{font-weight:700;font-size:13.5px;margin-bottom:2px}
   .hl-body{color:var(--text-soft);font-size:13px}
@@ -170,6 +171,9 @@
   <h2 class="section-title"><span class="dot"></span>Lowlighty</h2>
   <div class="cards-col" id="lowlights"></div>
 
+  <h2 class="section-title"><span class="dot"></span>Odporúčania na budúci mesiac</h2>
+  <div class="cards-col" id="recommendations"></div>
+
   <h2 class="section-title"><span class="dot"></span>Podľa typu aktivity</h2>
   <div class="sport-grid" id="sportGrid"></div>
 
@@ -230,6 +234,14 @@ const MONTHS = [
       { title: "Pokles objemu v strede mesiaca", body: "Týždenná vzdialenosť klesla z 58.4 km (týždeň 24) na 28.2 km (týždeň 26), predtým než ju posledný týždeň opäť zdvihol 27. jún." },
       { title: "Iba 2 dni voľna za mesiac", body: "93% aktívnych dní je skvelá disciplína, ale s len dvoma dňami regenerácie za 30 dní stojí za sledovanie riziko pretrénovania." },
       { title: "Silový tréning chýbal 3 týždne", body: "Prvý silový tréning sa objavil až 23. júna — prvé tri týždne mesiaca boli čisto kardio (beh/chôdza/bicykel)." }
+    ],
+    recommendations: [
+      { title: "Naplánuj si pravidelné dni voľna", body: "Len 2 dni bez aktivity za celý jún. Nastav si aspoň 1 pevný deň regenerácie týždenne (napr. nedeľa), aby si znížil riziko pretrénovania." },
+      { title: "Zaraď silový tréning od prvého týždňa", body: "V júni sa objavil až 23. dňa. Skús ho v júli zaradiť pravidelne 2× týždenne od začiatku mesiaca, nie až v druhej polovici." },
+      { title: "Over si, čo sa stalo 10. júna", body: "Beh s tempom 15:11/km a efortom 68 je jasný výnimočný deň (možno teplo, únava, dlhé prestávky). Ak sa podobný vzorec zopakuje, sleduj hydratáciu a tempo pri horúčave." },
+      { title: "Vyrovnaj týždenný objem", body: "Objem klesol z 58.4 km na 28.2 km v strede mesiaca. Skús rozložiť kilometre rovnomernejšie cez týždne namiesto veľkých výkyvov hore-dole." },
+      { title: "Nadviaž na 10 km beh z 27. júna", body: "Zvládol si ho v solídnom tempe 5:47/km. Skús v júli zaradiť 1 dlhší beh týždenne a postupne naberať vzdialenosť nad 5 km štandard." },
+      { title: "Zameraj sa na hydratáciu", body: "Posledné meranie ukázalo vodu len 53.6 % (nedostatočné) a zvýšený viscerálny tuk. Viac tekutín cez deň v kombinácii s pravidelným silovým tréningom by mali oboje zlepšiť." }
     ],
     bodyComposition: {
       date: "2026-06-30",
@@ -313,6 +325,9 @@ function render(){
 
   document.getElementById('lowlights').innerHTML = m.lowlights.map(h=>`
     <div class="hl-card low"><div class="hl-emoji">⚠️</div><div><div class="hl-title">${h.title}</div><div class="hl-body">${h.body}</div></div></div>`).join('');
+
+  document.getElementById('recommendations').innerHTML = (m.recommendations||[]).map(h=>`
+    <div class="hl-card reco"><div class="hl-emoji">🎯</div><div><div class="hl-title">${h.title}</div><div class="hl-body">${h.body}</div></div></div>`).join('');
 
   document.getElementById('sportGrid').innerHTML = Object.entries(m.bySport).map(([name,s])=>`
     <div class="sport-card">

@@ -4,12 +4,22 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Workout Dashboard</title>
+<link rel="manifest" href="workout-manifest.json" />
+<meta name="theme-color" content="#BD1F2F" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="Workout" />
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
+<link rel="icon" href="icons/icon-192.png" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
 <script type="module">  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
   import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged }
     from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-  window.fb = { initializeApp, getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged };
+  import { getFirestore, collection, getDocs, doc, setDoc }
+    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+  window.fb = { initializeApp, getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged, getFirestore, collection, getDocs, doc, setDoc };
   window.dispatchEvent(new Event('fb-ready'));</script>
 <style>
   *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -59,6 +69,11 @@
 
   .period-sub{color:var(--muted);font-size:13px;font-weight:600;margin-bottom:24px;letter-spacing:.02em}
 
+  .alltime-box{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:14px 18px;box-shadow:var(--shadow);margin-bottom:28px;display:flex;flex-wrap:wrap;align-items:center;gap:6px 18px}
+  .alltime-box .at-lbl{font-size:11.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-right:4px}
+  .alltime-box .at-item{font-size:13px;font-weight:600;color:var(--text-soft)}
+  .alltime-box .at-item b{color:var(--text);font-weight:800}
+
   .hero-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:28px}
   .hero-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow)}
   .hero-card .val{font-size:24px;font-weight:800;letter-spacing:-.02em}
@@ -82,6 +97,11 @@
   .rest-cal-box{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow);margin-top:10px}
   .rest-cal-title{font-weight:700;font-size:14px;margin-bottom:6px}
   .rest-cal-plan-note{color:var(--text-soft);font-size:12.5px;line-height:1.6;margin-bottom:14px}
+  .rest-cal-progress{margin-bottom:14px}
+  .rest-cal-progress .rcp-lbl{font-size:12.5px;font-weight:600;color:var(--text-soft);margin-bottom:6px}
+  .rest-cal-progress .rcp-lbl b{color:var(--text);font-weight:800}
+  .rest-cal-progress .rcp-bar{height:8px;border-radius:999px;background:var(--border-soft);overflow:hidden}
+  .rest-cal-progress .rcp-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent-hi));border-radius:999px;transition:width .2s}
   .rest-cal-legend{display:flex;flex-wrap:wrap;gap:14px;margin-bottom:16px}
   .rest-cal-legend .lg-item{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--text-soft)}
   .rest-cal-legend .lg-dot{width:10px;height:10px;border-radius:3px}
@@ -142,6 +162,11 @@
   .badge.warn{background:rgba(184,134,11,.14);color:var(--warn)}
   .badge.bad{background:rgba(189,31,47,.12);color:var(--bad)}
   .body-note{color:var(--muted);font-size:12px;margin-top:10px}
+
+  .chart-box{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px 20px;box-shadow:var(--shadow);margin-bottom:14px}
+  .chart-title{font-size:12.5px;color:var(--muted);font-weight:600;margin-bottom:6px}
+  .chart-note{font-weight:500;opacity:.8}
+  .chart-svg{width:100%;height:150px;display:block}
 
   .table-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:var(--radius);box-shadow:var(--shadow)}
   .runs-table{width:100%;min-width:520px;border-collapse:collapse;background:var(--card);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
@@ -227,6 +252,8 @@
 
   <div class="hero-grid" id="heroGrid"></div>
 
+  <div class="alltime-box" id="allTimeBox"></div>
+
   <h2 class="section-title"><span class="dot"></span>Highlighty</h2>
   <div class="cards-col" id="highlights"></div>
 
@@ -239,6 +266,7 @@
   <div class="rest-cal-box">
     <div class="rest-cal-title" id="restCalTitle"></div>
     <div class="rest-cal-plan-note" id="restCalPlanNote"></div>
+    <div class="rest-cal-progress" id="restCalProgress"></div>
     <div class="rest-cal-legend" id="restCalLegend"></div>
     <div class="rest-cal-scroll">
       <div class="rest-cal-inner">
@@ -262,11 +290,19 @@
 
   <div id="bodySection">
     <h2 class="section-title"><span class="dot"></span>Telesné metriky (posledné meranie)</h2>
+    <div class="chart-box" id="weightTrendBox">
+      <div class="chart-title">Trend váhy naprieč mesiacmi <span class="chart-note">(kg)</span></div>
+      <svg id="weightTrendSvg" class="chart-svg"></svg>
+    </div>
     <div class="body-grid" id="bodyGrid"></div>
     <div class="body-note" id="bodyNote"></div>
   </div>
 
   <h2 class="section-title"><span class="dot"></span>Behy mesiaca</h2>
+  <div class="chart-box" id="paceChartBox">
+    <div class="chart-title">Tempo behov v mesiaci <span class="chart-note">(min/km, nižšie = rýchlejšie; červené body sú mimo bežného rozsahu)</span></div>
+    <svg id="paceChartSvg" class="chart-svg"></svg>
+  </div>
   <div class="table-scroll"><table class="runs-table" id="runsTable"></table></div>
 
   <footer class="foot" id="footNote"></footer>
@@ -275,11 +311,13 @@
 
 <script>
 /* ============================================================
-   MONTHLY DATA
-   Pridaj nový objekt do poľa MONTHS pre každý ďalší mesiac —
-   dashboard automaticky dopočíta medzimesačné rozdiely (delty).
+   MONTHLY DATA (SEED)
+   Toto sú záložné/počiatočné dáta. Po zapnutí Firestore (pozri
+   firebaseFetchMonths nižšie) sa pri prihlásení automaticky raz
+   nahrajú do Firestore a odvtedy sa načítavajú odtiaľ — MONTHS
+   premenná nižšie sa prepíše dátami z Firestore, ak sú dostupné.
    ============================================================ */
-const MONTHS = [
+const SEED_MONTHS = [
   {
     key: "2026-04",
     label: "Apríl 2026",
@@ -332,12 +370,12 @@ const MONTHS = [
       {date:"17.04.", name:"Morning Run", distanceKm:7.06, paceMinKm:6.65, calories:445, effort:11},
       {date:"18.04.", name:"Afternoon Run", distanceKm:5.02, paceMinKm:6.48, calories:317, effort:11},
       {date:"20.04.", name:"Afternoon Run", distanceKm:5.01, paceMinKm:6.68, calories:319, effort:7},
-      {date:"22.04.", name:"Evening Run", distanceKm:4.87, paceMinKm:14.87, calories:272, effort:98, flag:"worst"},
+      {date:"22.04.", name:"Evening Run", distanceKm:4.87, paceMinKm:14.87, calories:272, effort:98},
       {date:"24.04.", name:"Afternoon Run", distanceKm:8.01, paceMinKm:6.47, calories:512, effort:15},
-      {date:"26.04.", name:"Evening Run", distanceKm:5.26, paceMinKm:6.08, calories:341, effort:18, flag:"best"},
+      {date:"26.04.", name:"Evening Run", distanceKm:5.26, paceMinKm:6.08, calories:341, effort:18},
       {date:"27.04.", name:"Afternoon Run", distanceKm:5.30, paceMinKm:8.68, calories:500, effort:3},
-      {date:"29.04.", name:"Evening Run", distanceKm:2.16, paceMinKm:17.02, calories:117, effort:35, flag:"worst"},
-      {date:"30.04.", name:"Afternoon Run", distanceKm:11.23, paceMinKm:6.25, calories:715, effort:67, flag:"best"}
+      {date:"29.04.", name:"Evening Run", distanceKm:2.16, paceMinKm:17.02, calories:117, effort:35},
+      {date:"30.04.", name:"Afternoon Run", distanceKm:11.23, paceMinKm:6.25, calories:715, effort:67}
     ],
     bodyComposition: {
       date: "2026-04-30",
@@ -401,9 +439,9 @@ const MONTHS = [
       {date:"03.05.", name:"Afternoon Run", distanceKm:7.19, paceMinKm:6.33, calories:468, effort:12},
       {date:"05.05.", name:"Lunch Run", distanceKm:5.07, paceMinKm:6.43, calories:327, effort:14},
       {date:"06.05.", name:"Evening Run", distanceKm:3.70, paceMinKm:15.18, calories:261, effort:48},
-      {date:"08.05.", name:"Afternoon Run", distanceKm:0.14, paceMinKm:18.30, calories:7, effort:0, flag:"worst"},
+      {date:"08.05.", name:"Afternoon Run", distanceKm:0.14, paceMinKm:18.30, calories:7, effort:0},
       {date:"12.05.", name:"Evening Run", distanceKm:5.02, paceMinKm:6.46, calories:322, effort:8},
-      {date:"13.05.", name:"Evening Run", distanceKm:6.35, paceMinKm:14.63, calories:456, effort:131, flag:"worst"},
+      {date:"13.05.", name:"Evening Run", distanceKm:6.35, paceMinKm:14.63, calories:456, effort:131},
       {date:"15.05.", name:"Evening Run", distanceKm:5.01, paceMinKm:6.18, calories:327, effort:9},
       {date:"17.05.", name:"Afternoon Run", distanceKm:5.51, paceMinKm:6.28, calories:362, effort:8},
       {date:"18.05.", name:"Afternoon Run", distanceKm:5.01, paceMinKm:6.15, calories:330, effort:18},
@@ -411,9 +449,9 @@ const MONTHS = [
       {date:"20.05.", name:"Evening Run", distanceKm:4.36, paceMinKm:15.35, calories:267, effort:59},
       {date:"21.05.", name:"Evening Run", distanceKm:5.06, paceMinKm:6.17, calories:323, effort:8},
       {date:"22.05.", name:"Afternoon Run", distanceKm:5.01, paceMinKm:6.35, calories:321, effort:8},
-      {date:"24.05.", name:"Evening Run", distanceKm:5.02, paceMinKm:6.06, calories:332, effort:12, flag:"best"},
+      {date:"24.05.", name:"Evening Run", distanceKm:5.02, paceMinKm:6.06, calories:332, effort:12},
       {date:"27.05.", name:"Afternoon Run", distanceKm:5.01, paceMinKm:6.56, calories:326, effort:7},
-      {date:"29.05.", name:"Afternoon Run", distanceKm:10.20, paceMinKm:6.20, calories:672, effort:37, flag:"best"},
+      {date:"29.05.", name:"Afternoon Run", distanceKm:10.20, paceMinKm:6.20, calories:672, effort:37},
       {date:"30.05.", name:"Afternoon Run", distanceKm:10.13, paceMinKm:6.24, calories:661, effort:19},
       {date:"31.05.", name:"Evening Run", distanceKm:2.56, paceMinKm:6.32, calories:167, effort:5}
     ],
@@ -545,26 +583,27 @@ const MONTHS = [
       {date:"06.06.", name:"Afternoon Run", distanceKm:5.02, paceMinKm:6.50, calories:329, effort:9},
       {date:"08.06.", name:"Afternoon Run", distanceKm:5.02, paceMinKm:6.47, calories:333, effort:8},
       {date:"09.06.", name:"Morning Run", distanceKm:5.02, paceMinKm:6.09, calories:334, effort:18},
-      {date:"10.06.", name:"Evening Run", distanceKm:4.62, paceMinKm:15.11, calories:313, effort:68, flag:"worst"},
+      {date:"10.06.", name:"Evening Run", distanceKm:4.62, paceMinKm:15.11, calories:313, effort:68},
       {date:"11.06.", name:"Evening Run", distanceKm:5.02, paceMinKm:6.24, calories:335, effort:10},
       {date:"12.06.", name:"Evening Run", distanceKm:5.01, paceMinKm:6.26, calories:330, effort:14},
       {date:"13.06.", name:"Lunch Run", distanceKm:5.08, paceMinKm:6.64, calories:336, effort:10},
-      {date:"14.06.", name:"Evening Run", distanceKm:5.02, paceMinKm:5.71, calories:336, effort:17, flag:"best"},
+      {date:"14.06.", name:"Evening Run", distanceKm:5.02, paceMinKm:5.71, calories:336, effort:17},
       {date:"17.06.", name:"Afternoon Run", distanceKm:5.02, paceMinKm:6.34, calories:331, effort:16},
       {date:"18.06.", name:"Afternoon Run", distanceKm:6.25, paceMinKm:6.63, calories:412, effort:12},
       {date:"19.06.", name:"Evening Run", distanceKm:5.03, paceMinKm:6.67, calories:328, effort:7},
       {date:"20.06.", name:"Afternoon Run", distanceKm:5.02, paceMinKm:6.38, calories:330, effort:12},
       {date:"21.06.", name:"Evening Run", distanceKm:5.01, paceMinKm:6.26, calories:333, effort:13},
-      {date:"22.06.", name:"Afternoon Run", distanceKm:2.22, paceMinKm:12.63, calories:112, effort:3, flag:"worst"},
+      {date:"22.06.", name:"Afternoon Run", distanceKm:2.22, paceMinKm:12.63, calories:112, effort:3},
       {date:"24.06.", name:"Afternoon Run", distanceKm:5.01, paceMinKm:6.34, calories:334, effort:9},
       {date:"26.06.", name:"Afternoon Run", distanceKm:5.37, paceMinKm:6.31, calories:357, effort:22},
-      {date:"27.06.", name:"Afternoon Run", distanceKm:10.04, paceMinKm:5.79, calories:675, effort:56, flag:"best"},
+      {date:"27.06.", name:"Afternoon Run", distanceKm:10.04, paceMinKm:5.79, calories:675, effort:56},
       {date:"29.06.", name:"Evening Run", distanceKm:5.01, paceMinKm:6.31, calories:335, effort:23},
       {date:"30.06.", name:"Evening Run", distanceKm:5.01, paceMinKm:6.17, calories:332, effort:32}
     ]
   }
 ];
 
+let MONTHS = SEED_MONTHS;
 let currentIdx = MONTHS.length - 1;
 
 function fmt(n, d=1){ return Number(n).toLocaleString('sk-SK',{minimumFractionDigits:d,maximumFractionDigits:d}); }
@@ -576,6 +615,43 @@ function deltaHtml(curr, prev, unit="", higherIsBetter=true){
   const good = higherIsBetter ? diff>0 : diff<0;
   const sign = diff>0 ? "+" : "";
   return `<div class="delta ${good?'up':'down'}">${sign}${fmt(diff, unit==="" && Number.isInteger(diff)?0:1)}${unit} oproti minulému mesiacu</div>`;
+}
+
+function renderAllTimeSummary(){
+  const totals = MONTHS.reduce((acc,m)=>{
+    acc.distanceKm += m.totals.distanceKm;
+    acc.timeMin += m.totals.timeMin;
+    acc.calories += m.totals.calories;
+    acc.prCount += m.totals.prCount;
+    acc.achievementCount += m.totals.achievementCount;
+    return acc;
+  }, {distanceKm:0, timeMin:0, calories:0, prCount:0, achievementCount:0});
+  const items = [
+    { lbl:"Vzdialenosť spolu", val:`${fmt(totals.distanceKm)} km` },
+    { lbl:"Čas pohybu", val:`${fmt(totals.timeMin/60)} h` },
+    { lbl:"Kalórie", val:`${fmt(totals.calories,0)} kcal` },
+    { lbl:"PR / Achievementy", val:`${totals.prCount} / ${totals.achievementCount}` },
+  ];
+  document.getElementById('allTimeBox').innerHTML = `
+    <span class="at-lbl">Spolu za ${MONTHS.length} ${MONTHS.length===1?'mesiac':MONTHS.length<5?'mesiace':'mesiacov'}:</span>
+    ${items.map(i=>`<span class="at-item">${i.lbl}: <b>${i.val}</b></span>`).join('')}`;
+}
+
+function computeRunFlags(runs){
+  const flags = new Map();
+  const real = runs.filter(r=>r.distanceKm >= 1);
+  if(real.length < 2) return flags;
+  const paces = real.map(r=>r.paceMinKm).slice().sort((a,b)=>a-b);
+  const median = paces[Math.floor(paces.length/2)];
+  const fastest = real.reduce((a,b)=> b.paceMinKm < a.paceMinKm ? b : a);
+  const longest = real.reduce((a,b)=> b.distanceKm > a.distanceKm ? b : a);
+  flags.set(fastest, 'best');
+  flags.set(longest, 'best');
+  real.filter(r=>r.paceMinKm > median*1.6)
+    .sort((a,b)=>b.paceMinKm-a.paceMinKm)
+    .slice(0,2)
+    .forEach(r=>flags.set(r,'worst'));
+  return flags;
 }
 
 function renderRestCalendar(plan){
@@ -618,8 +694,20 @@ function renderRestCalendar(plan){
       const key = cell.dataset.key;
       if(cb.checked) localStorage.setItem(key, '1'); else localStorage.removeItem(key);
       cell.classList.toggle('done', cb.checked);
+      updatePlanProgress(plan);
     });
   });
+  updatePlanProgress(plan);
+}
+
+function updatePlanProgress(plan){
+  const dayEntries = Object.entries(plan.days);
+  const done = dayEntries.filter(([d])=>localStorage.getItem(`wd-plan-${plan.year}-${plan.month}-${d}`) === '1').length;
+  const total = dayEntries.length;
+  const pct = total ? Math.round(done/total*100) : 0;
+  document.getElementById('restCalProgress').innerHTML = `
+    <div class="rcp-lbl">Splnené <b>${done}/${total}</b> naplánovaných dní (<b>${pct}&nbsp;%</b>)</div>
+    <div class="rcp-bar"><div class="rcp-fill" style="width:${pct}%"></div></div>`;
 }
 
 function render(){
@@ -642,6 +730,8 @@ function render(){
       <div class="hero-sub">${h.sub}</div>
       ${deltaHtml(...h.cmp)}
     </div>`).join('');
+
+  renderAllTimeSummary();
 
   document.getElementById('highlights').innerHTML = m.highlights.map(h=>`
     <div class="hl-card high"><div class="hl-emoji">✅</div><div><div class="hl-title">${h.title}</div><div class="hl-body">${h.body}</div></div></div>`).join('');
@@ -707,20 +797,74 @@ function render(){
           ${i.status?`<span class="badge ${i.status}">${i.statusLbl}</span>`:''}
         </div>
       </div>`).join('');
-    document.getElementById('bodyNote').textContent = `Meranie z telesnej váhy zo dňa ${bc.date}. Jednorazový snapshot ku koncu mesiaca — trend sa ukáže od budúceho merania.`;
+    document.getElementById('bodyNote').textContent = `Meranie z telesnej váhy zo dňa ${bc.date}.`;
+    renderWeightTrend();
   } else {
     document.getElementById('bodySection').style.display = 'none';
   }
 
-  const rows = m.runs.map(r=>`
-    <tr class="${r.flag==='best'?'best':r.flag==='worst'?'worst':''}">
+  const runFlags = computeRunFlags(m.runs);
+  const rows = m.runs.map(r=>{
+    const flag = runFlags.get(r);
+    return `
+    <tr class="${flag==='best'?'best':flag==='worst'?'worst':''}">
       <td>${r.date}</td><td>${r.name}</td><td>${fmt(r.distanceKm,2)} km</td>
       <td>${fmt(r.paceMinKm,2)} min/km</td><td>${r.calories} kcal</td><td>${r.effort}</td>
-    </tr>`).join('');
+    </tr>`;
+  }).join('');
   document.getElementById('runsTable').innerHTML = `
     <tr><th>Dátum</th><th>Aktivita</th><th>Vzdialenosť</th><th>Tempo</th><th>Kalórie</th><th>Efort</th></tr>${rows}`;
 
+  renderPaceChart(m.runs);
+
   document.getElementById('footNote').textContent = `Zdroj dát: Strava · Workout Dashboard · ${m.label}`;
+}
+
+function renderPaceChart(runs){
+  const box = document.getElementById('paceChartBox');
+  const real = runs.filter(r=>r.distanceKm >= 1);
+  if(real.length < 2){ box.style.display = 'none'; return; }
+  box.style.display = 'block';
+  const W = 700, H = 160, padL = 34, padR = 10, padT = 10, padB = 22;
+  const lo = 4, hi = 12; // typické tempo v min/km, mimo rozsahu sa hodnoty orežú
+  const clamp = v => Math.min(hi, Math.max(lo, v));
+  const x = i => padL + (i/(real.length-1)) * (W-padL-padR);
+  const y = v => padT + (1 - (clamp(v)-lo)/(hi-lo)) * (H-padT-padB);
+  const pts = real.map((r,i)=>`${x(i)},${y(r.paceMinKm)}`).join(' ');
+  const dots = real.map((r,i)=>{
+    const off = r.paceMinKm > hi || r.paceMinKm < lo;
+    return `<circle cx="${x(i)}" cy="${y(r.paceMinKm)}" r="${off?4:3}" fill="${off?'var(--bad)':'var(--accent)'}" />`;
+  }).join('');
+  const gridLines = [lo, (lo+hi)/2, hi].map(v=>`
+    <line x1="${padL}" y1="${y(v)}" x2="${W-padR}" y2="${y(v)}" stroke="var(--border)" stroke-width="1" />
+    <text x="${padL-6}" y="${y(v)+3}" text-anchor="end" font-size="9" fill="var(--muted)">${v}</text>`).join('');
+  document.getElementById('paceChartSvg').innerHTML = `
+    ${gridLines}
+    <polyline points="${pts}" fill="none" stroke="var(--accent)" stroke-width="2" />
+    ${dots}`;
+  document.getElementById('paceChartSvg').setAttribute('viewBox', `0 0 ${W} ${H}`);
+}
+
+function renderWeightTrend(){
+  const box = document.getElementById('weightTrendBox');
+  const pts = MONTHS.filter(m=>m.bodyComposition).map(m=>({label:m.label, weight:m.bodyComposition.weightKg}));
+  if(pts.length < 2){ box.style.display = 'none'; return; }
+  box.style.display = 'block';
+  const W = 700, H = 150, padL = 40, padR = 20, padT = 16, padB = 24;
+  const weights = pts.map(p=>p.weight);
+  const lo = Math.floor(Math.min(...weights) - 0.5);
+  const hi = Math.ceil(Math.max(...weights) + 0.5);
+  const x = i => padL + (pts.length===1 ? 0 : (i/(pts.length-1)) * (W-padL-padR));
+  const y = v => padT + (1 - (v-lo)/(hi-lo || 1)) * (H-padT-padB);
+  const linePts = pts.map((p,i)=>`${x(i)},${y(p.weight)}`).join(' ');
+  const dots = pts.map((p,i)=>`
+    <circle cx="${x(i)}" cy="${y(p.weight)}" r="3.5" fill="var(--accent)" />
+    <text x="${x(i)}" y="${y(p.weight)-10}" text-anchor="middle" font-size="10" font-weight="700" fill="var(--text)">${fmt(p.weight,2)}</text>
+    <text x="${x(i)}" y="${H-6}" text-anchor="middle" font-size="9" fill="var(--muted)">${p.label.split(' ')[0]}</text>`).join('');
+  document.getElementById('weightTrendSvg').innerHTML = `
+    <polyline points="${linePts}" fill="none" stroke="var(--accent)" stroke-width="2" />
+    ${dots}`;
+  document.getElementById('weightTrendSvg').setAttribute('viewBox', `0 0 ${W} ${H}`);
 }
 
 function buildMonthSelect(){
@@ -745,7 +889,8 @@ document.getElementById('darkToggle').addEventListener('click', toggleTheme);
 document.getElementById('loginThemeToggle').addEventListener('click', toggleTheme);
 
 window.addEventListener('fb-ready', () => {
-  const { initializeApp, getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } = window.fb;
+  const { initializeApp, getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged,
+    getFirestore, collection, getDocs, doc, setDoc } = window.fb;
   const firebaseConfig = {
     apiKey:"AIzaSyDzwgVupB_pDsoHZiG8JvQLx5QZy-BXdNY",
     authDomain:"kornelsson-bea69.firebaseapp.com",
@@ -756,13 +901,43 @@ window.addEventListener('fb-ready', () => {
   };
   const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
+  const db = getFirestore(app);
   const $ = id => document.getElementById(id);
+
+  // Číta report dáta z Firestore kolekcie "months" (chránené auth pravidlami).
+  // Ak je kolekcia prázdna, jednorazovo tam nahrá vstavané SEED_MONTHS dáta.
+  // Ak sú v SEED_MONTHS mesiace, ktoré vo Firestore ešte chýbajú (napr. pridané
+  // mesačnou automatizáciou), dopíšu sa tiež. Ak Firestore nie je zapnutý
+  // v konzole, fetch zlyhá a dashboard ticho zostane na embedded SEED dátach.
+  async function syncMonthsFromFirestore(){
+    try {
+      const snap = await getDocs(collection(db, 'months'));
+      const fetched = [];
+      snap.forEach(d => fetched.push(d.data()));
+      const existingKeys = new Set(fetched.map(m=>m.key));
+      const missing = SEED_MONTHS.filter(m => !existingKeys.has(m.key));
+      if(missing.length){
+        await Promise.all(missing.map(m => setDoc(doc(db, 'months', m.key), m)));
+        fetched.push(...missing);
+      }
+      if(fetched.length){
+        fetched.sort((a,b) => a.key.localeCompare(b.key));
+        MONTHS = fetched;
+        currentIdx = MONTHS.length - 1;
+        buildMonthSelect();
+        render();
+      }
+    } catch(e){
+      console.warn('Firestore sync zlyhal, používam vstavané SEED dáta.', e);
+    }
+  }
 
   onAuthStateChanged(auth, (user) => {
     if(user){
       $('loginScreen').style.display = 'none';
       $('dashboardRoot').style.display = 'block';
       $('userBadge').textContent = user.email;
+      syncMonthsFromFirestore();
     } else {
       $('loginScreen').style.display = 'flex';
       $('dashboardRoot').style.display = 'none';
@@ -779,6 +954,10 @@ window.addEventListener('fb-ready', () => {
   $('loginPassword').addEventListener('keydown', e => { if (e.key === 'Enter') $('loginBtn').click(); });
   $('logoutBtn').addEventListener('click', () => signOut(auth));
 });
+
+if('serviceWorker' in navigator){
+  window.addEventListener('load', () => navigator.serviceWorker.register('workout-sw.js').catch(()=>{}));
+}
 </script>
 </body>
 </html>

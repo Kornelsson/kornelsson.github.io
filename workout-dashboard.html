@@ -76,15 +76,35 @@
   .hl-card.high{border-left:3px solid var(--good)}
   .hl-card.reco{border-left:3px solid var(--accent)}
 
+  :root{ --run:#3B7DDD; --bike:#1F9E85; --strength:#7C5CBF; }
+  body[data-theme="dark"]{ --run:#6FA3FF; --bike:#33C2A6; --strength:#A78BFA; }
+
   .rest-cal-box{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow);margin-top:10px}
-  .rest-cal-title{font-weight:700;font-size:14px;margin-bottom:14px}
+  .rest-cal-title{font-weight:700;font-size:14px;margin-bottom:6px}
+  .rest-cal-plan-note{color:var(--text-soft);font-size:12.5px;line-height:1.6;margin-bottom:14px}
+  .rest-cal-legend{display:flex;flex-wrap:wrap;gap:14px;margin-bottom:16px}
+  .rest-cal-legend .lg-item{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--text-soft)}
+  .rest-cal-legend .lg-dot{width:10px;height:10px;border-radius:3px}
+  .rest-cal-legend .lg-dot.run{background:var(--run)}
+  .rest-cal-legend .lg-dot.bike{background:var(--bike)}
+  .rest-cal-legend .lg-dot.strength{background:var(--strength)}
+  .rest-cal-legend .lg-dot.rest{background:var(--accent)}
   .rest-cal-weekdays{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;margin-bottom:8px}
   .rest-cal-weekdays span{text-align:center;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.03em}
   .rest-cal{display:grid;grid-template-columns:repeat(7,1fr);gap:8px}
-  .rest-cal .cal-cell{aspect-ratio:1;border-radius:var(--radius-sm);display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:13px;font-weight:600;background:var(--border-soft);color:var(--text-soft)}
+  .rest-cal .cal-cell{min-height:88px;border-radius:var(--radius-sm);display:flex;flex-direction:column;padding:8px;background:var(--border-soft);gap:2px}
   .rest-cal .cal-cell.empty{background:transparent}
-  .rest-cal .cal-cell.rest{background:var(--accent);color:#fff}
-  .rest-cal .cal-cell.rest .cal-tag{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;margin-top:2px;opacity:.9}
+  .rest-cal .cal-cell .cal-day{font-size:11px;font-weight:700;color:var(--muted)}
+  .rest-cal .cal-cell .cal-type{font-size:11.5px;font-weight:800;margin-top:2px}
+  .rest-cal .cal-cell .cal-detail{font-size:10px;color:var(--text-soft);line-height:1.25}
+  .rest-cal .cal-cell.run{background:rgba(59,125,221,.12);border-left:3px solid var(--run)}
+  .rest-cal .cal-cell.run .cal-type{color:var(--run)}
+  .rest-cal .cal-cell.bike{background:rgba(31,158,133,.12);border-left:3px solid var(--bike)}
+  .rest-cal .cal-cell.bike .cal-type{color:var(--bike)}
+  .rest-cal .cal-cell.strength{background:rgba(124,92,191,.12);border-left:3px solid var(--strength)}
+  .rest-cal .cal-cell.strength .cal-type{color:var(--strength)}
+  .rest-cal .cal-cell.rest{background:var(--accent)}
+  .rest-cal .cal-cell.rest .cal-day,.rest-cal .cal-cell.rest .cal-type{color:#fff}
   .rest-cal-note{color:var(--muted);font-size:12.5px;margin-top:14px;line-height:1.6}
   .hl-emoji{font-size:20px;line-height:1.3}
   .hl-title{font-weight:700;font-size:13.5px;margin-bottom:2px}
@@ -187,6 +207,8 @@
 
   <div class="rest-cal-box">
     <div class="rest-cal-title" id="restCalTitle"></div>
+    <div class="rest-cal-plan-note" id="restCalPlanNote"></div>
+    <div class="rest-cal-legend" id="restCalLegend"></div>
     <div class="rest-cal-weekdays">
       <span>Po</span><span>Ut</span><span>St</span><span>Št</span><span>Pi</span><span>So</span><span>Ne</span>
     </div>
@@ -265,8 +287,47 @@ const MONTHS = [
     ],
     nextMonthPlan: {
       year: 2026, month: 7, label: "Júl 2026",
-      restDays: [5, 12, 19, 26],
-      restReason: "Pevný deň regenerácie každú nedeľu. V júni si mal iba 2 dni voľna za celý mesiac (7. a 16.) — 4 rozvrhnuté nedele v júli by mali znížiť riziko pretrénovania a dať telu priestor na zotavenie po silovom tréningu aj behoch."
+      note: "Postupné naberanie objemu (long run 8→9→10 km), 2 tempo behy týždenne, 6 silových tréningov (30-40 min), 4 jazdy na bicykli (12→18 km) a 10 dní voľna rozložených naprieč týždňom — nie len v nedeľu — tak, aby regenerácia vždy predchádzala alebo nasledovala po najťažšom dni.",
+      hrZoneNote: "HR zóny podľa tvojho Strava profilu: Z2 125-154 bpm (easy/aeróbne), Z3 155-169 bpm (tempo), Z4 170-184 bpm (namáhavé). Tempá behov vychádzajú z tvojich reálnych júnových výkonov (nie z odhadovaných Strava pace zón, ktoré počítajú s 5 km za 41 min a nesedia s tvojimi skutočnými ~29-34 min behmi).",
+      legend: [
+        { type:"run", label:"Beh" },
+        { type:"strength", label:"Silový" },
+        { type:"bike", label:"Bicykel" },
+        { type:"rest", label:"Voľno" }
+      ],
+      days: {
+        1:  { type:"run", label:"Beh", detail:"5 km · Z2", sub:"6:30-6:50/km" },
+        2:  { type:"rest", label:"Voľno" },
+        3:  { type:"strength", label:"Silový", sub:"30 min" },
+        4:  { type:"bike", label:"Bicykel", detail:"12 km · Z2", sub:"125-154 bpm" },
+        5:  { type:"rest", label:"Voľno" },
+        6:  { type:"run", label:"Beh", detail:"5 km · Z2", sub:"6:30-6:50/km" },
+        7:  { type:"strength", label:"Silový", sub:"35 min" },
+        8:  { type:"rest", label:"Voľno" },
+        9:  { type:"run", label:"Beh (tempo)", detail:"5 km · Z3-Z4", sub:"5:50-6:10/km" },
+        10: { type:"bike", label:"Bicykel", detail:"10 km · Z2", sub:"regenerácia" },
+        11: { type:"run", label:"Beh (long)", detail:"8 km · Z2-Z3", sub:"6:15-6:35/km" },
+        12: { type:"rest", label:"Voľno" },
+        13: { type:"run", label:"Beh", detail:"5 km · Z2", sub:"6:30-6:50/km" },
+        14: { type:"strength", label:"Silový", sub:"35 min" },
+        15: { type:"rest", label:"Voľno" },
+        16: { type:"run", label:"Beh (tempo)", detail:"5.5 km · Z3-Z4", sub:"5:45-6:05/km" },
+        17: { type:"bike", label:"Bicykel", detail:"15 km · Z2", sub:"vytrvalostná jazda" },
+        18: { type:"rest", label:"Voľno" },
+        19: { type:"run", label:"Beh (long)", detail:"9 km · Z2-Z3", sub:"6:10-6:30/km" },
+        20: { type:"rest", label:"Voľno" },
+        21: { type:"strength", label:"Silový", sub:"40 min" },
+        22: { type:"run", label:"Beh", detail:"5 km · Z2", sub:"6:25-6:45/km" },
+        23: { type:"run", label:"Beh (tempo)", detail:"6 km · Z3-Z4", sub:"5:40-6:00/km" },
+        24: { type:"strength", label:"Silový", sub:"30 min" },
+        25: { type:"bike", label:"Bicykel", detail:"18 km · Z2", sub:"najdlhšia jazda mesiaca" },
+        26: { type:"rest", label:"Voľno" },
+        27: { type:"run", label:"Beh", detail:"5 km · Z2", sub:"6:20-6:40/km" },
+        28: { type:"strength", label:"Silový", sub:"35 min" },
+        29: { type:"rest", label:"Voľno" },
+        30: { type:"run", label:"Beh (long)", detail:"10 km · Z2-Z3", sub:"6:00-6:20/km" },
+        31: { type:"rest", label:"Voľno" }
+      }
     },
     bodyComposition: {
       date: "2026-06-30",
@@ -328,22 +389,30 @@ function renderRestCalendar(plan){
   const box = document.querySelector('.rest-cal-box');
   if(!plan){ box.style.display = 'none'; return; }
   box.style.display = 'block';
-  document.getElementById('restCalTitle').textContent = `Navrhovaný kalendár dní voľna — ${plan.label}`;
+  document.getElementById('restCalTitle').textContent = `Navrhovaný tréningový plán — ${plan.label}`;
+  document.getElementById('restCalPlanNote').textContent = plan.note || '';
+  document.getElementById('restCalLegend').innerHTML = (plan.legend||[]).map(l=>
+    `<div class="lg-item"><span class="lg-dot ${l.type}"></span>${l.label}</div>`).join('');
   const daysInMonth = new Date(plan.year, plan.month, 0).getDate();
   const firstWeekdaySun0 = new Date(plan.year, plan.month-1, 1).getDay();
   const leadingBlanks = (firstWeekdaySun0 + 6) % 7;
-  const restSet = new Set(plan.restDays);
   let cells = '';
   for(let i=0;i<leadingBlanks;i++) cells += `<div class="cal-cell empty"></div>`;
   for(let d=1; d<=daysInMonth; d++){
-    if(restSet.has(d)){
-      cells += `<div class="cal-cell rest">${d}<span class="cal-tag">Voľno</span></div>`;
+    const day = plan.days[d];
+    if(day){
+      cells += `<div class="cal-cell ${day.type}">
+        <span class="cal-day">${d}</span>
+        <span class="cal-type">${day.label}</span>
+        ${day.detail?`<span class="cal-detail">${day.detail}</span>`:''}
+        ${day.sub?`<span class="cal-detail">${day.sub}</span>`:''}
+      </div>`;
     } else {
-      cells += `<div class="cal-cell">${d}</div>`;
+      cells += `<div class="cal-cell"><span class="cal-day">${d}</span></div>`;
     }
   }
   document.getElementById('restCal').innerHTML = cells;
-  document.getElementById('restCalNote').textContent = plan.restReason;
+  document.getElementById('restCalNote').textContent = plan.hrZoneNote || '';
 }
 
 function render(){

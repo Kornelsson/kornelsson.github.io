@@ -311,297 +311,15 @@
 
 <script>
 /* ============================================================
-   MONTHLY DATA (SEED)
-   Toto sú záložné/počiatočné dáta. Po zapnutí Firestore (pozri
-   firebaseFetchMonths nižšie) sa pri prihlásení automaticky raz
-   nahrajú do Firestore a odvtedy sa načítavajú odtiaľ — MONTHS
-   premenná nižšie sa prepíše dátami z Firestore, ak sú dostupné.
+   MONTHLY DATA
+   Reálne dáta (apríl, máj, jún 2026 a ďalšie) teraz žijú vo Firestore
+   kolekcii "months" (chránenej auth pravidlami) — pozri
+   syncMonthsFromFirestore nižšie. SEED_MONTHS je zámerne prázdne, aby
+   sa žiadne osobné dáta nedali vidieť cez "zobraziť zdroj" stránky.
+   Ak by Firestore niekedy vypadol, dashboard jednoducho nemá čo
+   zobraziť, kým sa spojenie neobnoví — nespadne.
    ============================================================ */
-const SEED_MONTHS = [
-  {
-    key: "2026-04",
-    label: "Apríl 2026",
-    generatedAt: "2026-07-01",
-    totals: { activeDays: 27, totalDays: 30, distanceKm: 266.8, timeMin: 1898, calories: 11558, elevationM: 1126, prCount: 66, achievementCount: 75 },
-    bySport: {
-      Run:    { count: 17, distanceKm: 100.1, timeMin: 737, calories: 6485, elevationM: 10,  icon: "🏃" },
-      Walk:   { count: 25, distanceKm: 46.0,  timeMin: 590, calories: 2414, elevationM: 294, icon: "🚶" },
-      Ride:   { count: 24, distanceKm: 120.7, timeMin: 540, calories: 2471, elevationM: 822, icon: "🚴" },
-      Soccer: { count: 1,  distanceKm: 0,     timeMin: 31,  calories: 188,  elevationM: 0,   icon: "⚽" }
-    },
-    weekly: [
-      { week: "14 (1.-5.4.)",   distanceKm: 53.8 },
-      { week: "15 (6.-12.4.)",  distanceKm: 21.4 },
-      { week: "16 (13.-19.4.)", distanceKm: 89.5 },
-      { week: "17 (20.-26.4.)", distanceKm: 58.6 },
-      { week: "18 (27.-30.4.)", distanceKm: 43.4 }
-    ],
-    highlights: [
-      { title: "27 z 30 dní s aktivitou (90 %)", body: "Silná konzistencia hneď v prvom sledovanom mesiaci." },
-      { title: "30. apríl — najdlhší beh mesiaca", body: "11.23 km za 70 min, tempo 6:15/km, 715 kcal — najväčší jednorazový výkon v behu." },
-      { title: "26. apríl — najlepšie tempo mesiaca", body: "5.26 km v tempe 6:08/km, 341 kcal." },
-      { title: "5. apríl — najväčšia jazda na bicykli", body: "32.07 km za 151 min, 15 osobných rekordov a 16 achievementov v jednej aktivite." },
-      { title: "Najsilnejší týždeň — 13.-19.4.", body: "89.5 km spolu, viac než dvojnásobok najslabšieho týždňa mesiaca." },
-      { title: "Mesačný súčet", body: "266.8 km spolu (beh, chôdza, bicykel), 31.6 h pohybu, 11 558 kcal, 66 PR a 75 achievementov." }
-    ],
-    lowlights: [
-      { title: "22. apríl — problematický beh", body: "Len 4.87 km za 81 min, tempo 14:52/km a extrémny efort 98 — najvyšší efort v mesiaci, vyzerá na prerušovaný beh s dlhými pauzami." },
-      { title: "29. apríl — najslabší beh mesiaca", body: "Iba 2.16 km, tempo 17:01/km, efort 35." },
-      { title: "Prudký výkyv objemu", body: "Týždeň 15 (6.-12.4.) klesol na 21.4 km hneď po týždni 14 s 53.8 km — nepravidelné rozloženie záťaže." },
-      { title: "Silový tréning úplne chýbal", body: "Za celý mesiac ani jeden silový tréning — čisto kardio (beh, chôdza, bicykel)." },
-      { title: "Iba 3 dni voľna za 30 dní", body: "90 % aktívnych dní je skvelá disciplína, ale s minimom regenerácie stojí za sledovanie riziko pretrénovania." }
-    ],
-    recommendations: [
-      { title: "Zaraď silový tréning", body: "V apríli chýbal úplne. Skús aspoň 1-2× týždenne." },
-      { title: "Naplánuj pravidelné dni voľna", body: "Iba 3 dni bez aktivity za mesiac — nastav si pevný rytmus regenerácie." },
-      { title: "Over si, čo sa stalo 22. apríla", body: "Efort 98 a tempo 14:52/km je jasná výnimka — ak sa vzorec zopakuje, sleduj príčinu (teplo, únava, zranenie)." },
-      { title: "Vyrovnaj týždenný objem", body: "Objem výrazne kolísal medzi 21.4 km a 89.5 km — skús rozložiť kilometre rovnomernejšie." },
-      { title: "Nadviaž na dlhý beh z 30. apríla", body: "11.23 km v tempe 6:15/km je solídny základ pre postupné naberanie vzdialenosti." }
-    ],
-    runs: [
-      {date:"02.04.", name:"Afternoon Run", distanceKm:5.02, paceMinKm:6.27, calories:317, effort:11},
-      {date:"03.04.", name:"Afternoon Run", distanceKm:5.01, paceMinKm:6.16, calories:319, effort:22},
-      {date:"04.04.", name:"Evening Run", distanceKm:5.03, paceMinKm:6.30, calories:320, effort:12},
-      {date:"07.04.", name:"Evening Run", distanceKm:5.06, paceMinKm:6.34, calories:320, effort:13},
-      {date:"09.04.", name:"Evening Run", distanceKm:5.12, paceMinKm:6.23, calories:333, effort:23},
-      {date:"10.04.", name:"Afternoon Run", distanceKm:5.01, paceMinKm:6.27, calories:318, effort:22},
-      {date:"13.04.", name:"Afternoon Run", distanceKm:10.03, paceMinKm:6.42, calories:637, effort:52},
-      {date:"15.04.", name:"Evening Run", distanceKm:5.96, paceMinKm:10.27, calories:383, effort:77},
-      {date:"17.04.", name:"Morning Run", distanceKm:7.06, paceMinKm:6.65, calories:445, effort:11},
-      {date:"18.04.", name:"Afternoon Run", distanceKm:5.02, paceMinKm:6.48, calories:317, effort:11},
-      {date:"20.04.", name:"Afternoon Run", distanceKm:5.01, paceMinKm:6.68, calories:319, effort:7},
-      {date:"22.04.", name:"Evening Run", distanceKm:4.87, paceMinKm:14.87, calories:272, effort:98},
-      {date:"24.04.", name:"Afternoon Run", distanceKm:8.01, paceMinKm:6.47, calories:512, effort:15},
-      {date:"26.04.", name:"Evening Run", distanceKm:5.26, paceMinKm:6.08, calories:341, effort:18},
-      {date:"27.04.", name:"Afternoon Run", distanceKm:5.30, paceMinKm:8.68, calories:500, effort:3},
-      {date:"29.04.", name:"Evening Run", distanceKm:2.16, paceMinKm:17.02, calories:117, effort:35},
-      {date:"30.04.", name:"Afternoon Run", distanceKm:11.23, paceMinKm:6.25, calories:715, effort:67}
-    ],
-    bodyComposition: {
-      date: "2026-04-30",
-      weightKg: 74.00,
-      bodyType: "Balanced",
-      waterPct: 54.0,
-      basalMetabolismKcal: 1473,
-      visceralFat: 11,
-      boneMassKg: 2.96,
-      bodyFatPct: 21.2,
-      bmi: 22.8,
-      muscleKg: 55.32,
-      proteinPct: 20.7,
-      statuses: {
-        water: "warn", basal: "bad", visceral: "bad", bone: "normal",
-        bodyfat: "normal", bmi: "normal", muscle: "normal", protein: "normal"
-      }
-    }
-  },
-  {
-    key: "2026-05",
-    label: "Máj 2026",
-    generatedAt: "2026-07-01",
-    totals: { activeDays: 29, totalDays: 31, distanceKm: 257.7, timeMin: 1809, calories: 11607, elevationM: 1542, prCount: 48, achievementCount: 55 },
-    bySport: {
-      Run:  { count: 19, distanceKm: 100.4, timeMin: 758, calories: 6583, elevationM: 62,   icon: "🏃" },
-      Walk: { count: 22, distanceKm: 48.0,  timeMin: 566, calories: 2440, elevationM: 305, icon: "🚶" },
-      Ride: { count: 25, distanceKm: 109.3, timeMin: 485, calories: 2584, elevationM: 1175, icon: "🚴" }
-    },
-    weekly: [
-      { week: "18 (1.-3.5.)",   distanceKm: 31.1 },
-      { week: "19 (4.-10.5.)",  distanceKm: 79.1 },
-      { week: "20 (11.-17.5.)", distanceKm: 48.1 },
-      { week: "21 (18.-24.5.)", distanceKm: 51.3 },
-      { week: "22 (25.-31.5.)", distanceKm: 48.0 }
-    ],
-    highlights: [
-      { title: "29 z 31 dní s aktivitou (94 %)", body: "Najkonzistentnejší mesiac zo sledovaných troch." },
-      { title: "29.-30. máj — dva dlhé behy v rade", body: "10.20 km a 10.13 km, oba v tempe okolo 6:20/km — dva dni po sebe nad 10 km." },
-      { title: "24. máj — najlepšie tempo mesiaca", body: "5.02 km v tempe 6:06/km, 332 kcal." },
-      { title: "9. máj — najväčšia jazda mesiaca", body: "28.75 km za 144 min, 15 osobných rekordov a 15 achievementov v jednej aktivite." },
-      { title: "Najsilnejší týždeň — 4.-10.5.", body: "79.1 km spolu, viac než dvojnásobok susedného najslabšieho týždňa." },
-      { title: "Mesačný súčet", body: "257.7 km spolu (beh, chôdza, bicykel), 30.2 h pohybu, 11 607 kcal, 48 PR a 55 achievementov." }
-    ],
-    lowlights: [
-      { title: "8. máj — takmer nulová aktivita", body: "Len 0.14 km za 2.6 min, efort 0 — pravdepodobne omylom spustený záznam, nie skutočný tréning." },
-      { title: "13. máj — extrémny efort", body: "Najvyšší efort v mesiaci (131), len 6.35 km za 93 min, tempo 14:38/km." },
-      { title: "Pokles objemu po najsilnejšom týždni", body: "Z 79.1 km (týždeň 19) na 48.1 km (týždeň 20)." },
-      { title: "Silový tréning opäť chýbal", body: "Druhý mesiac v rade bez jediného silového tréningu." },
-      { title: "Iba 2 dni úplného voľna za mesiac", body: "94 % aktívnych dní pokračuje v rovnakom vzorci ako predošlý mesiac — riziko pretrénovania stále aktuálne." }
-    ],
-    recommendations: [
-      { title: "Zaraď silový tréning", body: "Chýba už druhý mesiac po sebe — skús ho konečne dostať do rutiny." },
-      { title: "Naplánuj pravidelné dni voľna", body: "Iba 2 dni bez aktivity za mesiac — nastav si pevný rytmus regenerácie." },
-      { title: "Over si, čo sa stalo 8. a 13. mája", body: "Jedna takmer nulová aktivita a jedna s extrémnym efortom — over, či nešlo o chybu záznamu alebo o preťaženie." },
-      { title: "Nadviaž na dvojicu dlhých behov", body: "29. a 30. máj ukázali, že zvládneš 10 km dva dni po sebe — dobrý základ na postupné naberanie objemu." },
-      { title: "Vyrovnaj týždenný objem", body: "Výkyv medzi 31.1 km a 79.1 km je stále veľký — rozlož kilometre rovnomernejšie." }
-    ],
-    runs: [
-      {date:"02.05.", name:"Morning Run", distanceKm:5.02, paceMinKm:6.38, calories:327, effort:17},
-      {date:"03.05.", name:"Afternoon Run", distanceKm:7.19, paceMinKm:6.33, calories:468, effort:12},
-      {date:"05.05.", name:"Lunch Run", distanceKm:5.07, paceMinKm:6.43, calories:327, effort:14},
-      {date:"06.05.", name:"Evening Run", distanceKm:3.70, paceMinKm:15.18, calories:261, effort:48},
-      {date:"08.05.", name:"Afternoon Run", distanceKm:0.14, paceMinKm:18.30, calories:7, effort:0},
-      {date:"12.05.", name:"Evening Run", distanceKm:5.02, paceMinKm:6.46, calories:322, effort:8},
-      {date:"13.05.", name:"Evening Run", distanceKm:6.35, paceMinKm:14.63, calories:456, effort:131},
-      {date:"15.05.", name:"Evening Run", distanceKm:5.01, paceMinKm:6.18, calories:327, effort:9},
-      {date:"17.05.", name:"Afternoon Run", distanceKm:5.51, paceMinKm:6.28, calories:362, effort:8},
-      {date:"18.05.", name:"Afternoon Run", distanceKm:5.01, paceMinKm:6.15, calories:330, effort:18},
-      {date:"19.05.", name:"Lunch Run", distanceKm:5.01, paceMinKm:6.31, calories:327, effort:10},
-      {date:"20.05.", name:"Evening Run", distanceKm:4.36, paceMinKm:15.35, calories:267, effort:59},
-      {date:"21.05.", name:"Evening Run", distanceKm:5.06, paceMinKm:6.17, calories:323, effort:8},
-      {date:"22.05.", name:"Afternoon Run", distanceKm:5.01, paceMinKm:6.35, calories:321, effort:8},
-      {date:"24.05.", name:"Evening Run", distanceKm:5.02, paceMinKm:6.06, calories:332, effort:12},
-      {date:"27.05.", name:"Afternoon Run", distanceKm:5.01, paceMinKm:6.56, calories:326, effort:7},
-      {date:"29.05.", name:"Afternoon Run", distanceKm:10.20, paceMinKm:6.20, calories:672, effort:37},
-      {date:"30.05.", name:"Afternoon Run", distanceKm:10.13, paceMinKm:6.24, calories:661, effort:19},
-      {date:"31.05.", name:"Evening Run", distanceKm:2.56, paceMinKm:6.32, calories:167, effort:5}
-    ],
-    bodyComposition: {
-      date: "2026-05-31",
-      weightKg: 73.70,
-      bodyType: "Balanced",
-      waterPct: 54.0,
-      basalMetabolismKcal: 1469,
-      visceralFat: 11,
-      boneMassKg: 2.96,
-      bodyFatPct: 21.1,
-      bmi: 22.7,
-      muscleKg: 55.15,
-      proteinPct: 20.7,
-      statuses: {
-        water: "warn", basal: "bad", visceral: "bad", bone: "normal",
-        bodyfat: "normal", bmi: "normal", muscle: "normal", protein: "normal"
-      }
-    }
-  },
-  {
-    key: "2026-06",
-    label: "Jún 2026",
-    generatedAt: "2026-07-01",
-    totals: { activeDays: 28, totalDays: 30, distanceKm: 186.6, timeMin: 1454, calories: 10453, elevationM: 806, prCount: 18, achievementCount: 26 },
-    bySport: {
-      Run:            { count: 22, distanceKm: 113.8, timeMin: 771, calories: 7503, elevationM: 19, icon: "🏃" },
-      Walk:           { count: 12, distanceKm: 25.1,  timeMin: 309, calories: 1280, elevationM: 164, icon: "🚶" },
-      Ride:           { count: 11, distanceKm: 42.3,  timeMin: 204, calories: 989,  elevationM: 461, icon: "🚴" },
-      Hike:           { count: 1,  distanceKm: 5.4,   timeMin: 79,  calories: 362,  elevationM: 162, icon: "⛰️" },
-      WeightTraining: { count: 3,  distanceKm: 0,     timeMin: 90,  calories: 319,  elevationM: 0, icon: "🏋️" }
-    },
-    weekly: [
-      { week: "23 (1.-6.6.)",  distanceKm: 38.6 },
-      { week: "24 (8.-14.6.)", distanceKm: 58.4 },
-      { week: "25 (15.-21.6.)", distanceKm: 50.2 },
-      { week: "26 (22.-28.6.)", distanceKm: 28.2 },
-      { week: "27 (29.-30.6.)", distanceKm: 11.2 }
-    ],
-    highlights: [
-      { title: "27. jún — najsilnejší výkon mesiaca", body: "10.04 km za 58 min, tempo 5:47/km, 675 kcal, relatívny efort 56 a 2 achievementy. Najdlhší aj druhý najrýchlejší beh v jednom." },
-      { title: "28 z 30 dní s aktivitou (93 %)", body: "Iba dva dni voľna za celý mesiac (7. a 16. jún) — najkonzistentnejšia séria doteraz." },
-      { title: "14. jún — najlepšie tempo na 5 km", body: "5.02 km za 28.7 min, tempo 5:43/km — najrýchlejší bežný 5 km beh mesiaca." },
-      { title: "20. jún — jazda plná rekordov", body: "18.16 km, 89 min, 14 osobných rekordov a 16 achievementov v jednej aktivite — najväčšia jazda mesiaca." },
-      { title: "Nový návyk: silový tréning", body: "3 silové tréningy zaradené v druhej polovici mesiaca (23., 25., 29. jún), spolu 90 min a 319 kcal — predtým v mesiaci chýbal úplne." },
-      { title: "Mesačný súčet", body: "186.6 km spolu (beh, chôdza, bicykel, hike), 24.2 h pohybu, 10 453 kcal, 18 PR a 26 achievementov." }
-    ],
-    lowlights: [
-      { title: "10. jún — problematický večerný beh", body: "Len 4.62 km, ale 70 min čistého pohybu (110 min celkovo), tempo 15:11/km a extrémny efort 68. Vyzerá to na prerušovaný beh s dlhými prestávkami — stojí za spätnú kontrolu (teplo, únava, alebo začínajúce zranenie)." },
-      { title: "22. jún — najslabší beh mesiaca", body: "Iba 2.22 km, tempo 12:38/km, efort len 3 — výrazný pokles oproti bežnému 5 km tempu okolo 6:20/km." },
-      { title: "Pokles objemu v strede mesiaca", body: "Týždenná vzdialenosť klesla z 58.4 km (týždeň 24) na 28.2 km (týždeň 26), predtým než ju posledný týždeň opäť zdvihol 27. jún." },
-      { title: "Iba 2 dni voľna za mesiac", body: "93% aktívnych dní je skvelá disciplína, ale s len dvoma dňami regenerácie za 30 dní stojí za sledovanie riziko pretrénovania." },
-      { title: "Silový tréning chýbal 3 týždne", body: "Prvý silový tréning sa objavil až 23. júna — prvé tri týždne mesiaca boli čisto kardio (beh/chôdza/bicykel)." }
-    ],
-    recommendations: [
-      { title: "Naplánuj si pravidelné dni voľna", body: "Len 2 dni bez aktivity za celý jún. Nastav si aspoň 1 pevný deň regenerácie týždenne (napr. nedeľa), aby si znížil riziko pretrénovania." },
-      { title: "Zaraď silový tréning od prvého týždňa", body: "V júni sa objavil až 23. dňa. Skús ho v júli zaradiť pravidelne 2× týždenne od začiatku mesiaca, nie až v druhej polovici." },
-      { title: "Over si, čo sa stalo 10. júna", body: "Beh s tempom 15:11/km a efortom 68 je jasný výnimočný deň (možno teplo, únava, dlhé prestávky). Ak sa podobný vzorec zopakuje, sleduj hydratáciu a tempo pri horúčave." },
-      { title: "Vyrovnaj týždenný objem", body: "Objem klesol z 58.4 km na 28.2 km v strede mesiaca. Skús rozložiť kilometre rovnomernejšie cez týždne namiesto veľkých výkyvov hore-dole." },
-      { title: "Nadviaž na 10 km beh z 27. júna", body: "Zvládol si ho v solídnom tempe 5:47/km. Skús v júli zaradiť 1 dlhší beh týždenne a postupne naberať vzdialenosť nad 5 km štandard." },
-      { title: "Zameraj sa na hydratáciu", body: "Posledné meranie ukázalo vodu len 53.6 % (nedostatočné) a zvýšený viscerálny tuk. Viac tekutín cez deň v kombinácii s pravidelným silovým tréningom by mali oboje zlepšiť." }
-    ],
-    nextMonthPlan: {
-      year: 2026, month: 7, label: "Júl 2026",
-      note: "Postupné naberanie objemu (long run 8→9→10 km), 2 tempo behy týždenne, 6 silových tréningov (30-40 min), 4 jazdy na bicykli (12→18 km) a 10 dní voľna rozložených naprieč týždňom — nie len v nedeľu — tak, aby regenerácia vždy predchádzala alebo nasledovala po najťažšom dni.",
-      hrZoneNote: "HR zóny podľa tvojho Strava profilu: Z2 125-154 bpm (easy/aeróbne), Z3 155-169 bpm (tempo), Z4 170-184 bpm (namáhavé). Tempá behov vychádzajú z tvojich reálnych júnových výkonov (nie z odhadovaných Strava pace zón, ktoré počítajú s 5 km za 41 min a nesedia s tvojimi skutočnými ~29-34 min behmi).",
-      legend: [
-        { type:"run", label:"Beh" },
-        { type:"strength", label:"Silový" },
-        { type:"bike", label:"Bicykel" },
-        { type:"rest", label:"Voľno" }
-      ],
-      days: {
-        1:  { type:"run", label:"Beh", detail:"5 km · Z2", sub:"6:30-6:50/km" },
-        2:  { type:"rest", label:"Voľno" },
-        3:  { type:"strength", label:"Silový", sub:"30 min" },
-        4:  { type:"bike", label:"Bicykel", detail:"12 km · Z2", sub:"125-154 bpm" },
-        5:  { type:"rest", label:"Voľno" },
-        6:  { type:"run", label:"Beh", detail:"5 km · Z2", sub:"6:30-6:50/km" },
-        7:  { type:"strength", label:"Silový", sub:"35 min" },
-        8:  { type:"rest", label:"Voľno" },
-        9:  { type:"run", label:"Beh (tempo)", detail:"5 km · Z3-Z4", sub:"5:50-6:10/km" },
-        10: { type:"bike", label:"Bicykel", detail:"10 km · Z2", sub:"regenerácia" },
-        11: { type:"run", label:"Beh (long)", detail:"8 km · Z2-Z3", sub:"6:15-6:35/km" },
-        12: { type:"rest", label:"Voľno" },
-        13: { type:"run", label:"Beh", detail:"5 km · Z2", sub:"6:30-6:50/km" },
-        14: { type:"strength", label:"Silový", sub:"35 min" },
-        15: { type:"rest", label:"Voľno" },
-        16: { type:"run", label:"Beh (tempo)", detail:"5.5 km · Z3-Z4", sub:"5:45-6:05/km" },
-        17: { type:"bike", label:"Bicykel", detail:"15 km · Z2", sub:"vytrvalostná jazda" },
-        18: { type:"rest", label:"Voľno" },
-        19: { type:"run", label:"Beh (long)", detail:"9 km · Z2-Z3", sub:"6:10-6:30/km" },
-        20: { type:"rest", label:"Voľno" },
-        21: { type:"strength", label:"Silový", sub:"40 min" },
-        22: { type:"run", label:"Beh", detail:"5 km · Z2", sub:"6:25-6:45/km" },
-        23: { type:"run", label:"Beh (tempo)", detail:"6 km · Z3-Z4", sub:"5:40-6:00/km" },
-        24: { type:"strength", label:"Silový", sub:"30 min" },
-        25: { type:"bike", label:"Bicykel", detail:"18 km · Z2", sub:"najdlhšia jazda mesiaca" },
-        26: { type:"rest", label:"Voľno" },
-        27: { type:"run", label:"Beh", detail:"5 km · Z2", sub:"6:20-6:40/km" },
-        28: { type:"strength", label:"Silový", sub:"35 min" },
-        29: { type:"rest", label:"Voľno" },
-        30: { type:"run", label:"Beh (long)", detail:"10 km · Z2-Z3", sub:"6:00-6:20/km" },
-        31: { type:"rest", label:"Voľno" }
-      }
-    },
-    bodyComposition: {
-      date: "2026-07-01",
-      weightKg: 75.05,
-      bodyType: "Balanced",
-      waterPct: 53.7,
-      basalMetabolismKcal: 1489,
-      visceralFat: 12,
-      boneMassKg: 2.99,
-      bodyFatPct: 21.6,
-      bmi: 23.2,
-      muscleKg: 55.81,
-      proteinPct: 20.6,
-      statuses: {
-        water: "warn", basal: "bad", visceral: "bad", bone: "warn",
-        bodyfat: "normal", bmi: "normal", muscle: "normal", protein: "normal"
-      }
-    },
-    runs: [
-      {date:"01.06.", name:"Afternoon Run", distanceKm:5.00, paceMinKm:6.41, calories:325, effort:7},
-      {date:"03.06.", name:"Evening Run", distanceKm:5.01, paceMinKm:6.32, calories:327, effort:9},
-      {date:"05.06.", name:"Afternoon Run", distanceKm:5.02, paceMinKm:6.45, calories:326, effort:9},
-      {date:"06.06.", name:"Afternoon Run", distanceKm:5.02, paceMinKm:6.50, calories:329, effort:9},
-      {date:"08.06.", name:"Afternoon Run", distanceKm:5.02, paceMinKm:6.47, calories:333, effort:8},
-      {date:"09.06.", name:"Morning Run", distanceKm:5.02, paceMinKm:6.09, calories:334, effort:18},
-      {date:"10.06.", name:"Evening Run", distanceKm:4.62, paceMinKm:15.11, calories:313, effort:68},
-      {date:"11.06.", name:"Evening Run", distanceKm:5.02, paceMinKm:6.24, calories:335, effort:10},
-      {date:"12.06.", name:"Evening Run", distanceKm:5.01, paceMinKm:6.26, calories:330, effort:14},
-      {date:"13.06.", name:"Lunch Run", distanceKm:5.08, paceMinKm:6.64, calories:336, effort:10},
-      {date:"14.06.", name:"Evening Run", distanceKm:5.02, paceMinKm:5.71, calories:336, effort:17},
-      {date:"17.06.", name:"Afternoon Run", distanceKm:5.02, paceMinKm:6.34, calories:331, effort:16},
-      {date:"18.06.", name:"Afternoon Run", distanceKm:6.25, paceMinKm:6.63, calories:412, effort:12},
-      {date:"19.06.", name:"Evening Run", distanceKm:5.03, paceMinKm:6.67, calories:328, effort:7},
-      {date:"20.06.", name:"Afternoon Run", distanceKm:5.02, paceMinKm:6.38, calories:330, effort:12},
-      {date:"21.06.", name:"Evening Run", distanceKm:5.01, paceMinKm:6.26, calories:333, effort:13},
-      {date:"22.06.", name:"Afternoon Run", distanceKm:2.22, paceMinKm:12.63, calories:112, effort:3},
-      {date:"24.06.", name:"Afternoon Run", distanceKm:5.01, paceMinKm:6.34, calories:334, effort:9},
-      {date:"26.06.", name:"Afternoon Run", distanceKm:5.37, paceMinKm:6.31, calories:357, effort:22},
-      {date:"27.06.", name:"Afternoon Run", distanceKm:10.04, paceMinKm:5.79, calories:675, effort:56},
-      {date:"29.06.", name:"Evening Run", distanceKm:5.01, paceMinKm:6.31, calories:335, effort:23},
-      {date:"30.06.", name:"Evening Run", distanceKm:5.01, paceMinKm:6.17, calories:332, effort:32}
-    ]
-  }
-];
+const SEED_MONTHS = [];
 
 let MONTHS = SEED_MONTHS;
 let currentIdx = MONTHS.length - 1;
@@ -874,8 +592,7 @@ function buildMonthSelect(){
   sel.addEventListener('change', ()=>{ currentIdx = Number(sel.value); render(); });
 }
 
-buildMonthSelect();
-render();
+if(MONTHS.length){ buildMonthSelect(); render(); }
 
 const savedTheme = localStorage.getItem('wd-theme');
 const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
@@ -903,26 +620,21 @@ window.addEventListener('fb-ready', () => {
   const auth = getAuth(app);
   const db = getFirestore(app);
   const $ = id => document.getElementById(id);
-  window.__wd_debug = { app, auth, db, collection, getDocs, doc, setDoc }; // TODO: remove after Firestore sync is confirmed working
 
   // Číta report dáta z Firestore kolekcie "months" (chránené auth pravidlami).
-  // Ak je kolekcia prázdna, jednorazovo tam nahrá vstavané SEED_MONTHS dáta.
   // Ak sú v SEED_MONTHS mesiace, ktoré vo Firestore ešte chýbajú (napr. pridané
-  // mesačnou automatizáciou), dopíšu sa tiež. Ak Firestore nie je zapnutý
-  // v konzole, fetch zlyhá a dashboard ticho zostane na embedded SEED dátach.
+  // mesačnou automatizáciou), dopíšu sa tiež. Ak Firestore nie je dostupný,
+  // fetch zlyhá a dashboard ticho zostane bez dát (žiadne osobné dáta nie sú
+  // embedded v zdrojovom kóde, takže niet na čo spadnúť späť).
   async function syncMonthsFromFirestore(){
-    console.log('[wd] Firestore sync: štart, čítam kolekciu "months"...');
     try {
       const snap = await getDocs(collection(db, 'months'));
       const fetched = [];
       snap.forEach(d => fetched.push(d.data()));
-      console.log(`[wd] Firestore sync: nájdených ${fetched.length} existujúcich dokumentov.`);
       const existingKeys = new Set(fetched.map(m=>m.key));
       const missing = SEED_MONTHS.filter(m => !existingKeys.has(m.key));
       if(missing.length){
-        console.log(`[wd] Firestore sync: nahrávam ${missing.length} chýbajúcich mesiacov: ${missing.map(m=>m.key).join(', ')}`);
         await Promise.all(missing.map(m => setDoc(doc(db, 'months', m.key), m)));
-        console.log('[wd] Firestore sync: nahrávanie dokončené bez chyby.');
         fetched.push(...missing);
       }
       if(fetched.length){
@@ -931,10 +643,9 @@ window.addEventListener('fb-ready', () => {
         currentIdx = MONTHS.length - 1;
         buildMonthSelect();
         render();
-        console.log('[wd] Firestore sync: dashboard teraz zobrazuje dáta z Firestore.');
       }
     } catch(e){
-      console.warn('[wd] Firestore sync ZLYHAL, používam vstavané SEED dáta. Kód chyby:', e.code, e.message, e);
+      console.warn('Firestore sync zlyhal.', e);
     }
   }
 

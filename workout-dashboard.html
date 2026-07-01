@@ -903,6 +903,7 @@ window.addEventListener('fb-ready', () => {
   const auth = getAuth(app);
   const db = getFirestore(app);
   const $ = id => document.getElementById(id);
+  window.__wd_debug = { app, auth, db, collection, getDocs, doc, setDoc }; // TODO: remove after Firestore sync is confirmed working
 
   // Číta report dáta z Firestore kolekcie "months" (chránené auth pravidlami).
   // Ak je kolekcia prázdna, jednorazovo tam nahrá vstavané SEED_MONTHS dáta.
@@ -910,14 +911,18 @@ window.addEventListener('fb-ready', () => {
   // mesačnou automatizáciou), dopíšu sa tiež. Ak Firestore nie je zapnutý
   // v konzole, fetch zlyhá a dashboard ticho zostane na embedded SEED dátach.
   async function syncMonthsFromFirestore(){
+    console.log('[wd] Firestore sync: štart, čítam kolekciu "months"...');
     try {
       const snap = await getDocs(collection(db, 'months'));
       const fetched = [];
       snap.forEach(d => fetched.push(d.data()));
+      console.log(`[wd] Firestore sync: nájdených ${fetched.length} existujúcich dokumentov.`);
       const existingKeys = new Set(fetched.map(m=>m.key));
       const missing = SEED_MONTHS.filter(m => !existingKeys.has(m.key));
       if(missing.length){
+        console.log(`[wd] Firestore sync: nahrávam ${missing.length} chýbajúcich mesiacov: ${missing.map(m=>m.key).join(', ')}`);
         await Promise.all(missing.map(m => setDoc(doc(db, 'months', m.key), m)));
+        console.log('[wd] Firestore sync: nahrávanie dokončené bez chyby.');
         fetched.push(...missing);
       }
       if(fetched.length){
@@ -926,9 +931,10 @@ window.addEventListener('fb-ready', () => {
         currentIdx = MONTHS.length - 1;
         buildMonthSelect();
         render();
+        console.log('[wd] Firestore sync: dashboard teraz zobrazuje dáta z Firestore.');
       }
     } catch(e){
-      console.warn('Firestore sync zlyhal, používam vstavané SEED dáta.', e);
+      console.warn('[wd] Firestore sync ZLYHAL, používam vstavané SEED dáta. Kód chyby:', e.code, e.message, e);
     }
   }
 

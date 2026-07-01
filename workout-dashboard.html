@@ -75,6 +75,17 @@
   .hl-card.low{border-left:3px solid var(--bad)}
   .hl-card.high{border-left:3px solid var(--good)}
   .hl-card.reco{border-left:3px solid var(--accent)}
+
+  .rest-cal-box{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow);margin-top:10px}
+  .rest-cal-title{font-weight:700;font-size:14px;margin-bottom:14px}
+  .rest-cal-weekdays{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;margin-bottom:8px}
+  .rest-cal-weekdays span{text-align:center;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.03em}
+  .rest-cal{display:grid;grid-template-columns:repeat(7,1fr);gap:8px}
+  .rest-cal .cal-cell{aspect-ratio:1;border-radius:var(--radius-sm);display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:13px;font-weight:600;background:var(--border-soft);color:var(--text-soft)}
+  .rest-cal .cal-cell.empty{background:transparent}
+  .rest-cal .cal-cell.rest{background:var(--accent);color:#fff}
+  .rest-cal .cal-cell.rest .cal-tag{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;margin-top:2px;opacity:.9}
+  .rest-cal-note{color:var(--muted);font-size:12.5px;margin-top:14px;line-height:1.6}
   .hl-emoji{font-size:20px;line-height:1.3}
   .hl-title{font-weight:700;font-size:13.5px;margin-bottom:2px}
   .hl-body{color:var(--text-soft);font-size:13px}
@@ -174,6 +185,15 @@
   <h2 class="section-title"><span class="dot"></span>Odporúčania na budúci mesiac</h2>
   <div class="cards-col" id="recommendations"></div>
 
+  <div class="rest-cal-box">
+    <div class="rest-cal-title" id="restCalTitle"></div>
+    <div class="rest-cal-weekdays">
+      <span>Po</span><span>Ut</span><span>St</span><span>Št</span><span>Pi</span><span>So</span><span>Ne</span>
+    </div>
+    <div class="rest-cal" id="restCal"></div>
+    <div class="rest-cal-note" id="restCalNote"></div>
+  </div>
+
   <h2 class="section-title"><span class="dot"></span>Podľa typu aktivity</h2>
   <div class="sport-grid" id="sportGrid"></div>
 
@@ -243,6 +263,11 @@ const MONTHS = [
       { title: "Nadviaž na 10 km beh z 27. júna", body: "Zvládol si ho v solídnom tempe 5:47/km. Skús v júli zaradiť 1 dlhší beh týždenne a postupne naberať vzdialenosť nad 5 km štandard." },
       { title: "Zameraj sa na hydratáciu", body: "Posledné meranie ukázalo vodu len 53.6 % (nedostatočné) a zvýšený viscerálny tuk. Viac tekutín cez deň v kombinácii s pravidelným silovým tréningom by mali oboje zlepšiť." }
     ],
+    nextMonthPlan: {
+      year: 2026, month: 7, label: "Júl 2026",
+      restDays: [5, 12, 19, 26],
+      restReason: "Pevný deň regenerácie každú nedeľu. V júni si mal iba 2 dni voľna za celý mesiac (7. a 16.) — 4 rozvrhnuté nedele v júli by mali znížiť riziko pretrénovania a dať telu priestor na zotavenie po silovom tréningu aj behoch."
+    },
     bodyComposition: {
       date: "2026-06-30",
       weightKg: 75.35,
@@ -299,6 +324,28 @@ function deltaHtml(curr, prev, unit="", higherIsBetter=true){
   return `<div class="delta ${good?'up':'down'}">${sign}${fmt(diff, unit==="" && Number.isInteger(diff)?0:1)}${unit} oproti minulému mesiacu</div>`;
 }
 
+function renderRestCalendar(plan){
+  const box = document.querySelector('.rest-cal-box');
+  if(!plan){ box.style.display = 'none'; return; }
+  box.style.display = 'block';
+  document.getElementById('restCalTitle').textContent = `Navrhovaný kalendár dní voľna — ${plan.label}`;
+  const daysInMonth = new Date(plan.year, plan.month, 0).getDate();
+  const firstWeekdaySun0 = new Date(plan.year, plan.month-1, 1).getDay();
+  const leadingBlanks = (firstWeekdaySun0 + 6) % 7;
+  const restSet = new Set(plan.restDays);
+  let cells = '';
+  for(let i=0;i<leadingBlanks;i++) cells += `<div class="cal-cell empty"></div>`;
+  for(let d=1; d<=daysInMonth; d++){
+    if(restSet.has(d)){
+      cells += `<div class="cal-cell rest">${d}<span class="cal-tag">Voľno</span></div>`;
+    } else {
+      cells += `<div class="cal-cell">${d}</div>`;
+    }
+  }
+  document.getElementById('restCal').innerHTML = cells;
+  document.getElementById('restCalNote').textContent = plan.restReason;
+}
+
 function render(){
   const m = MONTHS[currentIdx];
   const prev = MONTHS[currentIdx-1];
@@ -328,6 +375,8 @@ function render(){
 
   document.getElementById('recommendations').innerHTML = (m.recommendations||[]).map(h=>`
     <div class="hl-card reco"><div class="hl-emoji">🎯</div><div><div class="hl-title">${h.title}</div><div class="hl-body">${h.body}</div></div></div>`).join('');
+
+  renderRestCalendar(m.nextMonthPlan);
 
   document.getElementById('sportGrid').innerHTML = Object.entries(m.bySport).map(([name,s])=>`
     <div class="sport-card">

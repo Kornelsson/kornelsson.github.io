@@ -92,7 +92,7 @@
   .rest-cal-weekdays{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;margin-bottom:8px}
   .rest-cal-weekdays span{text-align:center;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.03em}
   .rest-cal{display:grid;grid-template-columns:repeat(7,1fr);gap:8px}
-  .rest-cal .cal-cell{min-height:88px;border-radius:var(--radius-sm);display:flex;flex-direction:column;padding:8px;background:var(--border-soft);gap:2px}
+  .rest-cal .cal-cell{position:relative;min-height:88px;border-radius:var(--radius-sm);display:flex;flex-direction:column;padding:8px;background:var(--border-soft);gap:2px}
   .rest-cal .cal-cell.empty{background:transparent}
   .rest-cal .cal-cell .cal-day{font-size:11px;font-weight:700;color:var(--muted)}
   .rest-cal .cal-cell .cal-type{font-size:11.5px;font-weight:800;margin-top:2px}
@@ -105,6 +105,10 @@
   .rest-cal .cal-cell.strength .cal-type{color:var(--strength)}
   .rest-cal .cal-cell.rest{background:var(--accent)}
   .rest-cal .cal-cell.rest .cal-day,.rest-cal .cal-cell.rest .cal-type{color:#fff}
+  .rest-cal .cal-check{position:absolute;top:7px;right:7px;width:15px;height:15px;cursor:pointer;accent-color:var(--accent)}
+  .rest-cal .cal-cell.rest .cal-check{accent-color:#fff}
+  .rest-cal .cal-cell.done{opacity:.5}
+  .rest-cal .cal-cell.done .cal-type{text-decoration:line-through}
   .rest-cal-note{color:var(--muted);font-size:12.5px;margin-top:14px;line-height:1.6}
   .hl-emoji{font-size:20px;line-height:1.3}
   .hl-title{font-weight:700;font-size:13.5px;margin-bottom:2px}
@@ -401,7 +405,10 @@ function renderRestCalendar(plan){
   for(let d=1; d<=daysInMonth; d++){
     const day = plan.days[d];
     if(day){
-      cells += `<div class="cal-cell ${day.type}">
+      const key = `wd-plan-${plan.year}-${plan.month}-${d}`;
+      const done = localStorage.getItem(key) === '1';
+      cells += `<div class="cal-cell ${day.type}${done?' done':''}" data-key="${key}">
+        <input type="checkbox" class="cal-check" ${done?'checked':''} title="Splnené" />
         <span class="cal-day">${d}</span>
         <span class="cal-type">${day.label}</span>
         ${day.detail?`<span class="cal-detail">${day.detail}</span>`:''}
@@ -413,6 +420,14 @@ function renderRestCalendar(plan){
   }
   document.getElementById('restCal').innerHTML = cells;
   document.getElementById('restCalNote').textContent = plan.hrZoneNote || '';
+  document.querySelectorAll('#restCal .cal-check').forEach(cb=>{
+    cb.addEventListener('change', ()=>{
+      const cell = cb.closest('.cal-cell');
+      const key = cell.dataset.key;
+      if(cb.checked) localStorage.setItem(key, '1'); else localStorage.removeItem(key);
+      cell.classList.toggle('done', cb.checked);
+    });
+  });
 }
 
 function render(){

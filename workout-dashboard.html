@@ -96,6 +96,7 @@
   .rest-cal-inner{min-width:600px}
   .rest-cal .cal-cell{position:relative;min-height:88px;border-radius:var(--radius-sm);display:flex;flex-direction:column;padding:8px;background:var(--border-soft);gap:2px}
   .rest-cal .cal-cell.empty{background:transparent}
+  .rest-cal .cal-cell .cal-wd{display:none}
   .rest-cal .cal-cell .cal-day{font-size:11px;font-weight:700;color:var(--muted)}
   .rest-cal .cal-cell .cal-type{font-size:11.5px;font-weight:800;margin-top:2px}
   .rest-cal .cal-cell .cal-detail{font-size:10px;color:var(--text-soft);line-height:1.25}
@@ -186,6 +187,14 @@
     .sport-grid{grid-template-columns:1fr 1fr;gap:10px}
     .rest-cal-box{padding:14px}
     .body-card{flex-wrap:wrap}
+
+    .rest-cal-weekdays{display:none}
+    .rest-cal-scroll{overflow-x:visible}
+    .rest-cal-inner{min-width:0}
+    .rest-cal{grid-template-columns:1fr 1fr}
+    .rest-cal .cal-cell.empty{display:none}
+    .rest-cal .cal-cell .cal-wd{display:block;font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.03em}
+    .rest-cal .cal-cell.rest .cal-wd{color:rgba(255,255,255,.8)}
   }
 </style>
 </head>
@@ -579,22 +588,25 @@ function renderRestCalendar(plan){
   const daysInMonth = new Date(plan.year, plan.month, 0).getDate();
   const firstWeekdaySun0 = new Date(plan.year, plan.month-1, 1).getDay();
   const leadingBlanks = (firstWeekdaySun0 + 6) % 7;
+  const wdLabels = ['Ne','Po','Ut','St','Št','Pi','So'];
   let cells = '';
   for(let i=0;i<leadingBlanks;i++) cells += `<div class="cal-cell empty"></div>`;
   for(let d=1; d<=daysInMonth; d++){
+    const wd = wdLabels[new Date(plan.year, plan.month-1, d).getDay()];
     const day = plan.days[d];
     if(day){
       const key = `wd-plan-${plan.year}-${plan.month}-${d}`;
       const done = localStorage.getItem(key) === '1';
       cells += `<div class="cal-cell ${day.type}${done?' done':''}" data-key="${key}">
         <input type="checkbox" class="cal-check" ${done?'checked':''} title="Splnené" />
+        <span class="cal-wd">${wd}</span>
         <span class="cal-day">${d}</span>
         <span class="cal-type">${day.label}</span>
         ${day.detail?`<span class="cal-detail">${day.detail}</span>`:''}
         ${day.sub?`<span class="cal-detail">${day.sub}</span>`:''}
       </div>`;
     } else {
-      cells += `<div class="cal-cell"><span class="cal-day">${d}</span></div>`;
+      cells += `<div class="cal-cell"><span class="cal-wd">${wd}</span><span class="cal-day">${d}</span></div>`;
     }
   }
   document.getElementById('restCal').innerHTML = cells;

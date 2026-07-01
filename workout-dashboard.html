@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Workout Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<script type="module">  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged }
+    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+  window.fb = { initializeApp, getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged };
+  window.dispatchEvent(new Event('fb-ready'));</script>
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --bg:#FAF6F0; --card:#FFFFFF; --text:#1A1A1A; --text-soft:#4A4A4A;
+    --muted:#8B8580; --border:#E8E1D5; --border-soft:#F0EBE0;
+    --accent:#BD1F2F; --accent-hi:#9B1A26;
+    --good:#2E7D4F; --bad:#BD1F2F; --warn:#B8860B;
+    --shadow:0 1px 3px rgba(0,0,0,0.04), 0 4px 16px rgba(0,0,0,0.04);
+    --shadow-hi:0 4px 8px rgba(0,0,0,0.06), 0 12px 32px rgba(0,0,0,0.1);
+    --radius:16px; --radius-sm:10px;
+    color-scheme:light;
+  }
+  body[data-theme="dark"]{
+    --bg:#0E0D0B; --card:#1A1814; --text:#F0E9DD; --text-soft:#C8C0B2;
+    --muted:#857D72; --border:#2D2820; --border-soft:#1F1C17;
+    --accent:#E8526F; --accent-hi:#FF6B85;
+    --good:#4CAF77; --bad:#E8526F; --warn:#D4A94A;
+    --shadow:0 1px 3px rgba(0,0,0,0.3), 0 4px 16px rgba(0,0,0,0.3);
+    --shadow-hi:0 4px 8px rgba(0,0,0,0.4), 0 12px 32px rgba(0,0,0,0.5);
+    color-scheme:dark;
+  }
+  body{
+    background:var(--bg); color:var(--text); font-family:'Plus Jakarta Sans',sans-serif;
+    font-size:14px; font-weight:400; min-height:100vh; line-height:1.5;
+    transition:background .2s,color .2s;
+  }
+  a{color:inherit}
+  .wrap{max-width:1080px;margin:0 auto;padding:28px 24px 80px}
+  header.top{
+    display:flex;align-items:center;justify-content:space-between;gap:16px;
+    margin-bottom:28px;flex-wrap:wrap;
+  }
+  .logo{font-weight:800;font-size:22px;color:var(--accent);letter-spacing:-0.02em}
+  .logo span{color:var(--text);font-weight:600}
+  .top-right{display:flex;align-items:center;gap:12px}
+  select#monthSelect{
+    background:var(--card);border:1px solid var(--border);border-radius:999px;
+    padding:9px 16px;font-size:13px;font-weight:600;color:var(--text);cursor:pointer;
+  }
+  .theme-toggle{position:relative;width:56px;height:28px;background:var(--border-soft);border:1px solid var(--border);border-radius:999px;padding:0 7px;display:inline-flex;align-items:center;justify-content:space-between;cursor:pointer;transition:background .25s}
+  .theme-toggle-icon{font-size:11px;line-height:1;z-index:1;color:var(--muted);opacity:0.7}
+  .theme-toggle-thumb{position:absolute;top:3px;left:3px;width:20px;height:20px;background:var(--accent);border-radius:50%;box-shadow:0 1px 4px rgba(0,0,0,.25);transition:transform .25s ease;z-index:2}
+  body[data-theme="dark"] .theme-toggle{background:#1F1C17}
+  body[data-theme="dark"] .theme-toggle-thumb{transform:translateX(28px)}
+  body[data-theme="dark"] .theme-toggle-icon{color:var(--text-soft)}
+
+  .period-sub{color:var(--muted);font-size:13px;font-weight:600;margin-bottom:24px;letter-spacing:.02em}
+
+  .hero-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:28px}
+  .hero-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow)}
+  .hero-card .val{font-size:24px;font-weight:800;letter-spacing:-.02em}
+  .hero-card .lbl{font-size:11.5px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.04em;margin-top:4px}
+  .hero-card .hero-sub{font-size:11px;color:var(--muted);font-weight:500;margin-top:3px;opacity:.75}
+  .hero-card .delta{font-size:11.5px;font-weight:700;margin-top:6px}
+  .delta.up{color:var(--good)} .delta.down{color:var(--bad)} .delta.flat{color:var(--muted)}
+
+  h2.section-title{font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:32px 0 14px;display:flex;align-items:center;gap:8px}
+  h2.section-title .dot{width:7px;height:7px;border-radius:50%;background:var(--accent)}
+
+  .cards-col{display:flex;flex-direction:column;gap:10px}
+  .hl-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px 16px;box-shadow:var(--shadow);display:flex;gap:12px;align-items:flex-start}
+  .hl-card.low{border-left:3px solid var(--bad)}
+  .hl-card.high{border-left:3px solid var(--good)}
+  .hl-emoji{font-size:20px;line-height:1.3}
+  .hl-title{font-weight:700;font-size:13.5px;margin-bottom:2px}
+  .hl-body{color:var(--text-soft);font-size:13px}
+
+  .sport-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}
+  .sport-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow)}
+  .sport-card .sicon{font-size:20px;margin-bottom:6px}
+  .sport-card .sname{font-weight:700;font-size:13.5px;margin-bottom:8px}
+  .sport-card .srow{display:flex;justify-content:space-between;font-size:12px;color:var(--text-soft);padding:2px 0}
+  .sport-card .srow b{color:var(--text);font-weight:700}
+
+  .week-chart{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow)}
+  .week-bars{display:flex;align-items:flex-end;gap:14px;height:140px;margin-top:14px}
+  .week-bar-col{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%}
+  .week-bar{width:100%;max-width:56px;background:linear-gradient(180deg,var(--accent),var(--accent-hi));border-radius:8px 8px 3px 3px;position:relative}
+  .week-bar-val{font-size:11px;font-weight:700;margin-bottom:6px}
+  .week-bar-lbl{font-size:11px;color:var(--muted);margin-top:8px;font-weight:600}
+
+  .body-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+  .body-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px 16px;box-shadow:var(--shadow);display:flex;align-items:center;justify-content:space-between;gap:10px}
+  .body-card .bl{display:flex;align-items:center;gap:10px;font-weight:600;font-size:13.5px}
+  .body-card .bicon{font-size:16px}
+  .body-card .bv{font-weight:800;font-size:14px}
+  .badge{border-radius:999px;padding:4px 10px;font-size:11px;font-weight:700}
+  .badge.normal{background:rgba(46,125,79,.12);color:var(--good)}
+  .badge.warn{background:rgba(184,134,11,.14);color:var(--warn)}
+  .badge.bad{background:rgba(189,31,47,.12);color:var(--bad)}
+  .body-note{color:var(--muted);font-size:12px;margin-top:10px}
+
+  .runs-table{width:100%;border-collapse:collapse;background:var(--card);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow)}
+  .runs-table th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);font-weight:700;padding:10px 14px;border-bottom:1px solid var(--border)}
+  .runs-table td{padding:9px 14px;font-size:12.5px;border-bottom:1px solid var(--border-soft)}
+  .runs-table tr:last-child td{border-bottom:none}
+  .runs-table tr.best td{background:rgba(46,125,79,.06)}
+  .runs-table tr.worst td{background:rgba(189,31,47,.05)}
+
+  footer.foot{margin-top:40px;color:var(--muted);font-size:12px;text-align:center;padding-top:20px;border-top:1px solid var(--border-soft)}
+
+  .login-screen{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:1000;padding:20px}
+  .login-theme-toggle{position:absolute;top:20px;right:20px}
+  .login-box{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow-hi);padding:32px;width:100%;max-width:360px}
+  .login-box .logo{display:block;text-align:center;margin-bottom:6px}
+  .login-sub{color:var(--muted);font-size:13px;text-align:center;margin-bottom:22px}
+  .login-field{margin-bottom:14px}
+  .login-field label{display:block;font-size:12px;font-weight:600;letter-spacing:.02em;color:var(--text-soft);margin-bottom:6px}
+  .login-field input{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 12px;font-size:14px;color:var(--text);font-family:inherit}
+  .login-field input:focus{outline:none;border-color:var(--accent)}
+  .login-btn{width:100%;background:var(--accent);color:#fff;border:none;border-radius:999px;padding:11px;font-size:14px;font-weight:700;cursor:pointer;margin-top:4px}
+  .login-btn:hover{background:var(--accent-hi)}
+  .login-error{color:var(--bad);font-size:12.5px;margin-top:10px;min-height:16px;text-align:center}
+  #dashboardRoot{display:none}
+  .logout-btn{background:transparent;border:1px solid var(--border);border-radius:999px;padding:9px 16px;font-size:13px;font-weight:600;color:var(--text);cursor:pointer}
+  .user-badge{font-size:12px;color:var(--muted);font-weight:600}
+
+  @media (max-width:860px){
+    .hero-grid{grid-template-columns:repeat(2,1fr)}
+    .sport-grid{grid-template-columns:repeat(2,1fr)}
+    .body-grid{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+
+<div class="login-screen" id="loginScreen">
+  <button id="loginThemeToggle" class="theme-toggle login-theme-toggle" title="Prepnúť tému" aria-label="Prepnúť tému"><span class="theme-toggle-icon">☀</span><span class="theme-toggle-icon">☽</span><span class="theme-toggle-thumb"></span></button>
+  <div class="login-box">
+    <div class="logo">Workout <span>Dashboard</span></div>
+    <div class="login-sub">Prihlás sa pre zobrazenie reportu</div>
+    <div class="login-field"><label>Email</label><input id="loginEmail" type="email" autocomplete="username" /></div>
+    <div class="login-field"><label>Heslo</label><input id="loginPassword" type="password" autocomplete="current-password" /></div>
+    <button id="loginBtn" class="login-btn">Prihlásiť sa</button>
+    <div id="loginError" class="login-error"></div>
+  </div>
+</div>
+
+<div id="dashboardRoot">
+<div class="wrap">
+  <header class="top">
+    <div class="logo">Workout <span>Dashboard</span></div>
+    <div class="top-right">
+      <select id="monthSelect"></select>
+      <span class="user-badge" id="userBadge"></span>
+      <button id="logoutBtn" class="logout-btn">Odhlásiť</button>
+      <button id="darkToggle" class="theme-toggle" title="Prepnúť tému" aria-label="Prepnúť tému"><span class="theme-toggle-icon">☀</span><span class="theme-toggle-icon">☽</span><span class="theme-toggle-thumb"></span></button>
+    </div>
+  </header>
+  <div class="period-sub" id="periodSub"></div>
+
+  <div class="hero-grid" id="heroGrid"></div>
+
+  <h2 class="section-title"><span class="dot"></span>Highlighty</h2>
+  <div class="cards-col" id="highlights"></div>
+
+  <h2 class="section-title"><span class="dot"></span>Lowlighty</h2>
+  <div class="cards-col" id="lowlights"></div>
+
+  <h2 class="section-title"><span class="dot"></span>Podľa typu aktivity</h2>
+  <div class="sport-grid" id="sportGrid"></div>
+
+  <h2 class="section-title"><span class="dot"></span>Objem podľa týždňa</h2>
+  <div class="week-chart">
+    <div style="font-size:12.5px;color:var(--muted);font-weight:600">Vzdialenosť (km) / týždeň</div>
+    <div class="week-bars" id="weekBars"></div>
+  </div>
+
+  <h2 class="section-title"><span class="dot"></span>Telesné metriky (posledné meranie)</h2>
+  <div class="body-grid" id="bodyGrid"></div>
+  <div class="body-note" id="bodyNote"></div>
+
+  <h2 class="section-title"><span class="dot"></span>Behy mesiaca</h2>
+  <table class="runs-table" id="runsTable"></table>
+
+  <footer class="foot" id="footNote"></footer>
+</div>
+</div>
+
+<script>
+/* ============================================================
+   MONTHLY DATA
+   Pridaj nový objekt do poľa MONTHS pre každý ďalší mesiac —
+   dashboard automaticky dopočíta medzimesačné rozdiely (delty).
+   ============================================================ */
+const MONTHS = [
+  {
+    key: "2026-06",
+    label: "Jún 2026",
+    generatedAt: "2026-07-01",
+    totals: { activeDays: 28, totalDays: 30, distanceKm: 186.6, timeMin: 1454, calories: 10453, elevationM: 806, prCount: 18, achievementCount: 26 },
+    bySport: {
+      Run:            { count: 22, distanceKm: 113.8, timeMin: 771, calories: 7503, elevationM: 19, icon: "🏃" },
+      Walk:           { count: 12, distanceKm: 25.1,  timeMin: 309, calories: 1280, elevationM: 164, icon: "🚶" },
+      Ride:           { count: 11, distanceKm: 42.3,  timeMin: 204, calories: 989,  elevationM: 461, icon: "🚴" },
+      Hike:           { count: 1,  distanceKm: 5.4,   timeMin: 79,  calories: 362,  elevationM: 162, icon: "⛰️" },
+      WeightTraining: { count: 3,  distanceKm: 0,     timeMin: 90,  calories: 319,  elevationM: 0, icon: "🏋️" }
+    },
+    weekly: [
+      { week: "23 (1.-6.6.)",  distanceKm: 38.6 },
+      { week: "24 (8.-14.6.)", distanceKm: 58.4 },
+      { week: "25 (15.-21.6.)", distanceKm: 50.2 },
+      { week: "26 (22.-28.6.)", distanceKm: 28.2 },
+      { week: "27 (29.-30.6.)", distanceKm: 11.2 }
+    ],
+    highlights: [
+      { title: "27. jún — najsilnejší výkon mesiaca", body: "10.04 km za 58 min, tempo 5:47/km, 675 kcal, relatívny efort 56 a 2 achievementy. Najdlhší aj druhý najrýchlejší beh v jednom." },
+      { title: "28 z 30 dní s aktivitou (93 %)", body: "Iba dva dni voľna za celý mesiac (7. a 16. jún) — najkonzistentnejšia séria doteraz." },
+      { title: "14. jún — najlepšie tempo na 5 km", body: "5.02 km za 28.7 min, tempo 5:43/km — najrýchlejší bežný 5 km beh mesiaca." },
+      { title: "20. jún — jazda plná rekordov", body: "18.16 km, 89 min, 14 osobných rekordov a 16 achievementov v jednej aktivite — najväčšia jazda mesiaca." },
+      { title: "Nový návyk: silový tréning", body: "3 silové tréningy zaradené v druhej polovici mesiaca (23., 25., 29. jún), spolu 90 min a 319 kcal — predtým v mesiaci chýbal úplne." },
+      { title: "Mesačný súčet", body: "186.6 km spolu (beh, chôdza, bicykel, hike), 24.2 h pohybu, 10 453 kcal, 18 PR a 26 achievementov." }
+    ],
+    lowlights: [
+      { title: "10. jún — problematický večerný beh", body: "Len 4.62 km, ale 70 min čistého pohybu (110 min celkovo), tempo 15:11/km a extrémny efort 68. Vyzerá to na prerušovaný beh s dlhými prestávkami — stojí za spätnú kontrolu (teplo, únava, alebo začínajúce zranenie)." },
+      { title: "22. jún — najslabší beh mesiaca", body: "Iba 2.22 km, tempo 12:38/km, efort len 3 — výrazný pokles oproti bežnému 5 km tempu okolo 6:20/km." },
+      { title: "Pokles objemu v strede mesiaca", body: "Týždenná vzdialenosť klesla z 58.4 km (týždeň 24) na 28.2 km (týždeň 26), predtým než ju posledný týždeň opäť zdvihol 27. jún." },
+      { title: "Iba 2 dni voľna za mesiac", body: "93% aktívnych dní je skvelá disciplína, ale s len dvoma dňami regenerácie za 30 dní stojí za sledovanie riziko pretrénovania." },
+      { title: "Silový tréning chýbal 3 týždne", body: "Prvý silový tréning sa objavil až 23. júna — prvé tri týždne mesiaca boli čisto kardio (beh/chôdza/bicykel)." }
+    ],
+    bodyComposition: {
+      date: "2026-06-30",
+      weightKg: 75.35,
+      bodyType: "Balanced",
+      waterPct: 53.6,
+      basalMetabolismKcal: 1494,
+      visceralFat: 12,
+      boneMassKg: 2.99,
+      bodyFatPct: 21.8,
+      bmi: 23.3,
+      muscleKg: 55.89,
+      statuses: {
+        water: "warn", basal: "bad", visceral: "bad", bone: "warn",
+        bodyfat: "normal", bmi: "normal", muscle: "normal"
+      }
+    },
+    runs: [
+      {date:"01.06.", name:"Afternoon Run", distanceKm:5.00, paceMinKm:6.41, calories:325, effort:7},
+      {date:"03.06.", name:"Evening Run", distanceKm:5.01, paceMinKm:6.32, calories:327, effort:9},
+      {date:"05.06.", name:"Afternoon Run", distanceKm:5.02, paceMinKm:6.45, calories:326, effort:9},
+      {date:"06.06.", name:"Afternoon Run", distanceKm:5.02, paceMinKm:6.50, calories:329, effort:9},
+      {date:"08.06.", name:"Afternoon Run", distanceKm:5.02, paceMinKm:6.47, calories:333, effort:8},
+      {date:"09.06.", name:"Morning Run", distanceKm:5.02, paceMinKm:6.09, calories:334, effort:18},
+      {date:"10.06.", name:"Evening Run", distanceKm:4.62, paceMinKm:15.11, calories:313, effort:68, flag:"worst"},
+      {date:"11.06.", name:"Evening Run", distanceKm:5.02, paceMinKm:6.24, calories:335, effort:10},
+      {date:"12.06.", name:"Evening Run", distanceKm:5.01, paceMinKm:6.26, calories:330, effort:14},
+      {date:"13.06.", name:"Lunch Run", distanceKm:5.08, paceMinKm:6.64, calories:336, effort:10},
+      {date:"14.06.", name:"Evening Run", distanceKm:5.02, paceMinKm:5.71, calories:336, effort:17, flag:"best"},
+      {date:"17.06.", name:"Afternoon Run", distanceKm:5.02, paceMinKm:6.34, calories:331, effort:16},
+      {date:"18.06.", name:"Afternoon Run", distanceKm:6.25, paceMinKm:6.63, calories:412, effort:12},
+      {date:"19.06.", name:"Evening Run", distanceKm:5.03, paceMinKm:6.67, calories:328, effort:7},
+      {date:"20.06.", name:"Afternoon Run", distanceKm:5.02, paceMinKm:6.38, calories:330, effort:12},
+      {date:"21.06.", name:"Evening Run", distanceKm:5.01, paceMinKm:6.26, calories:333, effort:13},
+      {date:"22.06.", name:"Afternoon Run", distanceKm:2.22, paceMinKm:12.63, calories:112, effort:3, flag:"worst"},
+      {date:"24.06.", name:"Afternoon Run", distanceKm:5.01, paceMinKm:6.34, calories:334, effort:9},
+      {date:"26.06.", name:"Afternoon Run", distanceKm:5.37, paceMinKm:6.31, calories:357, effort:22},
+      {date:"27.06.", name:"Afternoon Run", distanceKm:10.04, paceMinKm:5.79, calories:675, effort:56, flag:"best"},
+      {date:"29.06.", name:"Evening Run", distanceKm:5.01, paceMinKm:6.31, calories:335, effort:23},
+      {date:"30.06.", name:"Evening Run", distanceKm:5.01, paceMinKm:6.17, calories:332, effort:32}
+    ]
+  }
+];
+
+let currentIdx = MONTHS.length - 1;
+
+function fmt(n, d=1){ return Number(n).toLocaleString('sk-SK',{minimumFractionDigits:d,maximumFractionDigits:d}); }
+
+function deltaHtml(curr, prev, unit="", higherIsBetter=true){
+  if(prev===undefined || prev===null) return "";
+  const diff = curr - prev;
+  if(Math.abs(diff) < 0.01) return `<div class="delta flat">= oproti minulému mesiacu</div>`;
+  const good = higherIsBetter ? diff>0 : diff<0;
+  const sign = diff>0 ? "+" : "";
+  return `<div class="delta ${good?'up':'down'}">${sign}${fmt(diff, unit==="" && Number.isInteger(diff)?0:1)}${unit} oproti minulému mesiacu</div>`;
+}
+
+function render(){
+  const m = MONTHS[currentIdx];
+  const prev = MONTHS[currentIdx-1];
+  document.getElementById('periodSub').textContent = `${m.label} · vygenerované ${m.generatedAt} · ${m.totals.activeDays}/${m.totals.totalDays} aktívnych dní`;
+
+  // hero
+  const hero = [
+    { lbl:"Vzdialenosť spolu", sub:"beh + chôdza + bicykel + hike", val:`${fmt(m.totals.distanceKm)} km`, cmp:[m.totals.distanceKm, prev?.totals.distanceKm, " km", true] },
+    { lbl:"Čas pohybu", sub:"všetky aktivity", val:`${fmt(m.totals.timeMin/60)} h`, cmp:[m.totals.timeMin/60, prev?prev.totals.timeMin/60:undefined, " h", true] },
+    { lbl:"Kalórie", sub:"všetky aktivity", val:`${fmt(m.totals.calories,0)} kcal`, cmp:[m.totals.calories, prev?.totals.calories, " kcal", true] },
+    { lbl:"Aktívne dni", sub:"dni s aspoň 1 aktivitou", val:`${m.totals.activeDays}/${m.totals.totalDays}`, cmp:[m.totals.activeDays, prev?.totals.activeDays, " dní", true] },
+    { lbl:"Osobné rekordy / odznaky", sub:"PR = nový rekord, Achievement = Strava odznak/míľnik", val:`${m.totals.prCount} / ${m.totals.achievementCount}`, cmp:[m.totals.prCount, prev?.totals.prCount, "", true] },
+  ];
+  document.getElementById('heroGrid').innerHTML = hero.map(h=>`
+    <div class="hero-card">
+      <div class="val">${h.val}</div>
+      <div class="lbl">${h.lbl}</div>
+      <div class="hero-sub">${h.sub}</div>
+      ${deltaHtml(...h.cmp)}
+    </div>`).join('');
+
+  document.getElementById('highlights').innerHTML = m.highlights.map(h=>`
+    <div class="hl-card high"><div class="hl-emoji">✅</div><div><div class="hl-title">${h.title}</div><div class="hl-body">${h.body}</div></div></div>`).join('');
+
+  document.getElementById('lowlights').innerHTML = m.lowlights.map(h=>`
+    <div class="hl-card low"><div class="hl-emoji">⚠️</div><div><div class="hl-title">${h.title}</div><div class="hl-body">${h.body}</div></div></div>`).join('');
+
+  document.getElementById('sportGrid').innerHTML = Object.entries(m.bySport).map(([name,s])=>`
+    <div class="sport-card">
+      <div class="sicon">${s.icon}</div>
+      <div class="sname">${name}</div>
+      <div class="srow"><span>Počet</span><b>${s.count}</b></div>
+      <div class="srow"><span>Vzdialenosť</span><b>${fmt(s.distanceKm)} km</b></div>
+      <div class="srow"><span>Čas</span><b>${fmt(s.timeMin/60)} h</b></div>
+      <div class="srow"><span>Kalórie</span><b>${fmt(s.calories,0)}</b></div>
+    </div>`).join('');
+
+  const maxWeek = Math.max(...m.weekly.map(w=>w.distanceKm));
+  document.getElementById('weekBars').innerHTML = m.weekly.map(w=>`
+    <div class="week-bar-col">
+      <div class="week-bar-val">${fmt(w.distanceKm)}</div>
+      <div class="week-bar" style="height:${Math.max(6,(w.distanceKm/maxWeek*100))}%"></div>
+      <div class="week-bar-lbl">${w.week}</div>
+    </div>`).join('');
+
+  const bc = m.bodyComposition;
+  const items = [
+    { icon:"⚖️", label:"Váha", val:`${fmt(bc.weightKg,2)} kg`, status:null },
+    { icon:"👤", label:"Typ postavy", val:bc.bodyType, status:null },
+    { icon:"💧", label:"Voda", val:`${fmt(bc.waterPct)} %`, status:bc.statuses.water, statusLbl:"Nedostatočné" },
+    { icon:"🔥", label:"Bazálny metabolizmus", val:`${fmt(bc.basalMetabolismKcal,0)} kcal`, status:bc.statuses.basal, statusLbl:"Pod cieľom" },
+    { icon:"🫃", label:"Viscerálny tuk", val:`${bc.visceralFat}`, status:bc.statuses.visceral, statusLbl:"Zvýšené" },
+    { icon:"🦴", label:"Kostná hmota", val:`${fmt(bc.boneMassKg,2)} kg`, status:bc.statuses.bone, statusLbl:"Nedostatočné" },
+    { icon:"📊", label:"Telesný tuk", val:`${fmt(bc.bodyFatPct)} %`, status:bc.statuses.bodyfat, statusLbl:"Normálne" },
+    { icon:"📐", label:"BMI", val:`${fmt(bc.bmi)}`, status:bc.statuses.bmi, statusLbl:"Normálne" },
+    { icon:"💪", label:"Svalová hmota", val:`${fmt(bc.muscleKg,2)} kg`, status:bc.statuses.muscle, statusLbl:"Normálne" },
+  ];
+  document.getElementById('bodyGrid').innerHTML = items.map(i=>`
+    <div class="body-card">
+      <div class="bl"><span class="bicon">${i.icon}</span>${i.label}</div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <span class="bv">${i.val}</span>
+        ${i.status?`<span class="badge ${i.status}">${i.statusLbl}</span>`:''}
+      </div>
+    </div>`).join('');
+  document.getElementById('bodyNote').textContent = `Meranie z telesnej váhy zo dňa ${bc.date}. Jednorazový snapshot ku koncu mesiaca — trend sa ukáže od budúceho merania.`;
+
+  const rows = m.runs.map(r=>`
+    <tr class="${r.flag==='best'?'best':r.flag==='worst'?'worst':''}">
+      <td>${r.date}</td><td>${r.name}</td><td>${fmt(r.distanceKm,2)} km</td>
+      <td>${fmt(r.paceMinKm,2)} min/km</td><td>${r.calories} kcal</td><td>${r.effort}</td>
+    </tr>`).join('');
+  document.getElementById('runsTable').innerHTML = `
+    <tr><th>Dátum</th><th>Aktivita</th><th>Vzdialenosť</th><th>Tempo</th><th>Kalórie</th><th>Efort</th></tr>${rows}`;
+
+  document.getElementById('footNote').textContent = `Zdroj dát: Strava · Workout Dashboard · ${m.label}`;
+}
+
+function buildMonthSelect(){
+  const sel = document.getElementById('monthSelect');
+  sel.innerHTML = MONTHS.map((m,i)=>`<option value="${i}">${m.label}</option>`).join('');
+  sel.value = currentIdx;
+  sel.addEventListener('change', ()=>{ currentIdx = Number(sel.value); render(); });
+}
+
+buildMonthSelect();
+render();
+
+const savedTheme = localStorage.getItem('wd-theme');
+const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+if(savedTheme === 'dark' || (!savedTheme && prefersDark)){ document.body.setAttribute('data-theme','dark'); }
+function toggleTheme(){
+  const isDark = document.body.getAttribute('data-theme') === 'dark';
+  document.body.setAttribute('data-theme', isDark ? 'light' : 'dark');
+  localStorage.setItem('wd-theme', !isDark ? 'dark' : 'light');
+}
+document.getElementById('darkToggle').addEventListener('click', toggleTheme);
+document.getElementById('loginThemeToggle').addEventListener('click', toggleTheme);
+
+window.addEventListener('fb-ready', () => {
+  const { initializeApp, getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } = window.fb;
+  const firebaseConfig = {
+    apiKey:"AIzaSyDzwgVupB_pDsoHZiG8JvQLx5QZy-BXdNY",
+    authDomain:"kornelsson-bea69.firebaseapp.com",
+    projectId:"kornelsson-bea69",
+    storageBucket:"kornelsson-bea69.firebasestorage.app",
+    messagingSenderId:"129211041007",
+    appId:"1:129211041007:web:5923134219948f8bdbc71a"
+  };
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const $ = id => document.getElementById(id);
+
+  onAuthStateChanged(auth, (user) => {
+    if(user){
+      $('loginScreen').style.display = 'none';
+      $('dashboardRoot').style.display = 'block';
+      $('userBadge').textContent = user.email;
+    } else {
+      $('loginScreen').style.display = 'flex';
+      $('dashboardRoot').style.display = 'none';
+    }
+  });
+
+  $('loginBtn').addEventListener('click', async () => {
+    $('loginError').textContent = '';
+    try {
+      await signInWithEmailAndPassword(auth, $('loginEmail').value.trim(), $('loginPassword').value);
+      $('loginPassword').value = '';
+    } catch { $('loginError').textContent = 'Nesprávny email alebo heslo.'; }
+  });
+  $('loginPassword').addEventListener('keydown', e => { if (e.key === 'Enter') $('loginBtn').click(); });
+  $('logoutBtn').addEventListener('click', () => signOut(auth));
+});
+</script>
+</body>
+</html>

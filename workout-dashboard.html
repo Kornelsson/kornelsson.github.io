@@ -307,7 +307,24 @@ const MONTHS = [
       {date:"27.04.", name:"Afternoon Run", distanceKm:5.30, paceMinKm:8.68, calories:500, effort:3},
       {date:"29.04.", name:"Evening Run", distanceKm:2.16, paceMinKm:17.02, calories:117, effort:35, flag:"worst"},
       {date:"30.04.", name:"Afternoon Run", distanceKm:11.23, paceMinKm:6.25, calories:715, effort:67, flag:"best"}
-    ]
+    ],
+    bodyComposition: {
+      date: "2026-04-30",
+      weightKg: 74.00,
+      bodyType: "Balanced",
+      waterPct: 54.0,
+      basalMetabolismKcal: 1473,
+      visceralFat: 11,
+      boneMassKg: 2.96,
+      bodyFatPct: 21.2,
+      bmi: 22.8,
+      muscleKg: 55.32,
+      proteinPct: 20.7,
+      statuses: {
+        water: "warn", basal: "bad", visceral: "bad", bone: "normal",
+        bodyfat: "normal", bmi: "normal", muscle: "normal", protein: "normal"
+      }
+    }
   },
   {
     key: "2026-05",
@@ -368,7 +385,24 @@ const MONTHS = [
       {date:"29.05.", name:"Afternoon Run", distanceKm:10.20, paceMinKm:6.20, calories:672, effort:37, flag:"best"},
       {date:"30.05.", name:"Afternoon Run", distanceKm:10.13, paceMinKm:6.24, calories:661, effort:19},
       {date:"31.05.", name:"Evening Run", distanceKm:2.56, paceMinKm:6.32, calories:167, effort:5}
-    ]
+    ],
+    bodyComposition: {
+      date: "2026-05-31",
+      weightKg: 73.70,
+      bodyType: "Balanced",
+      waterPct: 54.0,
+      basalMetabolismKcal: 1469,
+      visceralFat: 11,
+      boneMassKg: 2.96,
+      bodyFatPct: 21.1,
+      bmi: 22.7,
+      muscleKg: 55.15,
+      proteinPct: 20.7,
+      statuses: {
+        water: "warn", basal: "bad", visceral: "bad", bone: "normal",
+        bodyfat: "normal", bmi: "normal", muscle: "normal", protein: "normal"
+      }
+    }
   },
   {
     key: "2026-06",
@@ -606,17 +640,30 @@ function render(){
   const bc = m.bodyComposition;
   if(bc){
     document.getElementById('bodySection').style.display = 'block';
+    const statusLabels = {
+      water: { normal:"Normálne", warn:"Nedostatočné", bad:"Nedostatočné" },
+      basal: { normal:"V norme", warn:"Pod cieľom", bad:"Pod cieľom" },
+      visceral: { normal:"Normálne", warn:"Zvýšené", bad:"Zvýšené" },
+      bone: { normal:"Normálne", warn:"Nedostatočné", bad:"Nedostatočné" },
+      bodyfat: { normal:"Normálne", warn:"Mimo normy", bad:"Mimo normy" },
+      bmi: { normal:"Normálne", warn:"Mimo normy", bad:"Mimo normy" },
+      muscle: { normal:"Normálne", warn:"Nízke", bad:"Nízke" },
+      protein: { normal:"Skvelé", warn:"Nízke", bad:"Nízke" },
+    };
     const items = [
       { icon:"⚖️", label:"Váha", val:`${fmt(bc.weightKg,2)} kg`, status:null },
       { icon:"👤", label:"Typ postavy", val:bc.bodyType, status:null },
-      { icon:"💧", label:"Voda", val:`${fmt(bc.waterPct)} %`, status:bc.statuses.water, statusLbl:"Nedostatočné" },
-      { icon:"🔥", label:"Bazálny metabolizmus", val:`${fmt(bc.basalMetabolismKcal,0)} kcal`, status:bc.statuses.basal, statusLbl:"Pod cieľom" },
-      { icon:"🫃", label:"Viscerálny tuk", val:`${bc.visceralFat}`, status:bc.statuses.visceral, statusLbl:"Zvýšené" },
-      { icon:"🦴", label:"Kostná hmota", val:`${fmt(bc.boneMassKg,2)} kg`, status:bc.statuses.bone, statusLbl:"Nedostatočné" },
-      { icon:"📊", label:"Telesný tuk", val:`${fmt(bc.bodyFatPct)} %`, status:bc.statuses.bodyfat, statusLbl:"Normálne" },
-      { icon:"📐", label:"BMI", val:`${fmt(bc.bmi)}`, status:bc.statuses.bmi, statusLbl:"Normálne" },
-      { icon:"💪", label:"Svalová hmota", val:`${fmt(bc.muscleKg,2)} kg`, status:bc.statuses.muscle, statusLbl:"Normálne" },
+      { icon:"💧", label:"Voda", val:`${fmt(bc.waterPct)} %`, status:bc.statuses.water, statusLbl:statusLabels.water[bc.statuses.water] },
+      { icon:"🔥", label:"Bazálny metabolizmus", val:`${fmt(bc.basalMetabolismKcal,0)} kcal`, status:bc.statuses.basal, statusLbl:statusLabels.basal[bc.statuses.basal] },
+      { icon:"🫃", label:"Viscerálny tuk", val:`${bc.visceralFat}`, status:bc.statuses.visceral, statusLbl:statusLabels.visceral[bc.statuses.visceral] },
+      { icon:"🦴", label:"Kostná hmota", val:`${fmt(bc.boneMassKg,2)} kg`, status:bc.statuses.bone, statusLbl:statusLabels.bone[bc.statuses.bone] },
+      { icon:"📊", label:"Telesný tuk", val:`${fmt(bc.bodyFatPct)} %`, status:bc.statuses.bodyfat, statusLbl:statusLabels.bodyfat[bc.statuses.bodyfat] },
+      { icon:"📐", label:"BMI", val:`${fmt(bc.bmi)}`, status:bc.statuses.bmi, statusLbl:statusLabels.bmi[bc.statuses.bmi] },
+      { icon:"💪", label:"Svalová hmota", val:`${fmt(bc.muscleKg,2)} kg`, status:bc.statuses.muscle, statusLbl:statusLabels.muscle[bc.statuses.muscle] },
     ];
+    if(bc.proteinPct !== undefined){
+      items.push({ icon:"🍗", label:"Proteín", val:`${fmt(bc.proteinPct)} %`, status:bc.statuses.protein, statusLbl:statusLabels.protein[bc.statuses.protein] });
+    }
     document.getElementById('bodyGrid').innerHTML = items.map(i=>`
       <div class="body-card">
         <div class="bl"><span class="bicon">${i.icon}</span>${i.label}</div>

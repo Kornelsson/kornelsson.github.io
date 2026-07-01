@@ -145,13 +145,7 @@
   }
   .tag-chip:hover { border-color:var(--text); color:var(--text); }
   .tag-chip.active { background:var(--text); color:#fff; border-color:var(--text); }
-  .color-dot {
-    width:24px; height:24px; border-radius:50%; cursor:pointer;
-    border:2px solid transparent; transition:transform 0.15s, border-color 0.15s;
-  }
-  .color-dot:hover { transform:scale(1.15); }
-  .color-dot.active { border-color:var(--text); transform:scale(1.1); }
-  #clearFilters {
+#clearFilters {
     background:transparent; border:none; color:var(--accent);
     font-size:12px; font-weight:600; padding:5px 10px;
     cursor:pointer; opacity:0.8;
@@ -241,13 +235,7 @@
   }
   .pin-board-chip { display:inline-block; font-size:11.5px; color:var(--muted); font-weight:500; }
   .pin-board-chip::before { content:'◷ '; opacity:0.6; }
-  .pin-colors-strip {
-    display:flex; gap:3px; padding:0 14px 12px;
-  }
-  .pin-color-mini {
-    width:14px; height:14px; border-radius:50%;
-    box-shadow:0 0 0 1px rgba(0,0,0,0.05);
-  }
+
   body.select-mode .pin { cursor:pointer; }
   body.select-mode .pin-overlay { opacity:1 !important; background:none; }
   body.select-mode .pin-overlay-bottom { display:none; }
@@ -411,9 +399,6 @@
     color:var(--text-soft); border-radius:999px;
     padding:6px 14px; font-size:12.5px; font-weight:500;
   }
-  .pin-detail-colors{display:flex;gap:8px;margin-bottom:20px;align-items:center}
-  .pin-detail-color{width:24px;height:24px;border-radius:50%;box-shadow:0 0 0 1px rgba(0,0,0,.06);cursor:pointer;transition:transform .15s}
-  .pin-detail-color:hover{transform:scale(1.18)}
   .pin-detail-notes{background:var(--border-soft);border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:18px}
   .notes-label{font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--accent);margin-bottom:6px}
   .notes-content{font-size:13.5px;color:var(--text-soft);white-space:pre-wrap;line-height:1.5}
@@ -516,7 +501,6 @@
           <div class="notes-content" id="pinNotesContent"></div>
         </div>
         <div class="pin-detail-tags" id="pinDetailTags"></div>
-        <div class="pin-detail-colors" id="pinDetailColors"></div>
         <div class="pin-detail-actions">
           <button id="pinDownloadBtn">↓ Stiahnuť</button><a id="pinShareBtn" href="#" style="display:none">⎘ Skopírovať link</a><button id="pinEditBtn" style="display:none">Upraviť</button><button id="pinDeleteBtn" class="danger" style="display:none">Zmazať</button>
         </div>
@@ -581,7 +565,7 @@
   const storage = getStorage(app);
   let pins = [], boards = [];
   let currentBoardId = 'all', searchTerm = '';
-  let activeTags = new Set(), activeColor = null;
+  let activeTags = new Set();
   let isAdmin = false;
   let selectedFiles = [], selectedUrls = [];
   let currentPin = null, currentPinIdx = 0;
@@ -669,18 +653,7 @@
       img.src = url;
     });
   }
-  function colorMatches(pinColors, target, tol=60) {
-    if (!pinColors || !pinColors.length) return false;
-    const [tr, tg, tb] = hexToRgb(target);
-    return pinColors.some(c => {
-      const [r, g, b] = hexToRgb(c);
-      return Math.abs(r-tr)+Math.abs(g-tg)+Math.abs(b-tb) < tol*3;
-    });
-  }
-  function hexToRgb(h) {
-    h = h.replace('#','');
-    return [parseInt(h.slice(0,2),16), parseInt(h.slice(2,4),16), parseInt(h.slice(4,6),16)];
-  }
+
   function computeFingerprint(file) {
     return new Promise((resolve) => {
       const img = new Image();
@@ -875,7 +848,7 @@
   function renderFilterBar() {
     const bar = $('filterBar');
     bar.innerHTML = '';
-    const visiblePinsForTags = applyFilters(pins, { ignoreTags: true, ignoreColor: true });
+    const visiblePinsForTags = applyFilters(pins, { ignoreTags: true });
     const allTags = new Set();
     visiblePinsForTags.forEach(p => (p.tags || []).forEach(t => allTags.add(t)));
     if (allTags.size > 0) {
@@ -896,49 +869,18 @@
         bar.appendChild(chip);
       });
     }
-    const visiblePinsForColors = applyFilters(pins, { ignoreColor: true });
-    const colorMap = {};
-    visiblePinsForColors.forEach(p => (p.colors || []).forEach(c => {
-      const key = quantizeColor(c);
-      if (!colorMap[key]) colorMap[key] = c;
-    }));
-    const colorList = Object.values(colorMap).slice(0, 12);
-    if (colorList.length > 0) {
-      const lbl = document.createElement('span');
-      lbl.className = 'filter-label';
-      lbl.style.marginLeft = allTags.size ? '16px' : '0';
-      lbl.textContent = 'Farby:';
-      bar.appendChild(lbl);
-      colorList.forEach(c => {
-        const dot = document.createElement('button');
-        dot.className = 'color-dot' + (activeColor === c ? ' active' : '');
-        dot.style.background = c;
-        dot.title = c;
-        dot.addEventListener('click', () => {
-          activeColor = (activeColor === c) ? null : c;
-          visibleCount = PAGE;
-          renderFilterBar(); renderPins();
-        });
-        bar.appendChild(dot);
-      });
-    }
-    if (activeTags.size > 0 || activeColor) {
+    if (activeTags.size > 0) {
       const clear = document.createElement('button');
       clear.id = 'clearFilters';
       clear.textContent = '× Vyčistiť filter';
       clear.addEventListener('click', () => {
         activeTags.clear();
-        activeColor = null;
         visibleCount = PAGE;
         renderFilterBar(); renderPins();
       });
       bar.appendChild(clear);
     }
-    bar.classList.toggle('has-content', allTags.size > 0 || colorList.length > 0);
-  }
-  function quantizeColor(hex) {
-    const [r, g, b] = hexToRgb(hex);
-    return `${Math.round(r/40)*40}-${Math.round(g/40)*40}-${Math.round(b/40)*40}`;
+    bar.classList.toggle('has-content', allTags.size > 0);
   }
   function applyFilters(arr, opts = {}) {
     let f = arr;
@@ -963,9 +905,7 @@
         return [...activeTags].every(tag => t.includes(tag));
       });
     }
-    if (!opts.ignoreColor && activeColor) {
-      f = f.filter(p => colorMatches(p.colors, activeColor));
-    }
+
     if (currentBoardId !== 'all') {
       f = [...f].sort((a, b) => {
         const ao = (a.order !== undefined && a.order !== null) ? a.order : -a.createdAt;
@@ -1000,9 +940,7 @@
     if (selectedPinIds.has(p.id)) card.classList.add('selected');
     const board = boards.find(b => b.id === p.boardId);
     const isChecked = selectedPinIds.has(p.id);
-    const colorsStrip = (p.colors && p.colors.length)
-      ? `<div class="pin-colors-strip">${p.colors.slice(0,5).map(c => `<div class="pin-color-mini" style="background:${c}"></div>`).join('')}</div>`
-      : '';
+
     const aspectStyle = p.width && p.height ? `aspect-ratio:${p.width}/${p.height};` : 'min-height:120px;';
     card.innerHTML = `
       <div class="pin-img-wrap" style="${aspectStyle}">
@@ -1024,7 +962,6 @@
         ${p.title ? `<div class="pin-title">${escapeHtml(p.title)}</div>` : ''}
         ${board ? `<div class="pin-board-chip">${escapeHtml(board.name)}</div>` : ''}
       </div>` : ''}
-      ${colorsStrip}
     `;
     const imgEl = card.querySelector('.pin-img');
     const imgWrap = card.querySelector('.pin-img-wrap');
@@ -1125,22 +1062,6 @@
       el.className = 'pin-detail-tag';
       el.textContent = t;
       tagsEl.appendChild(el);
-    });
-    const colorsEl = $('pinDetailColors');
-    colorsEl.innerHTML = '';
-    (p.colors || []).forEach(c => {
-      const dot = document.createElement('div');
-      dot.className = 'pin-detail-color';
-      dot.style.background = c;
-      dot.title = `Filtrovať podľa ${c}`;
-      dot.addEventListener('click', () => {
-        activeColor = c;
-        visibleCount = PAGE;
-        closeModal('pinModal');
-        renderFilterBar();
-        renderPins();
-      });
-      colorsEl.appendChild(dot);
     });
     const shareBtn = $('pinShareBtn');
     if (board && board.isPublic) {

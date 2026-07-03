@@ -459,7 +459,8 @@ function updatePlanProgress(plan){
 function render(){
   const m = MONTHS[currentIdx];
   const prev = MONTHS[currentIdx-1];
-  document.getElementById('periodSub').textContent = `${m.label} · vygenerované ${m.generatedAt} · ${m.totals.activeDays}/${m.totals.totalDays} aktívnych dní`;
+  const progressNote = m.inProgress ? ` · priebežné dáta k ${m.asOf}` : '';
+  document.getElementById('periodSub').textContent = `${m.label} · vygenerované ${m.generatedAt} · ${m.totals.activeDays}/${m.totals.totalDays} aktívnych dní${progressNote}`;
 
   // hero
   const hero = [
@@ -657,17 +658,23 @@ window.addEventListener('fb-ready', () => {
   async function syncMonthsFromFirestore(){
     try {
       const snap = await getDocs(collection(db, 'months'));
-      const fetched = [];
-      snap.forEach(d => fetched.push(d.data()));
-      const existingKeys = new Set(fetched.map(m=>m.key));
-      const missing = SEED_MONTHS.filter(m => !existingKeys.has(m.key));
-      if(missing.length){
-        await Promise.all(missing.map(m => setDoc(doc(db, 'months', m.key), m)));
-        fetched.push(...missing);
+      const byKey = new Map();
+      snap.forEach(d => byKey.set(d.id, d.data()));
+      // Nahraj do Firestore čokoľvek zo SEED_MONTHS, čo tam ešte nie je,
+      // alebo čo sa odvtedy zmenilo (napr. priebežne aktualizovaný
+      // rozbehnutý mesiac cez dennú automatizáciu).
+      const toUpload = SEED_MONTHS.filter(m => {
+        const existing = byKey.get(m.key);
+        return !existing || JSON.stringify(existing) !== JSON.stringify(m);
+      });
+      if(toUpload.length){
+        await Promise.all(toUpload.map(m => setDoc(doc(db, 'months', m.key), m)));
+        toUpload.forEach(m => byKey.set(m.key, m));
       }
-      if(fetched.length){
-        fetched.sort((a,b) => a.key.localeCompare(b.key));
-        MONTHS = fetched;
+      const merged = Array.from(byKey.values());
+      if(merged.length){
+        merged.sort((a,b) => a.key.localeCompare(b.key));
+        MONTHS = merged;
         currentIdx = MONTHS.length - 1;
         buildMonthSelect();
         render();

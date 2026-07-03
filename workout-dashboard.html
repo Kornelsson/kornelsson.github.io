@@ -128,8 +128,16 @@
   .rest-cal .cal-cell.strength .cal-type{color:var(--strength)}
   .rest-cal .cal-cell.rest{background:var(--accent)}
   .rest-cal .cal-cell.rest .cal-day,.rest-cal .cal-cell.rest .cal-type{color:#fff}
-  .rest-cal .cal-check{position:absolute;top:7px;right:7px;width:15px;height:15px;cursor:pointer;accent-color:var(--accent)}
-  .rest-cal .cal-cell.rest .cal-check{accent-color:#fff}
+  .rest-cal .cal-check{
+    position:absolute;top:6px;right:6px;width:17px;height:17px;margin:0;cursor:pointer;z-index:2;
+    -webkit-appearance:none;appearance:none;border:1.5px solid var(--muted);border-radius:5px;
+    background:var(--card);display:flex;align-items:center;justify-content:center;
+    font-size:12px;font-weight:800;color:transparent;
+  }
+  .rest-cal .cal-cell.rest .cal-check{border-color:rgba(255,255,255,.65);background:rgba(0,0,0,.15)}
+  .rest-cal .cal-check:checked{background:var(--accent);border-color:var(--accent);color:#fff}
+  .rest-cal .cal-cell.rest .cal-check:checked{background:#fff;border-color:#fff;color:var(--accent)}
+  .rest-cal .cal-check:checked::before{content:'✓'}
   .rest-cal .cal-cell.done{opacity:.5}
   .rest-cal .cal-cell.done .cal-type{text-decoration:line-through}
   .rest-cal-note{color:var(--muted);font-size:12.5px;margin-top:14px;line-height:1.6}
@@ -324,6 +332,27 @@ const SEED_MONTHS = [];
 let MONTHS = SEED_MONTHS;
 let currentIdx = MONTHS.length - 1;
 
+// Stav zaškrtnutých dní v tréningovom pláne. Zdroj pravdy je Firestore
+// (naplní ho syncPlanCompletionsFromFirestore po prihlásení, synchronizuje
+// naprieč zariadeniami), localStorage slúži len ako okamžitý lokálny fallback
+// kým sa Firestore nenačíta alebo keď zápis zlyhá (napr. výpadok siete).
+let PLAN_COMPLETIONS = {};
+
+function isDayDone(plan, d){
+  const cloudMap = PLAN_COMPLETIONS[`${plan.year}-${plan.month}`];
+  if(cloudMap && cloudMap[d] !== undefined) return !!cloudMap[d];
+  return localStorage.getItem(`wd-plan-${plan.year}-${plan.month}-${d}`) === '1';
+}
+
+function setDayDone(plan, d, checked){
+  const key = `${plan.year}-${plan.month}`;
+  if(!PLAN_COMPLETIONS[key]) PLAN_COMPLETIONS[key] = {};
+  PLAN_COMPLETIONS[key][d] = checked;
+  if(checked) localStorage.setItem(`wd-plan-${plan.year}-${plan.month}-${d}`, '1');
+  else localStorage.removeItem(`wd-plan-${plan.year}-${plan.month}-${d}`);
+  if(window.__wdSavePlanCompletion) window.__wdSavePlanCompletion(plan.year, plan.month, d, checked);
+}
+
 function fmt(n, d=1){ return Number(n).toLocaleString('sk-SK',{minimumFractionDigits:d,maximumFractionDigits:d}); }
 
 function deltaHtml(curr, prev, unit="", higherIsBetter=true){
@@ -390,9 +419,8 @@ function renderRestCalendar(plan){
     const wd = wdLabels[new Date(plan.year, plan.month-1, d).getDay()];
     const day = plan.days[d];
     if(day){
-      const key = `wd-plan-${plan.year}-${plan.month}-${d}`;
-      const done = localStorage.getItem(key) === '1';
-      cells += `<div class="cal-cell ${day.type}${done?' done':''}" data-key="${key}">
+      const done = isDayDone(plan, d);
+      cells += `<div class="cal-cell ${day.type}${done?' done':''}" data-day="${d}">
         <input type="checkbox" class="cal-check" ${done?'checked':''} title="Splnené" />
         <span class="cal-wd">${wd}</span>
         <span class="cal-day">${d}</span>
@@ -409,8 +437,8 @@ function renderRestCalendar(plan){
   document.querySelectorAll('#restCal .cal-check').forEach(cb=>{
     cb.addEventListener('change', ()=>{
       const cell = cb.closest('.cal-cell');
-      const key = cell.dataset.key;
-      if(cb.checked) localStorage.setItem(key, '1'); else localStorage.removeItem(key);
+      const d = cell.dataset.day;
+      setDayDone(plan, d, cb.checked);
       cell.classList.toggle('done', cb.checked);
       updatePlanProgress(plan);
     });
@@ -420,7 +448,7 @@ function renderRestCalendar(plan){
 
 function updatePlanProgress(plan){
   const dayEntries = Object.entries(plan.days);
-  const done = dayEntries.filter(([d])=>localStorage.getItem(`wd-plan-${plan.year}-${plan.month}-${d}`) === '1').length;
+  const done = dayEntries.filter(([d])=>isDayDone(plan, d)).length;
   const total = dayEntries.length;
   const pct = total ? Math.round(done/total*100) : 0;
   document.getElementById('restCalProgress').innerHTML = `
@@ -649,11 +677,28 @@ window.addEventListener('fb-ready', () => {
     }
   }
 
-  onAuthStateChanged(auth, (user) => {
+  // Zaškrtnuté dni tréningového plánu — synchronizované naprieč zariadeniami
+  // cez kolekciu "planCompletions" (doc id = "{rok}-{mesiac}", polia = deň -> bool).
+  async function syncPlanCompletionsFromFirestore(){
+    try {
+      const snap = await getDocs(collection(db, 'planCompletions'));
+      snap.forEach(d => { PLAN_COMPLETIONS[d.id] = d.data(); });
+    } catch(e){
+      console.warn('Sync zaškrtnutých dní zlyhal, používam len lokálne uložené dáta.', e);
+    }
+  }
+
+  window.__wdSavePlanCompletion = (year, month, day, checked) => {
+    setDoc(doc(db, 'planCompletions', `${year}-${month}`), { [day]: checked }, { merge: true })
+      .catch(e => console.warn('Uloženie zaškrtnutého dňa do Firestore zlyhalo, zostáva len lokálne.', e));
+  };
+
+  onAuthStateChanged(auth, async (user) => {
     if(user){
       $('loginScreen').style.display = 'none';
       $('dashboardRoot').style.display = 'block';
       $('userBadge').textContent = user.email;
+      await syncPlanCompletionsFromFirestore();
       syncMonthsFromFirestore();
     } else {
       $('loginScreen').style.display = 'flex';

@@ -327,7 +327,35 @@
    Ak by Firestore niekedy vypadol, dashboard jednoducho nemá čo
    zobraziť, kým sa spojenie neobnoví — nespadne.
    ============================================================ */
-const SEED_MONTHS = [];
+const SEED_MONTHS = [
+  {
+    key: "2026-07",
+    label: "Júl 2026",
+    generatedAt: "2026-07-03",
+    inProgress: true,
+    asOf: "2026-07-03",
+    totals: { activeDays: 3, totalDays: 3, distanceKm: 14.9, timeMin: 170, calories: 933, elevationM: 133, prCount: 0, achievementCount: 1 },
+    bySport: {
+      Run:            { count: 1, distanceKm: 5.0, timeMin: 32.6, calories: 327, elevationM: 0,  icon: "🏃" },
+      Walk:           { count: 4, distanceKm: 6.9, timeMin: 84.2, calories: 392, elevationM: 62, icon: "🚶" },
+      Ride:           { count: 1, distanceKm: 3.0, timeMin: 14.2, calories: 61,  elevationM: 38, icon: "🚴" },
+      WeightTraining: { count: 1, distanceKm: 0,   timeMin: 39.4, calories: 153, elevationM: 0,  icon: "🏋️" }
+    },
+    weekly: [
+      { week: "1 (1.-3.7.)", distanceKm: 14.9 }
+    ],
+    highlights: [
+      { title: "1. júl — prvý beh mesiaca", body: "5.02 km v tempe 6:30/km, 327 kcal." },
+      { title: "3 aktívne dni z 3 doterajších (100 %)", body: "Zatiaľ bez jediného dňa voľna od začiatku mesiaca." },
+      { title: "3. júl — prvý silový tréning mesiaca", body: "39 min, 153 kcal — presne podľa plánu hneď na začiatku mesiaca." }
+    ],
+    lowlights: [],
+    recommendations: [],
+    runs: [
+      { date:"01.07.", name:"Afternoon Run", distanceKm:5.02, paceMinKm:6.50, calories:327, effort:7 }
+    ]
+  }
+];
 
 let MONTHS = SEED_MONTHS;
 let currentIdx = MONTHS.length - 1;
@@ -480,10 +508,10 @@ function render(){
 
   renderAllTimeSummary();
 
-  document.getElementById('highlights').innerHTML = m.highlights.map(h=>`
+  document.getElementById('highlights').innerHTML = (m.highlights||[]).map(h=>`
     <div class="hl-card high"><div class="hl-emoji">✅</div><div><div class="hl-title">${h.title}</div><div class="hl-body">${h.body}</div></div></div>`).join('');
 
-  document.getElementById('lowlights').innerHTML = m.lowlights.map(h=>`
+  document.getElementById('lowlights').innerHTML = (m.lowlights||[]).map(h=>`
     <div class="hl-card low"><div class="hl-emoji">⚠️</div><div><div class="hl-title">${h.title}</div><div class="hl-body">${h.body}</div></div></div>`).join('');
 
   document.getElementById('recommendations').innerHTML = (m.recommendations||[]).map(h=>`

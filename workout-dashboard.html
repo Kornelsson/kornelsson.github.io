@@ -688,9 +688,14 @@ window.addEventListener('fb-ready', () => {
     }
   }
 
-  window.__wdSavePlanCompletion = (year, month, day, checked) => {
+  window.__wdSavePlanCompletion = (year, month, day, checked, attempt = 1) => {
     setDoc(doc(db, 'planCompletions', `${year}-${month}`), { [day]: checked }, { merge: true })
-      .catch(e => console.warn('Uloženie zaškrtnutého dňa do Firestore zlyhalo, zostáva len lokálne.', e));
+      .catch(e => {
+        console.warn(`Uloženie zaškrtnutého dňa do Firestore zlyhalo (pokus ${attempt}/3).`, e);
+        if(attempt < 3){
+          setTimeout(() => window.__wdSavePlanCompletion(year, month, day, checked, attempt + 1), attempt * 1200);
+        }
+      });
   };
 
   onAuthStateChanged(auth, async (user) => {

@@ -120,6 +120,8 @@
   .rest-cal .cal-cell .cal-day{font-size:11px;font-weight:700;color:var(--muted)}
   .rest-cal .cal-cell .cal-type{font-size:11.5px;font-weight:800;margin-top:2px}
   .rest-cal .cal-cell .cal-detail{font-size:10px;color:var(--text-soft);line-height:1.25}
+  .rest-cal .cal-cell .cal-extra{font-size:9.5px;color:var(--muted);line-height:1.25;font-style:italic}
+  .rest-cal .cal-cell.rest .cal-extra{color:rgba(255,255,255,.75)}
   .rest-cal .cal-cell.run{background:rgba(59,125,221,.12);border-left:3px solid var(--run)}
   .rest-cal .cal-cell.run .cal-type{color:var(--run)}
   .rest-cal .cal-cell.bike{background:rgba(31,158,133,.12);border-left:3px solid var(--bike)}
@@ -381,16 +383,16 @@ const SEED_MONTHS = [
         { type:"rest", label:"Voľno" }
       ],
       days: {
-        1:  { type:"run", label:"Beh", detail:"5 km · Z2", sub:"6:30-6:50/km" },
-        2:  { type:"rest", label:"Voľno" },
-        3:  { type:"strength", label:"Silový", sub:"30 min" },
-        4:  { type:"bike", label:"Bicykel", detail:"12 km · Z2", sub:"125-154 bpm" },
+        1:  { type:"run", label:"Beh", detail:"5,02 km · 6:30/km", sub:"efort 7" },
+        2:  { type:"rest", label:"Voľno", detail:"4× prechádzka (6,9 km)", sub:"+ krátka jazda 3,0 km" },
+        3:  { type:"strength", label:"Silový", detail:"39 min", sub:"153 kcal" },
+        4:  { type:"bike", label:"Bicykel", detail:"25,4 km · 581 m prevýšenia", sub:"14 PR, 774 kcal" },
         5:  { type:"rest", label:"Voľno" },
-        6:  { type:"run", label:"Beh", detail:"5 km · Z2", sub:"6:30-6:50/km" },
-        7:  { type:"strength", label:"Silový", sub:"35 min" },
+        6:  { type:"run", label:"Beh", detail:"5,05 km · 6:23/km", sub:"efort 26" },
+        7:  { type:"strength", label:"Silový", detail:"38 min", sub:"186 kcal" },
         8:  { type:"run", label:"Futbal", detail:"65 min, efort 66", sub:"namiesto plánovaného voľna — zapísané v Strave ako beh" },
-        9:  { type:"run", label:"Beh (tempo)", detail:"5 km · Z3-Z4", sub:"5:50-6:10/km" },
-        10: { type:"bike", label:"Bicykel", detail:"10 km · Z2", sub:"regenerácia" },
+        9:  { type:"run", label:"Beh (tempo)", detail:"5,02 km · 5:58/km", sub:"efort 20", extra:[{label:"Silový", detail:"35 min"},{label:"Bicykel", detail:"2,7 km"}] },
+        10: { type:"run", label:"Beh", detail:"5,02 km · 6:23/km", sub:"efort 10 · namiesto plánovanej jazdy" },
         11: { type:"run", label:"Beh (long)", detail:"8 km · Z2-Z3", sub:"6:15-6:35/km" },
         12: { type:"rest", label:"Voľno" },
         13: { type:"run", label:"Beh", detail:"5 km · Z2", sub:"6:30-6:50/km" },
@@ -462,29 +464,33 @@ const SEED_MONTHS = [
     generatedAt: "2026-07-11",
     inProgress: true,
     asOf: "2026-07-11",
-    totals: { activeDays: 7, totalDays: 11, distanceKm: 56.15, timeMin: 553.4, calories: 3025, elevationM: 777.8, prCount: 15, achievementCount: 17 },
+    totals: { activeDays: 10, totalDays: 11, distanceKm: 72.36, timeMin: 705.1, calories: 4023, elevationM: 791, prCount: 15, achievementCount: 17 },
     bySport: {
-      Run:            { count: 2, distanceKm: 10.06, timeMin: 64.8,  calories: 670,  elevationM: 0,     icon: "🏃" },
-      Walk:           { count: 7, distanceKm: 15.17, timeMin: 185.6, calories: 840,  elevationM: 130.2, icon: "🚶" },
-      Ride:           { count: 3, distanceKm: 30.92, timeMin: 160.0, calories: 874,  elevationM: 632.6, icon: "🚴" },
-      WeightTraining: { count: 2, distanceKm: 0,     timeMin: 77.2,  calories: 339,  elevationM: 0,     icon: "🏋️" },
+      Run:            { count: 4, distanceKm: 20.10, timeMin: 126.8, calories: 1341, elevationM: 0,     icon: "🏃" },
+      Walk:           { count: 9, distanceKm: 18.62, timeMin: 222.9, calories: 1024, elevationM: 136.1, icon: "🚶" },
+      Ride:           { count: 4, distanceKm: 33.65, timeMin: 177.2, calories: 929,  elevationM: 640.2, icon: "🚴" },
+      WeightTraining: { count: 3, distanceKm: 0,     timeMin: 112.4, calories: 427,  elevationM: 0,     icon: "🏋️" },
       Soccer:         { count: 1, distanceKm: 0,     timeMin: 65.8,  calories: 302,  elevationM: 15,    icon: "⚽" }
     },
     weekly: [
       { week: "27 (1.-5.7.)", distanceKm: 40.26 },
-      { week: "28 (6.-11.7.)", distanceKm: 15.89 }
+      { week: "28 (6.-11.7.)", distanceKm: 32.10 }
     ],
     highlights: [
-      { title: "7 aktívnych dní z 11 doterajších (64 %)", body: "Voľné dni zatiaľ: 5., 9., 10. a 11. júl (do večera)." },
+      { title: "10 aktívnych dní z 11 doterajších (91 %)", body: "Jediný voľný deň zatiaľ bol 5. júl." },
       { title: "4. júl — sobotňajšia jazda so 14 osobnými rekordmi", body: "25.39 km, 581 m prevýšenia, 774 kcal — zatiaľ najsilnejší výkon mesiaca." },
       { title: "8. júl — futbal namiesto voľna", body: "Strava zaznamenala pickup futbal ako beh (4.3 km, 66 min, efort 66) — v prehľade počítané ako Soccer, nie do bežeckých štatistík." },
-      { title: "2 behy zatiaľ, oba okolo 5 km", body: "1. júl tempo 6:50/km (efort 7), 6. júl 6:37/km (efort 26) — o niečo rýchlejšie, ale s výrazne vyšším efortom." }
+      { title: "9. júl — trojkombo v jeden deň", body: "Beh (5.02 km), silový tréning (35 min) aj bicykel (2.7 km) v ten istý deň." },
+      { title: "10. júl — beh namiesto plánovanej regeneračnej jazdy", body: "Plán počítal s ľahkou jazdou na bicykli, namiesto toho 5.02 km beh v tempe 6:23/km." },
+      { title: "4 behy zatiaľ, tempo sa zlepšuje", body: "1.7. 6:30/km, 6.7. 6:23/km, 9.7. 5:58/km (zatiaľ najrýchlejšie), 10.7. 6:23/km." }
     ],
     lowlights: [],
     recommendations: [],
     runs: [
       { date:"01.07.", name:"Afternoon Run", distanceKm:5.02, paceMinKm:6.50, calories:327, effort:7 },
-      { date:"06.07.", name:"Evening Run", distanceKm:5.05, paceMinKm:6.37, calories:343, effort:26 }
+      { date:"06.07.", name:"Evening Run", distanceKm:5.05, paceMinKm:6.37, calories:343, effort:26 },
+      { date:"09.07.", name:"Lunch Run", distanceKm:5.02, paceMinKm:5.97, calories:337, effort:20 },
+      { date:"10.07.", name:"Afternoon Run", distanceKm:5.02, paceMinKm:6.38, calories:334, effort:10 }
     ],
     bodyComposition: {
       date: "2026-07-07",
@@ -604,6 +610,7 @@ function renderRestCalendar(plan){
         <span class="cal-type">${day.label}</span>
         ${day.detail?`<span class="cal-detail">${day.detail}</span>`:''}
         ${day.sub?`<span class="cal-detail">${day.sub}</span>`:''}
+        ${(day.extra||[]).map(x=>`<span class="cal-extra">+ ${x.label}${x.detail?` · ${x.detail}`:''}</span>`).join('')}
       </div>`;
     } else {
       cells += `<div class="cal-cell"><span class="cal-wd">${wd}</span><span class="cal-day">${d}</span></div>`;

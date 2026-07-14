@@ -1,0 +1,1481 @@
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>PULSE · tréningové centrum</title>
+<meta name="theme-color" content="#0B0D10" />
+<link rel="icon" href="icons/icon-192.png" />
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{color-scheme:dark light}
+body{
+  --bg:#0B0D10; --card:#14171C; --card2:#1A1E24; --border:#242A32; --border-soft:#1D222A;
+  --text:#EDF1F5; --soft:#B9C2CC; --muted:#7C8791;
+  --volt:#C9F24E; --volt-soft:rgba(201,242,78,.14); --volt-ink:#0B0D10;
+  --grid:#232830; --baseline:#39414C;
+  --good:#4CC38A; --bad:#F07178; --warn:#E2B93D;
+  --c-run:#3987e5; --c-walk:#199e70; --c-ride:#c98500; --c-hike:#008300; --c-sila:#9085e9; --c-futbal:#e66767;
+  --heat0:#1A1F26; --heat1:#173156; --heat2:#1c5cab; --heat3:#2a78d6; --heat4:#5598e7; --heat5:#9ec5f4;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 28px rgba(0,0,0,.35);
+  --radius:18px; --radius-sm:12px;
+}
+body[data-theme="light"]{
+  --bg:#F5F6F3; --card:#FFFFFF; --card2:#F2F4EE; --border:#E1E5DC; --border-soft:#ECEFE7;
+  --text:#12161B; --soft:#414A53; --muted:#78828C;
+  --volt:#617D0B; --volt-soft:rgba(151,190,26,.16); --volt-ink:#FFFFFF;
+  --grid:#E7EAE2; --baseline:#C4C9BF;
+  --good:#1D8A56; --bad:#C4373F; --warn:#9A7B0A;
+  --c-run:#2a78d6; --c-walk:#1baf7a; --c-ride:#eda100; --c-hike:#008300; --c-sila:#4a3aa7; --c-futbal:#e34948;
+  --heat0:#EBEEE6; --heat1:#cde2fb; --heat2:#9ec5f4; --heat3:#5598e7; --heat4:#2a78d6; --heat5:#104281;
+  --shadow:0 1px 2px rgba(20,25,30,.05),0 8px 24px rgba(20,25,30,.06);
+}
+body{
+  background:var(--bg); color:var(--text);
+  font-family:'Plus Jakarta Sans',system-ui,-apple-system,sans-serif;
+  font-size:14px; line-height:1.5; min-height:100vh;
+  transition:background .25s,color .25s;
+}
+.wrap{max-width:1140px;margin:0 auto;padding:26px 20px 90px}
+.num{font-variant-numeric:tabular-nums}
+a{color:inherit}
+
+/* header */
+header.top{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:8px;flex-wrap:wrap}
+.logo{display:flex;align-items:center;gap:10px}
+.logo .bolt{width:34px;height:34px;border-radius:10px;background:var(--volt);color:var(--volt-ink);display:grid;place-items:center;font-size:19px;font-weight:800}
+.logo .name{font-size:22px;font-weight:800;letter-spacing:-.03em}
+.logo .name span{color:var(--muted);font-weight:600}
+.top-right{display:flex;align-items:center;gap:10px}
+.pill{background:var(--card);border:1px solid var(--border);border-radius:999px;padding:7px 14px;font-size:12.5px;font-weight:600;color:var(--soft)}
+.theme-btn{width:40px;height:40px;border-radius:12px;background:var(--card);border:1px solid var(--border);cursor:pointer;font-size:16px;display:grid;place-items:center;color:var(--text)}
+.subtitle{color:var(--muted);font-size:13px;font-weight:500;margin-bottom:26px}
+.subtitle b{color:var(--soft)}
+
+/* sections */
+section{margin-bottom:34px}
+.sec-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:14px;flex-wrap:wrap}
+.sec-title{font-size:16px;font-weight:800;letter-spacing:-.01em}
+.sec-title .kick{display:block;font-size:11px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--volt);margin-bottom:2px}
+.sec-note{font-size:12px;color:var(--muted)}
+
+/* cards */
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow)}
+
+/* hero */
+.hero{display:grid;grid-template-columns:1fr 1.15fr 1.5fr;gap:14px}
+@media(max-width:940px){.hero{grid-template-columns:1fr 1fr}}
+@media(max-width:640px){.hero{grid-template-columns:1fr}}
+.streak-num{font-size:52px;font-weight:800;letter-spacing:-.04em;line-height:1;margin:6px 0 2px}
+.streak-num small{font-size:18px;font-weight:700;color:var(--soft)}
+.lbl{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.streak-sub{font-size:12.5px;color:var(--soft);margin-top:8px}
+.quote{margin-top:14px;padding-top:12px;border-top:1px solid var(--border-soft);font-size:12.5px;color:var(--muted);font-style:italic}
+.rings{display:flex;gap:18px;align-items:center;margin-top:10px;flex-wrap:wrap}
+.ring-box{display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer}
+.ring-box svg{display:block}
+.ring-lbl{font-size:11.5px;font-weight:600;color:var(--muted)}
+.deltas{margin-top:14px;padding-top:12px;border-top:1px solid var(--border-soft);display:flex;gap:16px;flex-wrap:wrap}
+.delta .d-val{font-size:13px;font-weight:700}
+.delta .d-lbl{font-size:11px;color:var(--muted)}
+.up{color:var(--good)}.down{color:var(--bad)}
+.goal-hint{font-size:10.5px;color:var(--muted);margin-top:8px}
+
+/* coach */
+.coach-main{display:flex;gap:14px;align-items:flex-start;margin-top:10px}
+.coach-ico{width:52px;height:52px;border-radius:14px;background:var(--volt-soft);display:grid;place-items:center;font-size:26px;flex:none}
+.coach-what{font-size:19px;font-weight:800;letter-spacing:-.01em}
+.coach-detail{font-size:13px;color:var(--soft);font-weight:600}
+.coach-why{font-size:12.5px;color:var(--muted);margin-top:6px}
+.week-strip{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-top:16px}
+.ws-day{background:var(--card2);border:1px solid var(--border-soft);border-radius:10px;padding:7px 4px;text-align:center}
+.ws-day.today{border-color:var(--volt);box-shadow:0 0 0 1px var(--volt) inset}
+.ws-wd{font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
+.ws-ico{font-size:15px;margin:2px 0}
+.ws-what{font-size:9px;color:var(--soft);font-weight:600;line-height:1.2}
+.zone-hint{margin-top:12px;font-size:11px;color:var(--muted)}
+
+/* heatmap */
+.heat-scroll{overflow-x:auto;padding-bottom:6px}
+.heat-legend{display:flex;align-items:center;gap:4px;font-size:11px;color:var(--muted)}
+.heat-legend i{width:11px;height:11px;border-radius:3px;display:inline-block}
+
+/* charts */
+.grid-2{display:grid;grid-template-columns:1.9fr 1fr;gap:14px}
+@media(max-width:860px){.grid-2{grid-template-columns:1fr}}
+.chart-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px;flex-wrap:wrap}
+.chart-title{font-size:13.5px;font-weight:800}
+.chart-sub{font-size:11.5px;color:var(--muted);font-weight:500}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{background:var(--card2);border:1px solid var(--border);border-radius:999px;padding:4px 11px;font-size:11.5px;font-weight:700;color:var(--muted);cursor:pointer;user-select:none}
+.chip.on{background:var(--volt);border-color:var(--volt);color:var(--volt-ink)}
+.legend{display:flex;gap:12px;flex-wrap:wrap;margin-top:10px}
+.legend .li{display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--soft);font-weight:600}
+.legend .sw{width:10px;height:10px;border-radius:3px}
+svg text{font-family:'Plus Jakarta Sans',system-ui,sans-serif}
+
+/* records */
+.rec-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+@media(max-width:940px){.rec-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:480px){.rec-grid{grid-template-columns:1fr}}
+.rec{background:var(--card);border:1px solid var(--border);border-radius:var(--radius-sm);padding:16px;box-shadow:var(--shadow)}
+.rec .r-ico{font-size:20px}
+.rec .r-val{font-size:21px;font-weight:800;letter-spacing:-.02em;margin-top:6px}
+.rec .r-lbl{font-size:11.5px;font-weight:600;color:var(--soft);margin-top:1px}
+.rec .r-date{font-size:11px;color:var(--muted);margin-top:3px}
+
+/* badges */
+.badge-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+.badge{background:var(--card);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px;text-align:center;box-shadow:var(--shadow);position:relative}
+.badge .b-ico{font-size:28px;line-height:1}
+.badge .b-name{font-size:12.5px;font-weight:800;margin-top:8px}
+.badge .b-desc{font-size:10.5px;color:var(--muted);margin-top:2px;line-height:1.35}
+.badge .b-date{font-size:10px;color:var(--volt);font-weight:700;margin-top:6px}
+.badge.locked{opacity:.55}
+.badge.locked .b-ico{filter:grayscale(1)}
+.b-bar{height:4px;background:var(--card2);border-radius:99px;margin-top:8px;overflow:hidden}
+.b-bar i{display:block;height:100%;background:var(--volt);border-radius:99px}
+.badge .b-prog{font-size:10px;color:var(--muted);margin-top:4px}
+
+/* months table */
+table.months{width:100%;border-collapse:collapse}
+table.months th{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);text-align:right;padding:8px 10px;border-bottom:1px solid var(--border)}
+table.months th:first-child{text-align:left}
+table.months td{padding:9px 10px;font-size:13px;text-align:right;border-bottom:1px solid var(--border-soft);color:var(--soft);font-weight:600}
+table.months td:first-child{text-align:left;color:var(--text);font-weight:700}
+table.months tr.best td{color:var(--text)}
+table.months tr.best td:first-child::after{content:" 👑";font-size:11px}
+.mbar{display:inline-block;height:6px;border-radius:99px;background:var(--c-run);vertical-align:middle;margin-right:8px}
+.tbl-scroll{overflow-x:auto}
+
+/* body comp */
+.bc-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:12px}
+@media(max-width:940px){.bc-grid{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:520px){.bc-grid{grid-template-columns:repeat(2,1fr)}}
+.bc{background:var(--card);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px;box-shadow:var(--shadow)}
+.bc .v{font-size:19px;font-weight:800;margin-top:4px}
+.bc .l{font-size:11px;color:var(--muted);font-weight:600}
+.bc .d{font-size:11px;font-weight:700;margin-top:3px}
+
+/* activity table */
+table.acts{width:100%;border-collapse:collapse}
+table.acts th{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);text-align:right;padding:8px 10px;border-bottom:1px solid var(--border)}
+table.acts th:nth-child(-n+2){text-align:left}
+table.acts td{padding:8px 10px;font-size:12.5px;text-align:right;border-bottom:1px solid var(--border-soft);color:var(--soft);font-weight:600;white-space:nowrap}
+table.acts td:nth-child(-n+2){text-align:left}
+.sp-tag{display:inline-flex;align-items:center;gap:6px;font-weight:700;color:var(--text)}
+.sp-dot{width:9px;height:9px;border-radius:3px;display:inline-block}
+.ef-pill{display:inline-block;min-width:26px;text-align:center;border-radius:99px;padding:1px 7px;font-size:11px;font-weight:700;background:var(--card2)}
+
+/* tooltip */
+#tip{position:fixed;pointer-events:none;background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:9px 12px;font-size:12px;color:var(--text);box-shadow:var(--shadow);z-index:50;opacity:0;transition:opacity .12s;max-width:260px}
+#tip .t-h{font-weight:800;margin-bottom:3px}
+#tip .t-r{display:flex;justify-content:space-between;gap:14px;color:var(--soft)}
+#tip .t-r b{color:var(--text)}
+
+footer{margin-top:40px;text-align:center;color:var(--muted);font-size:11.5px}
+footer a{color:var(--soft)}
+</style>
+</head>
+<body data-theme="dark">
+<div class="wrap">
+
+<header class="top">
+  <div class="logo"><div class="bolt">⚡</div><div class="name">PULSE <span>· tréningové centrum</span></div></div>
+  <div class="top-right">
+    <span class="pill num" id="todayPill"></span>
+    <button class="theme-btn" id="themeBtn" title="Prepnúť tému">☀️</button>
+  </div>
+</header>
+<div class="subtitle" id="subtitle"></div>
+
+<section class="hero">
+  <div class="card" id="streakCard"></div>
+  <div class="card" id="weekCard"></div>
+  <div class="card" id="coachCard"></div>
+</section>
+
+<section>
+  <div class="sec-head">
+    <div class="sec-title"><span class="kick">Konzistencia</span>Posledných 12 mesiacov</div>
+    <div class="heat-legend" id="heatLegend"></div>
+  </div>
+  <div class="card"><div class="heat-scroll" id="heatmap"></div></div>
+</section>
+
+<section class="grid-2">
+  <div class="card">
+    <div class="chart-head">
+      <div><div class="chart-title">Týždenný objem</div><div class="chart-sub">posledných 16 týždňov</div></div>
+      <div class="chips" id="volChips"></div>
+    </div>
+    <div id="volChart"></div>
+    <div class="legend" id="volLegend"></div>
+  </div>
+  <div class="card">
+    <div class="chart-head"><div><div class="chart-title">Rozdelenie športov</div><div class="chart-sub">posledných 30 dní · podľa času</div></div></div>
+    <div id="donut"></div>
+  </div>
+</section>
+
+<section class="grid-2">
+  <div class="card">
+    <div class="chart-head">
+      <div><div class="chart-title">Tempo behov</div><div class="chart-sub">vyššie = rýchlejšie · čiara = kĺzavý medián</div></div>
+      <div class="chips" id="paceChips"></div>
+    </div>
+    <div id="paceChart"></div>
+  </div>
+  <div class="card">
+    <div class="chart-head"><div><div class="chart-title">Aktivita podľa dňa</div><div class="chart-sub">priem. minúty · posledných 90 dní</div></div></div>
+    <div id="weekdayChart"></div>
+  </div>
+</section>
+
+<section>
+  <div class="sec-head"><div class="sec-title"><span class="kick">Sieň slávy</span>Osobné rekordy</div></div>
+  <div class="rec-grid" id="records"></div>
+</section>
+
+<section>
+  <div class="sec-head">
+    <div class="sec-title"><span class="kick">Gamifikácia</span>Odznaky</div>
+    <div class="sec-note" id="badgeCount"></div>
+  </div>
+  <div class="badge-grid" id="badges"></div>
+</section>
+
+<section>
+  <div class="sec-head"><div class="sec-title"><span class="kick">Prehľad</span>Mesačné súhrny</div></div>
+  <div class="card tbl-scroll"><table class="months" id="monthsTbl"></table></div>
+</section>
+
+<section>
+  <div class="sec-head">
+    <div class="sec-title"><span class="kick">Telo</span>Telesné zloženie</div>
+    <div class="sec-note">meranie 7. 7. 2026 · zmena oproti 1. 7. 2026</div>
+  </div>
+  <div class="bc-grid" id="bodyComp"></div>
+</section>
+
+<section>
+  <div class="sec-head">
+    <div class="sec-title"><span class="kick">Denník</span>Posledné aktivity</div>
+    <div class="sec-note">posledných 25 záznamov</div>
+  </div>
+  <div class="card tbl-scroll"><table class="acts" id="actsTbl"></table></div>
+</section>
+
+<footer>
+  Dáta zo Stravy k <b id="dataAsOf" class="num"></b> · <span id="lifetime" class="num"></span><br/>
+  <a href="workout-dashboard.html">Mesačné reporty →</a>
+</footer>
+</div>
+<div id="tip"></div>
+
+<script>
+/* ============ DATA ============ */
+const RAW = `2026-07-14T07:26|Walk|927|843|14.2|55|1|0|0
+2026-07-13T20:35|WeightTraining|0|1313|0|87|2|0|0
+2026-07-13T07:40|Walk|1249|308|4.4|19|0|0|0
+2026-07-12T18:40|Run|3195|1230|0|211|9|0|0
+2026-07-12T13:45|Walk|3194|1570|6.8|100|3|0|0
+2026-07-11T10:54|Run|5010|1894|0|345|24|0|0
+2026-07-11T08:15|Walk|1651|1086|5.9|89|3|0|0
+2026-07-10T17:20|Walk|1798|1149|0|95|3|0|0
+2026-07-10T14:34|Run|5017|1921|0|334|10|0|0
+2026-07-09T20:45|Ride|2731|1030|7.6|55|3|0|0
+2026-07-09T19:47|WeightTraining|0|2112|0|88|5|0|0
+2026-07-09T11:13|Run|5022|1800|0|337|20|0|0
+2026-07-08T18:07|Soccer|4299|3947|15|302|66|1|1
+2026-07-08T17:48|Ride|2575|810|13.4|39|2|0|0
+2026-07-08T07:39|Walk|1175|1066|5.8|63|2|0|1
+2026-07-07T17:19|Walk|2807|1891|19.6|145|4|0|0
+2026-07-07T10:40|WeightTraining|0|2269|0|186|6|0|0
+2026-07-06T19:58|Run|5049|1931|0|343|26|0|0
+2026-07-06T16:09|Walk|4281|3128|9.6|240|6|0|0
+2026-07-04T14:58|Ride|25389|7940|581.2|774|137|14|14
+2026-07-03T10:37|WeightTraining|0|2365|0|153|4|0|0
+2026-07-02T23:22|Ride|2954|850|38|61|5|0|0
+2026-07-02T20:08|Walk|2753|1965|42|126|4|0|1
+2026-07-02T17:13|Walk|809|484|0|43|1|0|0
+2026-07-02T16:40|Walk|921|721|33|74|1|0|0
+2026-07-02T06:53|Walk|2423|1883|20.2|149|4|0|0
+2026-07-01T17:04|Run|5015|1956|0|327|7|0|0
+2026-06-30T19:42|Run|5013|1857|0|332|32|0|0
+2026-06-29T19:21|Run|5011|1896|0|335|23|0|0
+2026-06-29T18:38|WeightTraining|0|2426|0|66|5|0|0
+2026-06-29T08:48|Ride|1177|466|2.3|16|1|0|0
+2026-06-28T08:31|Walk|998|658|3.6|46|1|0|0
+2026-06-27T17:49|Run|10038|3488|0|675|56|0|2
+2026-06-26T16:30|Run|5371|2033|0|357|22|0|0
+2026-06-25T20:29|Walk|1821|1193|19.6|92|2|0|0
+2026-06-25T19:19|WeightTraining|0|1748|0|154|4|0|0
+2026-06-24T16:46|Run|5009|1904|0|334|9|0|0
+2026-06-23T21:42|WeightTraining|0|1230|0|99|3|0|0
+2026-06-23T11:26|Ride|849|264|0|10|0|0|0
+2026-06-22T15:44|Walk|1867|1444|5.3|101|3|0|0
+2026-06-22T14:18|Run|2224|1685|0|112|3|0|0
+2026-06-21T18:46|Run|5009|1882|0|333|13|0|0
+2026-06-20T20:17|Ride|18163|5351|243.2|416|43|14|16
+2026-06-20T13:22|Run|5015|1921|0|330|12|0|0
+2026-06-19T19:33|Run|5030|2013|0|328|7|0|0
+2026-06-18T22:47|Ride|2391|975|40|61|3|0|0
+2026-06-18T17:56|Run|6250|2488|0|412|12|0|0
+2026-06-18T15:38|Walk|2079|1475|11.9|100|3|0|0
+2026-06-17T17:41|Run|5016|1907|0|331|16|0|0
+2026-06-15T20:53|Walk|1280|978|3.6|57|1|0|0
+2026-06-14T19:23|Run|5021|1720|0|336|17|0|0
+2026-06-14T17:04|Hike|5363|4753|161.8|362|10|0|0
+2026-06-14T12:09|Ride|2977|933|13.1|107|2|0|0
+2026-06-13T12:16|Run|5076|2023|0|336|10|0|0
+2026-06-12T21:18|Walk|2911|1990|0|142|4|0|0
+2026-06-12T18:16|Run|5014|1882|0|330|14|0|0
+2026-06-12T13:27|Walk|2753|2160|41|165|4|0|1
+2026-06-11T19:54|Run|5021|1880|0|335|10|0|0
+2026-06-10T21:09|Ride|1962|434|31|64|2|0|0
+2026-06-10T18:09|Run|4621|4189|18.8|313|68|0|0
+2026-06-10T17:47|Ride|2544|850|11.2|41|2|1|1
+2026-06-10T16:55|Walk|1322|1150|2.5|61|2|0|0
+2026-06-10T00:27|Ride|1994|446|35.8|46|1|0|0
+2026-06-09T20:27|Walk|1782|1070|2.2|103|2|0|0
+2026-06-09T09:35|Run|5025|1835|0|334|18|0|0
+2026-06-08T14:20|Run|5018|1948|0|333|8|0|0
+2026-06-06T14:40|Run|5015|1956|0|329|9|0|0
+2026-06-05T16:20|Run|5019|1943|0|326|9|0|1
+2026-06-04T22:32|Walk|3687|3039|40|180|7|0|1
+2026-06-04T17:42|Walk|2940|1987|27.8|135|4|0|0
+2026-06-03T18:49|Run|5012|1902|0|327|9|0|0
+2026-06-03T07:52|Ride|5098|1227|42.2|124|11|3|3
+2026-06-02T21:53|Ride|2445|763|40|53|2|0|1
+2026-06-02T20:11|Ride|2709|537|2.4|51|3|0|0
+2026-06-02T16:47|Walk|1673|1407|6.2|98|2|0|0
+2026-06-01T17:03|Run|5005|1925|0|325|7|0|0
+2026-05-31T19:45|Run|2556|969|0|167|5|0|0
+2026-05-30T15:15|Run|10126|3794|0|661|19|0|0
+2026-05-29T16:56|Run|10200|3794|0|672|37|0|0
+2026-05-29T11:06|Walk|1474|929|0|73|2|0|0
+2026-05-28T20:19|Ride|2757|683|2.2|60|2|0|0
+2026-05-28T18:31|Walk|1124|704|5|58|1|0|0
+2026-05-28T15:42|Walk|5101|1345|26.1|133|2|0|1
+2026-05-27T23:10|Ride|2398|664|38|53|4|3|3
+2026-05-27T18:35|Walk|5063|3774|20|287|8|0|0
+2026-05-27T16:45|Run|5011|1971|0|326|7|0|0
+2026-05-26T19:32|Walk|2216|1786|3.6|99|3|0|0
+2026-05-24T23:46|Ride|2376|516|38.7|58|5|3|3
+2026-05-24T20:21|Ride|1992|467|4|31|1|0|0
+2026-05-24T18:37|Run|5025|1826|0|332|12|0|0
+2026-05-24T15:15|Walk|2250|1818|4.4|120|3|0|1
+2026-05-23T08:39|Walk|960|864|0|41|1|0|0
+2026-05-22T16:11|Run|5013|1910|0|321|8|0|0
+2026-05-22T15:45|Walk|918|656|4.5|42|1|0|0
+2026-05-21T19:46|Walk|1393|1103|4.7|64|2|0|0
+2026-05-21T18:38|Run|5056|1872|0|323|8|0|0
+2026-05-21T17:11|Walk|2884|2055|17|153|4|0|0
+2026-05-21T08:03|Walk|1304|1054|2.2|65|2|0|0
+2026-05-20T18:10|Run|4360|4015|27.6|267|59|2|2
+2026-05-19T17:33|Ride|4642|1061|6.8|86|3|0|0
+2026-05-19T15:27|Walk|3155|2509|23.6|170|4|0|0
+2026-05-19T11:34|Run|5014|1898|0|327|10|0|0
+2026-05-18T16:55|Run|5007|1849|0|330|18|0|0
+2026-05-17T15:28|Walk|2535|2187|25.1|147|4|0|1
+2026-05-17T14:26|Run|5511|2076|0|362|8|0|0
+2026-05-15T19:33|Run|5012|1858|0|327|9|0|0
+2026-05-14T17:44|Ride|10382|3222|189|284|28|9|9
+2026-05-14T17:27|Ride|1306|355|9.4|37|1|0|0
+2026-05-14T16:34|Ride|1847|412|0|32|1|0|0
+2026-05-13T22:08|Ride|2517|371|33.7|67|3|0|0
+2026-05-13T20:06|Ride|420|164|0|11|0|0|0
+2026-05-13T18:06|Run|6348|5574|8.8|456|131|5|5
+2026-05-13T17:55|Ride|2509|550|9.4|70|5|0|1
+2026-05-12T19:47|Run|5020|1945|0|322|8|0|0
+2026-05-12T18:45|Walk|2267|1721|5.4|114|3|0|0
+2026-05-11T19:36|Walk|2474|1916|16.9|131|3|0|0
+2026-05-10T21:13|Ride|3287|889|39.6|69|8|0|1
+2026-05-10T17:12|Ride|2618|546|0|53|2|0|0
+2026-05-10T13:49|Walk|94|104|3.2|9|0|0|0
+2026-05-10T12:48|Walk|2670|1723|71.7|175|3|0|0
+2026-05-10T07:21|Walk|1711|1317|12.1|88|2|0|0
+2026-05-09T10:34|Ride|28747|8663|573.8|865|77|15|15
+2026-05-09T00:07|Ride|5278|1393|39|99|5|0|0
+2026-05-08T21:34|Ride|4046|785|0|82|7|1|2
+2026-05-08T16:01|Walk|4670|3376|37.2|264|6|0|1
+2026-05-08T14:43|Run|141|155|0|7|0|0|0
+2026-05-07T12:30|Walk|1304|1019|5.9|53|2|0|0
+2026-05-06T18:08|Run|3704|3374|25.6|261|48|3|3
+2026-05-06T17:47|Ride|2496|740|9|32|1|1|1
+2026-05-05T22:03|Ride|3315|807|37.8|71|7|0|0
+2026-05-05T18:47|Ride|5356|1046|9.4|116|5|0|0
+2026-05-05T15:37|Walk|2434|1954|16.8|146|4|0|0
+2026-05-05T11:50|Run|5067|1955|0|327|14|0|0
+2026-05-04T16:47|Ride|2209|605|23|37|1|1|1
+2026-05-03T21:25|Ride|3322|878|39.2|70|5|0|0
+2026-05-03T19:44|Ride|2537|513|0|44|2|0|0
+2026-05-03T16:45|Run|7195|2734|0|468|12|0|0
+2026-05-03T10:32|Ride|4530|1835|8.6|82|4|0|0
+2026-05-02T19:51|Walk|48|47|0|8|0|0|0
+2026-05-02T10:48|Run|5022|1922|0|327|17|0|0
+2026-05-01T21:10|Ride|6055|1330|41.2|126|8|3|3
+2026-05-01T09:40|Ride|2343|621|23|49|2|2|2
+2026-04-30T16:46|Run|11228|4210|0|715|67|0|0
+2026-04-29T21:43|Ride|2352|707|35|52|3|0|0
+2026-04-29T18:56|Run|2157|2203|4.6|117|35|4|4
+2026-04-29T18:25|Soccer|0|1865|0|188|55|0|0
+2026-04-29T17:24|Ride|6124|1784|20|118|14|0|1
+2026-04-28T18:47|Ride|5068|1198|42.8|102|13|3|3
+2026-04-28T18:19|Ride|2139|443|3.2|41|5|0|0
+2026-04-28T07:12|Walk|2602|2287|24.3|140|4|0|0
+2026-04-27T15:25|Run|5300|2760|0|500|3|0|0
+2026-04-27T14:34|Walk|5222|1993|0|329|11|0|1
+2026-04-27T11:54|Ride|1238|298|2.4|18|1|0|0
+2026-04-26T19:12|Run|5257|1917|0|341|18|0|0
+2026-04-26T14:32|Walk|1884|1403|4|85|2|0|0
+2026-04-25T07:16|Walk|3425|2869|12.8|157|5|0|0
+2026-04-24T21:23|Ride|5436|1329|40.6|104|6|3|3
+2026-04-24T19:22|Ride|1678|159|21.7|105|1|2|2
+2026-04-24T16:55|Walk|2562|1961|7.6|149|4|0|0
+2026-04-24T15:22|Run|8011|3112|0|512|15|0|0
+2026-04-23T22:12|Ride|2174|603|35.6|53|6|0|1
+2026-04-23T20:01|Ride|2714|709|2.8|48|2|0|0
+2026-04-23T16:32|Walk|1500|1706|0|80|2|0|1
+2026-04-23T12:38|Walk|997|928|0|43|2|0|0
+2026-04-23T11:32|Ride|746|197|2.8|13|0|0|0
+2026-04-23T08:33|Ride|1079|282|2.4|25|3|0|0
+2026-04-22T21:10|Ride|3350|1003|38|63|10|2|2
+2026-04-22T20:28|Walk|2373|1670|12|112|4|0|0
+2026-04-22T18:09|Run|4868|4344|5.6|272|98|6|6
+2026-04-22T16:03|Walk|1299|965|3.3|59|2|0|0
+2026-04-22T00:35|Walk|1132|1005|4.9|61|1|0|0
+2026-04-20T15:00|Walk|3061|2381|13.1|145|5|0|0
+2026-04-20T13:29|Run|5010|2007|0|319|7|0|0
+2026-04-19T18:45|Ride|2894|962|37.8|59|7|0|0
+2026-04-19T17:59|Ride|507|393|23.8|16|1|0|0
+2026-04-19T13:46|Ride|26867|7021|239.4|535|40|14|14
+2026-04-19T13:11|Ride|3586|870|4.2|79|11|0|0
+2026-04-19T09:31|Ride|1537|402|6.6|40|1|0|0
+2026-04-18T21:17|Ride|1733|373|6.6|28|1|0|0
+2026-04-18T20:45|Ride|1318|420|4.2|42|1|0|1
+2026-04-18T16:04|Walk|68|37|0|6|0|0|0
+2026-04-18T14:42|Run|5016|1951|0|317|11|0|0
+2026-04-18T00:00|Walk|893|687|2.7|45|1|0|0
+2026-04-17T10:00|Run|7060|2815|0|445|11|0|0
+2026-04-17T06:57|Ride|3700|970|37.6|86|4|0|0
+2026-04-17T06:27|Walk|1059|964|6.4|56|1|0|0
+2026-04-16T20:18|Walk|1174|1069|4.5|58|1|0|0
+2026-04-16T11:15|Walk|1209|1057|6.7|56|2|0|0
+2026-04-16T08:49|Walk|1089|827|7.8|56|1|0|1
+2026-04-15T22:06|Ride|2305|782|29.8|41|3|0|0
+2026-04-15T18:06|Run|5959|3672|0|383|77|6|6
+2026-04-15T17:51|Ride|2198|551|8.2|51|3|1|1
+2026-04-15T16:33|Walk|1477|1134|3.7|76|2|0|0
+2026-04-14T17:24|Ride|7866|1883|48.6|173|21|10|10
+2026-04-13T14:43|Run|10026|3861|0|637|52|0|0
+2026-04-12T16:40|Walk|1157|1004|4|53|2|0|0
+2026-04-12T16:18|Walk|1415|959|4.7|64|2|0|0
+2026-04-11T18:21|Walk|147|105|59|24|0|0|0
+2026-04-10T14:21|Run|5007|1883|0|318|22|0|0
+2026-04-09T19:01|Run|5118|1913|0|333|23|0|0
+2026-04-07T18:08|Run|5065|1927|0|320|13|0|0
+2026-04-07T17:08|Walk|1054|896|0|47|1|0|0
+2026-04-06T15:45|Walk|2476|1882|25.4|108|4|0|0
+2026-04-05T15:32|Ride|32067|9060|128.2|579|43|15|16
+2026-04-04T18:40|Run|5029|1902|0|320|12|0|0
+2026-04-04T16:08|Walk|4165|3321|79.6|287|6|0|0
+2026-04-03T17:09|Run|5011|1852|0|319|22|0|2
+2026-04-02T17:12|Walk|2542|2280|7.5|118|5|0|0
+2026-04-02T13:49|Run|5020|1890|0|317|11|0|0
+2026-03-31T21:41|Ride|3521|1020|37.4|68|12|9|9
+2026-03-31T20:07|Ride|2572|591|2.2|58|3|0|0
+2026-03-31T16:24|Walk|1121|1059|0|46|2|0|0
+2026-03-30T18:24|Run|5155|2019|0|326|11|0|0
+2026-03-29T18:32|Run|5011|1911|0|318|25|0|0
+2026-03-27T20:09|Walk|1249|963|5|64|2|0|0
+2026-03-27T18:27|Run|5015|1849|0|323|29|0|0
+2026-03-27T06:59|Walk|827|686|0|41|1|0|0
+2026-03-26T16:25|Walk|1310|947|7|63|2|0|0
+2026-03-26T14:03|Run|7306|2785|0|464|28|0|0
+2026-03-25T21:32|Ride|4620|958|38.8|86|7|9|9
+2026-03-25T15:54|Walk|1711|1432|5.1|85|3|0|0
+2026-03-25T09:27|Walk|1491|926|6.3|81|2|0|0
+2026-03-25T07:27|Walk|1448|873|2.5|87|2|0|0
+2026-03-24T16:45|Walk|1311|925|26.8|82|2|0|0
+2026-03-23T22:52|Walk|1237|885|3|57|1|0|0
+2026-03-23T17:31|Ride|9935|3293|169.4|293|49|8|9
+2026-03-23T15:03|Walk|2455|1604|21|114|4|0|0
+2026-03-22T15:35|Run|5023|1945|0|316|13|0|0
+2026-03-22T10:37|Ride|3221|691|22.6|67|4|7|7
+2026-03-21T16:47|Run|5393|2092|0|342|17|0|0
+2026-03-21T08:06|Walk|1477|1119|2.6|72|2|0|0
+2026-03-20T19:53|Walk|1559|1286|5.5|116|2|0|0
+2026-03-20T16:39|Walk|1719|1410|4.8|75|2|0|0
+2026-03-19T18:37|Walk|2349|1640|0|129|4|0|0
+2026-03-19T17:39|Run|6136|2848|0|372|21|0|0
+2026-03-18T19:22|Run|6014|3366|0|397|11|0|0
+2026-03-17T10:24|Run|5161|1891|0|334|19|0|0
+2026-03-16T17:25|Run|5018|1900|0|321|10|0|0
+2026-03-16T11:38|Walk|2306|1733|22.9|127|4|0|0
+2026-03-15T20:33|Run|5014|1886|0|323|17|0|0
+2026-03-14T15:42|Walk|2390|2554|94.4|200|5|0|0
+2026-03-12T15:41|Run|5032|1961|0|322|17|0|0
+2026-03-12T11:42|Walk|2471|1617|13.3|131|4|0|0
+2026-03-12T08:50|Walk|1089|686|2.6|99|2|0|0
+2026-03-11T18:47|Walk|2770|1848|0|192|4|0|0
+2026-03-11T15:20|Walk|1549|1445|7.4|93|3|0|0
+2026-03-11T12:19|Walk|1233|654|4.1|58|1|0|0
+2026-03-11T07:23|Walk|1200|956|3.7|52|1|0|0
+2026-03-10T10:19|Run|5023|1931|0|322|20|0|0
+2026-03-09T17:26|Walk|4213|3173|54.6|219|7|0|0
+2026-03-09T12:06|Walk|1196|846|0|57|2|0|0
+2026-03-09T07:36|Walk|1371|1020|3.1|62|2|0|0
+2026-03-08T18:38|Run|3018|2699|0|202|4|0|0
+2026-03-07T18:43|Run|5014|1808|0|322|35|0|0
+2026-03-07T17:33|Walk|1050|963|4.2|67|2|0|0
+2026-03-07T16:36|Walk|2309|1726|14.6|105|4|0|0
+2026-03-06T19:14|Walk|2074|1458|3.9|106|3|0|0
+2026-03-06T16:16|Run|7041|2774|0|449|30|0|0
+2026-03-04T17:48|Run|5131|1881|0|329|28|0|0
+2026-03-02T19:09|Run|5006|1897|0|321|27|0|0
+2026-03-01T17:31|Run|7014|2587|0|462|49|0|0
+2026-03-01T11:19|Walk|2114|1695|36.3|109|3|0|0
+2026-02-28T07:29|Walk|1173|832|4|54|1|0|0
+2026-02-26T17:38|Run|5508|2372|0|354|58|0|0
+2026-02-25T11:11|Walk|702|406|9.6|43|1|0|0
+2026-02-25T06:57|Walk|1285|1000|2.1|58|2|0|0
+2026-02-24T12:11|Walk|1350|649|0|60|1|0|0
+2026-02-24T10:32|Walk|1514|1415|0|92|2|0|0
+2026-02-23T18:52|Walk|1901|1628|16.5|126|3|0|0
+2026-02-23T16:32|Run|7012|2704|0|459|27|0|0
+2026-02-21T18:43|Run|5017|1962|0|321|22|0|0
+2026-02-20T17:33|Run|5021|1935|0|322|36|0|0
+2026-02-18T17:48|Run|10004|3851|0|704|74|0|0
+2026-02-17T06:37|Walk|1037|943|4.2|52|2|0|0
+2026-02-15T17:45|Run|7039|2766|0|483|53|0|0
+2026-02-13T16:25|Run|221|84|0|12|0|0|0
+2026-02-13T15:09|Walk|1648|1013|2.3|81|2|0|0
+2026-02-12T17:00|Run|6000|3780|0|421|8|0|0
+2026-02-11T16:42|Run|6009|2286|0|421|48|0|0
+2026-02-11T07:36|Walk|2092|1736|23.6|114|4|0|0
+2026-02-10T17:20|Run|5013|2529|0|318|19|0|0
+2026-02-08T18:47|Run|8054|3075|0|534|33|0|0
+2026-02-07T16:31|Walk|2493|2044|43.4|167|5|0|0
+2026-02-06T20:09|Walk|2203|1591|0|100|3|0|0
+2026-02-06T15:41|Run|5009|1970|0|330|21|0|0
+2026-02-05T20:10|Walk|2574|1771|2.1|125|4|0|0
+2026-02-05T11:23|Run|6258|2592|0|415|35|0|0
+2026-02-04T18:09|Run|5081|3468|0|574|152|0|0
+2026-02-04T15:10|Walk|1348|864|4|64|1|0|0
+2026-02-02T16:33|Run|5018|1893|0|342|38|0|0
+2026-01-28T18:10|Soccer|0|4573|0|773|131|0|0
+2026-01-27T11:19|Walk|2868|1850|31.3|167|5|0|0
+2026-01-26T19:58|Walk|2488|1981|0|121|4|0|0
+2026-01-26T17:16|Run|5074|1923|0|335|30|0|0
+2026-01-24T16:54|Run|1886|702|0|122|7|0|0
+2026-01-23T17:18|Run|5108|2001|0|338|28|0|0
+2026-01-21T18:08|Soccer|0|8561|0|864|118|0|1
+2026-01-19T17:17|Walk|1394|1071|4.2|72|2|0|0
+2026-01-18T10:59|Run|5112|1994|0|352|55|0|0
+2026-01-15T19:24|Walk|2722|1509|0|150|5|0|0
+2026-01-15T17:21|Run|5190|1913|0|344|34|0|0
+2026-01-14T18:07|Walk|5054|4557|0|264|9|0|0
+2026-01-14T11:18|Walk|916|654|2.3|39|1|0|0
+2026-01-12T16:41|Run|5022|1874|0|331|25|0|0
+2026-01-10T20:54|Walk|70|114|0|9|0|0|0
+2026-01-09T10:23|Run|602|1262|0|54|3|0|0
+2026-01-07T18:09|Soccer|0|4557|0|708|87|0|0
+2026-01-04T20:49|Walk|1168|871|0|56|1|0|0
+2026-01-04T17:22|Walk|2567|1762|35|155|4|0|0
+2026-01-04T14:55|Run|5025|1883|0|331|29|0|0
+2026-01-03T19:10|Run|5023|1946|0|330|21|0|0
+2026-01-02T17:37|Run|5123|1899|0|345|34|0|0
+2026-01-01T15:35|Walk|2693|1731|41.1|153|4|0|0
+2025-12-31T18:33|Run|10062|3766|0|686|71|0|1
+2025-12-31T08:29|Hike|4454|986|12|351|2|0|0
+2025-12-30T17:05|Run|5025|1848|0|329|22|0|0
+2025-12-29T16:35|Run|5019|2015|0|349|41|0|0
+2025-12-27T17:13|Run|5030|1944|0|343|26|0|0
+2025-12-26T15:31|Walk|1190|1011|2.3|75|2|0|0
+2025-12-25T18:43|Run|10023|3961|0|756|81|0|0
+2025-12-25T16:46|Walk|1416|1199|2.3|63|2|0|0
+2025-12-24T11:25|Run|5009|1928|0|348|23|0|0
+2025-12-23T10:14|Workout|0|2769|0|352|13|0|0
+2025-12-23T08:03|Run|5000|5520|0|348|6|0|0
+2025-12-22T14:09|Run|5148|1884|0|347|27|0|0
+2025-12-20T11:43|Run|5114|1962|0|338|28|0|0
+2025-12-20T10:49|Walk|2594|1829|24.2|137|4|0|0
+2025-12-19T23:01|Walk|2296|1576|37.5|132|3|0|0
+2025-12-19T16:05|Walk|2733|1763|0|137|4|0|0
+2025-12-18T16:07|Run|5024|1949|0|337|15|0|0
+2025-12-17T22:31|Walk|2306|1880|35|139|5|0|0
+2025-12-17T19:42|Walk|2773|2014|2.5|172|5|0|0
+2025-12-17T18:07|Run|5258|2072|0|390|40|0|0
+2025-12-16T19:15|Run|5030|2012|0|332|0|0|0
+2025-12-16T17:40|Walk|2529|1610|6.4|107|3|0|0
+2025-12-15T17:31|Walk|1556|795|0|81|2|0|0
+2025-12-15T15:54|Run|5014|1947|0|330|20|0|0
+2025-12-14T18:05|Walk|1697|1203|4.8|81|2|0|0
+2025-12-14T09:00|Walk|1669|2044|0|94|3|0|0
+2025-12-12T23:07|Walk|2368|1822|40.1|141|4|0|0
+2025-12-12T17:56|Run|5009|1907|0|343|0|0|0
+2025-12-12T11:04|Walk|1417|928|3.7|69|1|0|0
+2025-12-12T08:52|Walk|1307|1249|0|68|0|0|0
+2025-12-11T07:39|Walk|1952|1389|5.9|106|3|0|0
+2025-12-10T17:51|Walk|2232|1328|0|102|3|0|0
+2025-12-10T15:48|Run|5050|2001|0|339|0|0|0
+2025-12-09T19:52|Walk|2393|2011|11.2|125|4|0|0
+2025-12-08T18:00|Walk|1705|1924|3.8|88|3|0|0
+2025-12-07T14:47|Walk|1164|947|2.2|57|1|0|0
+2025-12-05T12:19|Walk|1155|947|6.3|56|2|0|0
+2025-12-05T10:59|Run|5225|1976|0|353|0|0|0
+2025-12-05T07:45|Walk|2117|1091|26.2|63|1|0|0
+2025-12-03T18:09|Soccer|0|4696|0|582|168|0|0
+2025-12-03T17:07|Walk|1133|781|4.2|48|1|0|0
+2025-12-02T07:52|Walk|1845|1961|0|97|0|0|0
+2025-12-01T16:29|Run|2351|905|0|153|0|0|0
+2025-11-30T16:02|Walk|5981|4123|41.2|296|9|0|0
+2025-11-29T17:45|Run|5014|1879|0|342|0|0|0
+2025-11-29T17:29|Run|454|184|0|30|2|0|1
+2025-11-29T15:58|Walk|1333|1174|6.1|59|2|0|0
+2025-11-28T17:16|Run|5013|1993|0|346|26|0|0
+2025-11-28T08:30|Walk|1218|701|2.2|68|1|0|0
+2025-11-27T15:15|Run|1242|512|0|81|0|0|0
+2025-11-26T18:10|Soccer|0|4723|0|996|17|0|0
+2025-11-25T18:14|Run|5016|1901|0|339|0|0|0
+2025-11-25T07:43|Walk|1355|891|2.8|78|2|0|0
+2025-11-25T07:07|Walk|1743|1237|12.3|100|3|0|0
+2025-11-24T17:16|Walk|1403|770|8.8|65|1|0|0
+2025-11-21T18:03|Walk|1311|934|2.1|85|2|0|0
+2025-11-21T16:30|Run|5007|1840|0|337|0|0|0
+2025-11-20T19:27|Walk|1180|821|0|54|1|0|0
+2025-11-20T18:09|Run|10009|3787|0|699|0|0|0
+2025-11-18T15:28|Walk|7119|5047|49.6|407|9|0|0
+2025-11-18T09:37|Walk|1449|738|2.5|82|1|0|0
+2025-11-18T07:30|Walk|2323|2201|0|120|0|0|0
+2025-11-17T22:29|Walk|3232|2593|39.9|185|4|0|0
+2025-11-17T17:49|Walk|2336|1572|0|133|3|0|0
+2025-11-17T12:09|Walk|1482|1432|0|74|0|0|0
+2025-11-16T16:59|Walk|1071|930|0|98|0|0|0
+2025-11-16T16:25|Run|5014|1935|0|336|0|0|0
+2025-11-15T12:25|Soccer|0|5894|0|1338|0|0|1
+2025-11-14T19:09|Walk|1933|1601|2.8|98|3|0|0
+2025-11-14T15:34|Run|5012|1947|0|352|19|0|0
+2025-11-12T18:10|Soccer|0|4857|0|760|104|0|0
+2025-11-12T07:30|Walk|809|533|2.6|50|0|0|0
+2025-11-11T15:10|Run|5017|1912|0|351|0|0|0
+2025-11-10T18:19|Walk|1395|891|9.1|78|1|0|0
+2025-11-10T15:01|Walk|2070|1476|6.8|104|2|0|0
+2025-11-09T19:03|Run|5017|2019|0|356|0|0|0
+2025-11-09T02:41|Walk|1893|1356|34.9|126|3|0|0
+2025-11-08T20:42|Walk|2689|1787|3.1|144|4|0|0
+2025-11-08T17:53|Walk|1123|939|4.1|64|2|0|0
+2025-11-08T16:06|Run|5032|1690|2.2|343|0|1|1
+2025-11-07T21:41|Walk|289|235|0|15|0|0|0
+2025-11-07T16:01|Run|5009|1828|0|341|0|0|0
+2025-11-07T11:20|Walk|1818|1326|6.3|86|3|0|0
+2025-11-06T16:25|Walk|7665|6160|45.4|470|13|0|1
+2025-11-06T12:34|Walk|1168|887|3.2|60|1|0|0
+2025-11-05T18:08|Soccer|0|4921|0|609|24|0|1
+2025-11-05T07:06|Walk|1822|1376|3.6|97|2|0|0
+2025-11-04T15:50|Run|5010|1781|0|343|0|0|0
+2025-11-03T20:52|Walk|1806|1404|6.5|106|3|0|0
+2025-11-03T19:41|Run|5034|1858|0|350|0|0|0
+2025-11-03T10:58|Walk|1619|1182|5.5|76|2|0|0
+2025-10-31T17:28|Run|5022|1838|0|331|0|0|0
+2025-10-31T07:33|Walk|1275|994|10.1|77|2|0|0
+2025-10-30T18:05|Walk|3671|4695|4.2|198|0|0|0
+2025-10-30T12:54|Walk|1032|585|2.9|56|1|0|0
+2025-10-30T11:30|Walk|1111|758|8.4|68|1|0|0
+2025-10-29T20:26|Walk|2789|2141|15.9|163|6|0|0
+2025-10-29T18:11|Soccer|0|4552|0|900|0|0|0
+2025-10-28T11:47|Walk|1341|718|0|70|1|0|0
+2025-10-27T17:14|Walk|1504|1098|2.7|72|2|0|0
+2025-10-26T15:54|Walk|2780|1960|33.6|147|5|0|0
+2025-10-23T18:52|Walk|3115|2026|0|158|4|0|0
+2025-10-23T17:57|Walk|2405|1586|4.1|113|3|0|0
+2025-10-22T18:10|Soccer|0|4443|0|708|212|0|0
+2025-10-20T16:51|Walk|1379|850|2.9|66|1|0|0
+2025-10-19T17:04|Run|5008|1829|0|330|6|0|0
+2025-10-18T18:47|Run|10011|3552|0|666|0|0|0
+2025-10-18T15:17|Walk|5912|4259|44.4|293|0|0|0
+2025-10-18T00:50|Walk|924|1064|8.6|70|0|0|0
+2025-10-17T16:52|Walk|2219|1700|0|106|3|0|0
+2025-10-15T14:37|Walk|1375|1205|3|79|3|0|0
+2025-10-13T19:27|Walk|2625|1858|9.5|139|3|0|0
+2025-10-11T19:33|Walk|1472|994|0|63|1|0|0
+2025-10-10T18:24|Run|5043|1796|0|332|0|0|0
+2025-10-09T16:35|Walk|6241|4327|43.6|322|9|0|1
+2025-10-08T18:11|Run|4990|3127|0|498|81|0|0
+2025-10-08T16:39|Walk|2641|1776|6.4|151|4|0|0
+2025-10-07T15:29|Walk|3016|2156|2.2|176|0|0|0
+2025-10-07T07:02|Walk|44|334|2|8|0|0|0
+2025-10-05T10:11|Run|9747|3162|49.6|689|0|12|12
+2025-10-05T09:37|Walk|2013|1138|0|106|2|0|0
+2025-10-04T08:51|Walk|3986|3012|53.6|228|7|0|0
+2025-10-03T19:30|Walk|3554|2486|63.4|186|5|0|0
+2025-10-02T12:23|Walk|1221|684|3.4|60|1|0|0
+2025-10-01T18:09|Soccer|0|4471|0|648|184|0|0
+2025-10-01T13:08|Walk|1643|1815|0|97|0|0|0
+2025-09-29T16:32|Walk|1201|1052|6.8|64|0|0|0
+2025-09-29T14:42|Run|5013|1849|0|331|0|0|0
+2025-09-28T16:55|Run|7896|2819|0|523|0|0|0
+2025-09-27T16:15|Walk|3561|3396|145.4|286|0|0|0
+2025-09-27T08:47|Walk|1731|1626|8.6|98|0|0|0
+2025-09-26T22:36|Walk|1459|968|5.1|72|1|0|0
+2025-09-25T16:24|Run|5064|1899|0|329|0|0|1
+2025-09-24T18:11|Soccer|0|4779|0|779|113|0|0
+2025-09-23T15:08|Walk|1371|1214|5.6|81|2|0|0
+2025-09-23T08:03|Walk|1440|830|6.8|73|0|0|0
+2025-09-22T16:06|Walk|4900|5868|4.1|249|0|0|0
+2025-08-10T08:36|Walk|1008|937|3.6|53|2|0|0
+2025-08-09T14:31|Run|5011|1869|0|329|34|0|0
+2025-08-08T20:41|Walk|1278|959|6.5|72|2|0|0
+2025-08-08T18:52|Run|5012|1858|0|333|30|0|0
+2025-08-07T19:02|Workout|0|4901|0|771|144|0|0
+2025-08-06T20:33|Walk|997|756|3.2|53|1|0|0
+2025-08-06T16:27|Walk|1754|1101|7|103|2|0|0
+2025-08-05T20:37|Walk|1688|1347|45.8|104|3|0|0
+2025-08-05T19:41|Run|5007|1526|42|345|53|16|16
+2025-08-05T17:28|Walk|2454|1879|7.7|126|3|0|0
+2025-08-05T11:17|Walk|1328|987|7.1|68|2|0|0
+2025-08-05T08:35|Walk|1227|824|0|62|1|0|1
+2025-08-02T12:14|Walk|879|804|25.2|65|1|0|0
+2025-08-02T08:24|Walk|766|565|4.2|74|1|0|0
+2025-08-01T20:31|Walk|2351|1809|39.4|194|4|0|0
+2025-08-01T19:08|Run|5013|1835|0|353|36|0|0
+2025-07-30T07:35|Walk|1304|942|4.3|74|2|0|0
+2025-07-25T15:21|Run|5009|1787|0|334|34|0|0
+2025-07-24T19:11|Walk|2671|1769|16.8|148|4|0|0
+2025-07-24T18:02|Walk|2512|2003|12|128|5|0|0
+2025-07-24T16:43|Run|10532|3630|0|759|117|0|0
+2025-07-23T21:53|Walk|1151|1025|2.8|52|2|0|0
+2025-07-23T09:56|Walk|252|270|0|17|0|0|0
+2025-07-22T21:16|Walk|2395|1927|7.7|129|3|0|0
+2025-07-21T13:24|Run|5223|1807|0|346|35|0|0
+2025-07-16T17:59|Run|5105|1590|65|347|65|18|18
+2025-07-16T16:13|Walk|3085|2103|16.7|152|4|0|0
+2025-07-16T12:02|Walk|2168|1474|71|131|3|0|0
+2025-07-15T16:37|Run|10018|4001|0|692|47|0|0
+2025-07-15T15:18|Walk|734|539|8.2|36|0|0|0
+2025-07-15T11:26|Walk|1310|1085|46.4|81|1|0|0
+2025-07-15T09:49|Walk|2254|2119|0|138|4|0|0
+2025-07-14T18:16|Walk|2465|1850|66.6|146|4|0|0
+2025-07-13T22:09|Walk|1891|1531|5.4|112|2|0|0
+2025-07-13T14:58|Walk|1580|1208|5.7|89|2|0|0
+2025-07-13T08:09|Walk|1635|1410|8|81|2|0|0
+2025-07-12T20:10|Walk|2432|1752|16|118|4|0|0
+2025-07-12T19:27|Walk|1011|812|33.4|67|1|0|0
+2025-07-12T16:20|Run|5013|1808|0|349|44|0|0
+2025-07-12T14:47|Walk|6104|2402|55|201|5|0|1
+2025-07-12T11:10|Walk|1063|952|4.1|52|1|0|0
+2025-07-12T08:40|Walk|1035|919|4.1|54|1|0|0
+2025-07-11T16:13|Walk|1246|1075|3.9|65|2|0|0
+2025-07-11T15:09|Run|5009|1953|0|336|34|0|0
+2025-07-11T07:36|Walk|1743|1205|5.2|117|2|0|0
+2025-07-10T19:02|Workout|0|4126|0|695|113|0|0
+2025-07-10T16:06|Walk|3544|2580|37|207|5|0|0
+2025-07-09T18:34|Walk|4293|2928|137.6|228|6|0|0
+2025-07-09T13:34|Walk|1773|1291|3.8|103|2|0|0
+2025-07-09T11:17|Walk|1207|522|4.2|56|1|0|0
+2025-07-07T19:48|Walk|2820|2109|54|150|3|0|0
+2025-07-07T16:04|Walk|2825|1951|62.2|157|5|0|0
+2025-07-05T18:06|Workout|0|7565|0|573|21|0|1
+2025-07-05T12:11|Walk|871|647|2.8|40|1|0|0
+2025-07-04T21:29|Walk|40|64|0|8|0|0|0
+2025-07-04T17:09|Run|5012|1856|0|329|21|0|0
+2025-07-04T07:53|Walk|783|566|4.1|36|1|0|0
+2025-07-03T19:01|Workout|0|4508|0|909|144|0|0
+2025-07-02T20:33|Walk|135|119|5.4|7|0|0|0
+2025-07-02T19:17|Run|5016|1740|0|333|37|0|0
+2025-06-30T19:36|Walk|3676|3251|109.4|191|5|0|0
+2025-06-29T08:07|Walk|1097|925|4.2|60|1|0|0
+2025-06-27T22:26|Walk|997|684|2.5|51|1|0|0
+2025-06-27T17:20|Run|5010|1912|0|366|31|0|1
+2025-06-26T19:03|Workout|0|4403|0|680|101|0|0
+2025-06-25T23:16|Walk|1427|995|4.8|76|2|0|0
+2025-06-25T20:21|Walk|2424|1762|22.4|145|4|0|0
+2025-06-25T18:57|Run|5012|1962|0|351|31|0|0
+2025-06-24T08:03|Walk|1242|1115|6.5|57|2|0|0
+2025-06-23T18:52|Walk|1269|924|39.6|88|1|0|0
+2025-06-21T18:26|Run|4571|2427|0|319|53|0|0
+2025-06-20T23:40|Walk|1340|1095|4.9|78|2|0|0
+2025-06-20T20:49|Walk|1678|1255|22.4|98|2|0|0
+2025-06-20T18:08|Walk|1175|906|7.1|51|1|0|0
+2025-06-19T21:43|Walk|1096|940|8.6|58|2|0|0
+2025-06-19T19:00|Workout|0|4591|0|813|127|0|0
+2025-06-18T17:49|Walk|2618|2076|60.8|174|3|0|0
+2025-06-18T10:14|Walk|5023|3956|0|315|7|0|1
+2025-06-18T07:15|Walk|1218|1151|3.9|59|2|0|0
+2025-06-17T08:19|Walk|133|323|0|10|0|0|0
+2025-06-16T19:14|Walk|2984|2354|66|150|4|0|0
+2025-06-16T15:55|Walk|1123|884|4.2|57|1|0|0
+2025-06-15T17:48|Workout|0|5571|0|466|16|0|0
+2025-06-15T09:31|Walk|855|352|3.5|40|0|0|0
+2025-06-14T14:12|Run|5008|1854|0|360|25|0|0
+2025-06-14T07:00|Walk|1283|1089|26.4|75|1|0|0
+2025-06-13T19:35|Walk|1103|484|4|55|1|0|0
+2025-06-13T14:34|Walk|1450|1220|2.5|74|2|0|0
+2025-06-13T06:52|Walk|829|704|4.1|42|1|0|0
+2025-06-12T23:10|Walk|2239|1668|8.4|116|3|0|0
+2025-06-12T20:03|Walk|1826|1338|25.4|105|3|0|0
+2025-06-12T11:37|Walk|1390|1040|6.3|76|2|0|0
+2025-06-11T17:31|Run|20021|7671|0|1493|166|0|1
+2025-06-11T15:32|Walk|2923|2293|45.4|196|4|0|0
+2025-06-11T11:28|Walk|1832|1436|33.8|138|3|0|0
+2025-06-10T21:44|Walk|679|591|8.6|56|1|0|0
+2025-06-10T18:00|Walk|2556|1876|37.6|139|2|0|0
+2025-06-10T13:29|Walk|89|122|4.8|10|0|0|0
+2025-06-09T20:17|Walk|2035|1652|9.3|97|3|0|0
+2025-06-09T15:54|Walk|4146|3099|115.4|206|5|0|0
+2025-06-08T11:06|Run|5011|1792|0|330|23|0|0
+2025-06-08T09:11|Walk|2289|2003|6.5|154|4|0|0
+2025-06-07T18:22|Workout|0|7534|0|536|18|0|1
+2025-06-06T18:29|Run|5019|1872|0|324|11|0|0
+2025-06-06T18:05|Walk|989|818|3.9|51|1|0|0
+2025-06-06T07:55|Walk|1214|1056|34.2|79|2|0|0
+2025-06-05T18:39|Walk|3283|2481|100.4|214|6|0|0
+2025-06-05T17:12|Run|7311|4104|0|468|22|0|0
+2025-06-05T11:59|Walk|2310|1562|8|110|3|0|0
+2025-06-04T20:27|Walk|2157|1731|5.7|129|4|0|0
+2025-06-04T18:07|Workout|0|5608|0|1115|178|0|0
+2025-06-04T16:42|Walk|1137|1000|41.8|71|1|0|0
+2025-06-03T19:05|Walk|485|564|2.2|59|0|0|0
+2025-06-02T09:20|Walk|2275|1508|56.6|132|3|0|0
+2025-06-01T14:35|Run|5022|2030|0|335|22|0|0
+2025-06-01T09:06|Walk|2247|1725|69.6|145|3|0|0
+2025-05-31T22:09|Walk|1482|1355|7.5|83|2|0|0
+2025-05-31T19:39|Walk|1065|804|31.4|72|1|0|0
+2025-05-30T20:04|Walk|2133|1644|71|141|3|0|0
+2025-05-29T22:17|Walk|2530|1701|13.8|148|3|0|0
+2025-05-29T18:43|Walk|3073|2315|12|213|5|0|0
+2025-05-29T17:25|Run|5196|1923|0|383|34|0|0`;
+
+/* ============ PARSE ============ */
+const SPORT = {
+  Run:{key:'run',label:'Beh',icon:'🏃',cv:'--c-run'},
+  Walk:{key:'walk',label:'Chôdza',icon:'🚶',cv:'--c-walk'},
+  Ride:{key:'ride',label:'Bicykel',icon:'🚴',cv:'--c-ride'},
+  Hike:{key:'hike',label:'Túra',icon:'⛰️',cv:'--c-hike'},
+  WeightTraining:{key:'sila',label:'Sila',icon:'🏋️',cv:'--c-sila'},
+  Workout:{key:'sila',label:'Sila',icon:'🏋️',cv:'--c-sila'},
+  Soccer:{key:'futbal',label:'Futbal',icon:'⚽',cv:'--c-futbal'}
+};
+const KEYS = ['run','walk','ride','hike','sila','futbal'];
+const KMETA = {
+  run:{label:'Beh',icon:'🏃',cv:'--c-run'},
+  walk:{label:'Chôdza',icon:'🚶',cv:'--c-walk'},
+  ride:{label:'Bicykel',icon:'🚴',cv:'--c-ride'},
+  hike:{label:'Túra',icon:'⛰️',cv:'--c-hike'},
+  sila:{label:'Sila',icon:'🏋️',cv:'--c-sila'},
+  futbal:{label:'Futbal',icon:'⚽',cv:'--c-futbal'}
+};
+const cssv = n => getComputedStyle(document.body).getPropertyValue(n).trim();
+
+const acts = RAW.trim().split('\n').map(l=>{
+  const [dt,sp,d,mv,el,cal,ef,pr,ach]=l.split('|');
+  const m = SPORT[sp]||SPORT.Workout;
+  return {dt, day:dt.slice(0,10), hour:+dt.slice(11,13), sport:m.key,
+    km:+d/1000, min:+mv/60, elev:+el, cal:+cal, ef:+ef, pr:+pr, ach:+ach,
+    date:new Date(dt)};
+}).sort((a,b)=>a.dt<b.dt?-1:1);
+
+const byDay = new Map();
+acts.forEach(a=>{ if(!byDay.has(a.day)) byDay.set(a.day,[]); byDay.get(a.day).push(a); });
+
+const fmtD = d => `${d.getDate()}. ${d.getMonth()+1}. ${d.getFullYear()}`;
+const fmtDs = s => { const [y,m,d]=s.split('-'); return `${+d}. ${+m}. ${y}`; };
+const pad = n => String(n).padStart(2,'0');
+const iso = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+const paceStr = p => { const mm=Math.floor(p), ss=Math.round((p-mm)*60); return `${mm}:${pad(ss)}`; };
+const hm = min => { const h=Math.floor(min/60), m=Math.round(min%60); return h? `${h} h ${m} min` : `${m} min`; };
+const nf = new Intl.NumberFormat('sk-SK');
+const WD = ['Ne','Po','Ut','St','Št','Pi','So'];
+const WD_FULL = ['nedeľa','pondelok','utorok','streda','štvrtok','piatok','sobota'];
+const MON = ['jan','feb','mar','apr','máj','jún','júl','aug','sep','okt','nov','dec'];
+const MON_FULL = ['Január','Február','Marec','Apríl','Máj','Jún','Júl','August','September','Október','November','December'];
+
+const dataEnd = new Date(acts[acts.length-1].day+'T12:00');
+const realToday = new Date();
+const refDate = realToday > dataEnd ? dataEnd : realToday;   // deň, ku ktorému sú dáta
+const coachDate = realToday > new Date(dataEnd.getTime()+7*864e5) ? dataEnd : realToday;
+
+/* ============ HELPERS ============ */
+function addDays(d,n){ const x=new Date(d); x.setDate(x.getDate()+n); return x; }
+function mondayOf(d){ const x=new Date(d); const wd=(x.getDay()+6)%7; x.setDate(x.getDate()-wd); x.setHours(0,0,0,0); return x; }
+function inRange(a, from, to){ return a.date>=from && a.date<to; }
+function sum(arr, f){ return arr.reduce((s,x)=>s+f(x),0); }
+
+/* streak */
+function streakEnding(endDay){
+  let s=0, d=new Date(endDay+'T12:00');
+  while(byDay.has(iso(d))){ s++; d=addDays(d,-1); }
+  return s;
+}
+function bestStreak(){
+  let best=0, bestEnd=null, cur=0, prev=null;
+  [...byDay.keys()].sort().forEach(day=>{
+    if(prev && (new Date(day+'T12:00') - new Date(prev+'T12:00'))===864e5) cur++;
+    else cur=1;
+    if(cur>best){ best=cur; bestEnd=day; }
+    prev=day;
+  });
+  return {len:best, end:bestEnd};
+}
+
+/* ============ HEADER ============ */
+document.getElementById('todayPill').textContent = `${WD_FULL[realToday.getDay()]} ${fmtD(realToday)}`;
+document.getElementById('dataAsOf').textContent = fmtD(dataEnd);
+{
+  const km=sum(acts,a=>a.km), h=sum(acts,a=>a.min)/60, kc=sum(acts,a=>a.cal);
+  document.getElementById('lifetime').textContent =
+    `${acts.length} aktivít · ${nf.format(Math.round(km))} km · ${Math.round(h)} h pohybu · ${nf.format(kc)} kcal`;
+  document.getElementById('subtitle').innerHTML =
+    `Ahoj Kornel! Od <b>29. mája 2025</b> si zvládol <b class="num">${acts.length}</b> aktivít a <b class="num">${nf.format(Math.round(km))} km</b>. Poďme na ďalšie.`;
+}
+
+/* ============ THEME ============ */
+const themeBtn=document.getElementById('themeBtn');
+function setTheme(t){ document.body.dataset.theme=t; themeBtn.textContent = t==='dark'?'☀️':'🌙'; localStorage.setItem('pulse-theme',t); renderAllCharts(); }
+themeBtn.onclick=()=>setTheme(document.body.dataset.theme==='dark'?'light':'dark');
+
+/* ============ TOOLTIP ============ */
+const tip=document.getElementById('tip');
+function showTip(html,ev){ tip.innerHTML=html; tip.style.opacity=1; moveTip(ev); }
+function moveTip(ev){
+  const w=tip.offsetWidth, h=tip.offsetHeight;
+  let x=ev.clientX+14, y=ev.clientY-h-10;
+  if(x+w>innerWidth-8) x=ev.clientX-w-14;
+  if(y<8) y=ev.clientY+16;
+  tip.style.left=x+'px'; tip.style.top=y+'px';
+}
+function hideTip(){ tip.style.opacity=0; }
+
+/* ============ STREAK CARD ============ */
+{
+  const cur=streakEnding(iso(refDate));
+  const best=bestStreak();
+  const quotes=[
+    'Najťažší krok je ten cez prah dverí.',
+    'Nemusíš byť rýchly. Stačí, že si vonku.',
+    'Telo dosiahne to, čomu myseľ uverí.',
+    'Malé kroky každý deň porazia veľké plány raz za čas.',
+    'Dnešný pot je zajtrajšia sila.',
+    'Nie je zlé počasie, len zlé oblečenie.',
+    'Séria sa nebuduje v ideálne dni, ale v tie ostatné.',
+    'Beháš pre seba — a to je najlepší súper.'
+  ];
+  const doy=Math.floor((realToday - new Date(realToday.getFullYear(),0,0))/864e5);
+  const last7 = acts.filter(a=>a.date>=addDays(refDate,-6));
+  document.getElementById('streakCard').innerHTML = `
+    <div class="lbl">🔥 Aktuálna séria</div>
+    <div class="streak-num num">${cur} <small>${cur===1?'deň':cur<5?'dni':'dní'}</small></div>
+    <div class="streak-sub num">Rekord: <b>${best.len} dní</b> (do ${fmtDs(best.end)})<br/>
+    Posledných 7 dní: <b>${last7.length}</b> aktivít, <b>${sum(last7,a=>a.km).toFixed(1)} km</b></div>
+    <div class="quote">„${quotes[doy%quotes.length]}“</div>`;
+}
+
+/* ============ WEEK CARD (ciele + kruhy) ============ */
+function getGoals(){ try{ return JSON.parse(localStorage.getItem('pulse-goals'))||{km:25,days:5}; }catch(e){ return {km:25,days:5}; } }
+function ring(id,val,goal,color,text,sub){
+  const R=34, C=2*Math.PI*R, p=Math.min(1,val/goal);
+  return `<div class="ring-box" data-goal="${id}" title="Klikni a uprav cieľ">
+    <svg width="92" height="92" viewBox="0 0 92 92">
+      <circle cx="46" cy="46" r="${R}" fill="none" stroke="var(--card2)" stroke-width="9"/>
+      <circle cx="46" cy="46" r="${R}" fill="none" stroke="${color}" stroke-width="9" stroke-linecap="round"
+        stroke-dasharray="${(p*C).toFixed(1)} ${C.toFixed(1)}" transform="rotate(-90 46 46)"/>
+      <text x="46" y="44" text-anchor="middle" font-size="15" font-weight="800" fill="var(--text)" class="num">${text}</text>
+      <text x="46" y="59" text-anchor="middle" font-size="9.5" fill="var(--muted)">${sub}</text>
+    </svg>
+  </div>`;
+}
+function renderWeekCard(){
+  const goals=getGoals();
+  const mon=mondayOf(refDate), nextMon=addDays(mon,7), prevMon=addDays(mon,-7);
+  const dayIdx=Math.floor((refDate-mon)/864e5);                 /* koľko dní z týždňa už ubehlo */
+  const prevCut=addDays(prevMon,dayIdx+1);                      /* rovnaký bod minulého týždňa */
+  const cw=acts.filter(a=>inRange(a,mon,nextMon));
+  const pw=acts.filter(a=>inRange(a,prevMon,prevCut));
+  const km=sum(cw,a=>a.km), pkm=sum(pw,a=>a.km);
+  const mins=sum(cw,a=>a.min), pmins=sum(pw,a=>a.min);
+  const days=new Set(cw.map(a=>a.day)).size, pdays=new Set(pw.map(a=>a.day)).size;
+  const kc=sum(cw,a=>a.cal), pkc=sum(pw,a=>a.cal);
+  const d=(v,p,unit,dec=0)=>{ const df=v-p; const cls=df>=0?'up':'down'; const sign=df>=0?'+':'−';
+    return `<div class="delta"><div class="d-val num ${cls}">${sign}${Math.abs(df).toFixed(dec)} ${unit}</div><div class="d-lbl">vs min. týž. k tomuto dňu</div></div>`; };
+  document.getElementById('weekCard').innerHTML = `
+    <div class="lbl">🎯 Tento týždeň</div>
+    <div class="rings">
+      ${ring('km',km,goals.km,'var(--volt)',km.toFixed(1),`z ${goals.km} km`)}
+      ${ring('days',days,goals.days,'var(--c-run)',days,`z ${goals.days} dní`)}
+      <div>
+        <div style="font-size:13px;color:var(--soft);font-weight:600" class="num">⏱️ ${hm(mins)}<br/>🔥 ${nf.format(kc)} kcal</div>
+      </div>
+    </div>
+    <div class="deltas">${d(km,pkm,'km',1)}${d(days,pdays,'dní')}${d(kc,pkc,'kcal')}</div>
+    <div class="goal-hint">Klikni na kruh a uprav si týždenný cieľ.</div>`;
+  document.querySelectorAll('[data-goal]').forEach(el=>{
+    el.onclick=()=>{
+      const g=getGoals(); const which=el.dataset.goal;
+      const cur=which==='km'?g.km:g.days;
+      const v=prompt(which==='km'?'Týždenný cieľ v km:':'Cieľ aktívnych dní v týždni:',cur);
+      if(v===null) return;
+      const n=parseFloat(String(v).replace(',','.'));
+      if(!isFinite(n)||n<=0) return;
+      if(which==='km') g.km=n; else g.days=Math.round(n);
+      localStorage.setItem('pulse-goals',JSON.stringify(g));
+      renderWeekCard();
+    };
+  });
+}
+renderWeekCard();
+
+/* ============ TRÉNER (coach engine) ============ */
+function coachState(upTo){
+  const from28=addDays(upTo,-28);
+  const hist=acts.filter(a=>a.date<upTo && a.date>=from28);
+  const last7=hist.filter(a=>a.date>=addDays(upTo,-7));
+  const yest=hist.filter(a=>a.day===iso(addDays(upTo,-1)));
+  const dSince=(pred)=>{ for(let i=1;i<=28;i++){ const dd=iso(addDays(upTo,-i)); const l=byDay.get(dd)||[]; if(l.some(pred)) return i; } return 99; };
+  return {
+    strain7:sum(last7,a=>a.ef),
+    avgStrain:sum(hist,a=>a.ef)/4,
+    yestEf:sum(yest,a=>a.ef),
+    dStrength:dSince(a=>a.sport==='sila'),
+    dLong:dSince(a=>a.sport==='run'&&a.km>=8),
+    dTempo:dSince(a=>a.sport==='run'&&a.km>=4.5&&(a.min/a.km)<=6.08),
+    runsLast7:last7.filter(a=>a.sport==='run').length
+  };
+}
+function coachSuggest(day, st){
+  const wd=day.getDay();
+  if(wd===3) return {icon:'⚽',what:'Futbal',detail:'~65 min s partiou',why:'Streda je futbalová klasika. Ak nevyjde počasie, daj ľahký beh 5 km.'};
+  if(st.yestEf>=60) return {icon:'😴',what:'Voľno / regenerácia',detail:'max. prechádzka 30 min',why:`Včera bol náročný deň (efort ${st.yestEf}). Nechaj telo vstrebať tréning.`};
+  if(st.strain7 > 1.6*st.avgStrain && st.avgStrain>0) return {icon:'😴',what:'Voľno / regenerácia',detail:'ľahká prechádzka',why:'Posledných 7 dní máš výrazne vyššiu záťaž než tvoj priemer — deň voľna ti vráti silu.'};
+  if(st.dStrength>=3) return {icon:'🏋️',what:'Silový tréning',detail:'35 – 40 min, celé telo',why:`Od posledného silového ubehli ${st.dStrength===99?'viac než 4 týždne':st.dStrength+' dni'}. Sila drží svaly aj metabolizmus.`};
+  if((wd===6||wd===0) && st.dLong>=10) return {icon:'🏃',what:'Dlhý beh',detail:'9 – 10 km · Z2–Z3 · 6:10–6:30/km',why:'Víkend + dlhší beh nebol už vyše 10 dní. Pokojné tempo, nech vydržíš celú trasu.'};
+  if(st.dTempo>=7) return {icon:'⚡',what:'Tempo beh',detail:'5 km · Z3–Z4 · 5:45–6:05/km',why:'Posledné behy boli v pohodovom tempe — jeden svižnejší posunie rýchlosť.'};
+  return {icon:'🏃',what:'Ľahký beh',detail:'5 km · Z2 · 6:20–6:40/km',why:'Základný aeróbny beh — udržíš objem a formu bez zbytočnej únavy.'};
+}
+{
+  const st=coachState(coachDate);
+  const s=coachSuggest(coachDate, st);
+  /* nasledujúcich 7 dní – simulácia */
+  let sim={...st};
+  let strip='';
+  for(let i=0;i<7;i++){
+    const d=addDays(coachDate,i);
+    const sg=i===0? s : coachSuggest(d,sim);
+    /* update simulovaného stavu */
+    if(sg.what==='Silový tréning') sim.dStrength=0; else sim.dStrength++;
+    if(sg.what==='Dlhý beh') sim.dLong=0; else sim.dLong++;
+    if(sg.what==='Tempo beh') sim.dTempo=0; else sim.dTempo++;
+    sim.yestEf = sg.what.startsWith('Voľno')?0: (sg.what==='Futbal'?55:20);
+    strip+=`<div class="ws-day${i===0?' today':''}"><div class="ws-wd">${WD[d.getDay()]}</div><div class="ws-ico">${sg.icon}</div><div class="ws-what">${sg.what.replace('Silový tréning','Sila').replace(' / regenerácia','')}</div></div>`;
+  }
+  document.getElementById('coachCard').innerHTML=`
+    <div class="lbl">🧠 Tréner odporúča na ${fmtD(coachDate)}</div>
+    <div class="coach-main">
+      <div class="coach-ico">${s.icon}</div>
+      <div>
+        <div class="coach-what">${s.what}</div>
+        <div class="coach-detail num">${s.detail}</div>
+        <div class="coach-why">${s.why}</div>
+      </div>
+    </div>
+    <div class="week-strip">${strip}</div>
+    <div class="zone-hint">HR zóny: Z2 125–154 · Z3 155–169 · Z4 170–184 bpm · záťaž 7 dní: <b class="num">${st.strain7}</b> (priemer <b class="num">${Math.round(st.avgStrain)}</b>/týž.)</div>`;
+}
+
+/* ============ HEATMAP ============ */
+function renderHeatmap(){
+  const cell=13,gap=3,left=30,top=18;
+  const end=refDate;
+  const start=mondayOf(addDays(end,-364));
+  const weeks=Math.ceil((addDays(end,1)-start)/(7*864e5));
+  const W=left+weeks*(cell+gap), H=top+7*(cell+gap)+4;
+  const heat=['--heat0','--heat1','--heat2','--heat3','--heat4','--heat5'].map(cssv);
+  let sq='', monthLbls='', lastM=-1;
+  for(let w=0; w<weeks; w++){
+    for(let r=0;r<7;r++){
+      const d=addDays(start,w*7+r);
+      if(d>end) continue;
+      const key=iso(d), list=byDay.get(key)||[];
+      const mins=sum(list,a=>a.min);
+      const lvl=mins===0?0:mins<25?1:mins<50?2:mins<80?3:mins<115?4:5;
+      sq+=`<rect x="${left+w*(cell+gap)}" y="${top+r*(cell+gap)}" width="${cell}" height="${cell}" rx="3" fill="${heat[lvl]}" data-day="${key}" data-mins="${Math.round(mins)}"/>`;
+      if(r===0 && d.getMonth()!==lastM){ lastM=d.getMonth(); monthLbls+=`<text x="${left+w*(cell+gap)}" y="11" font-size="10" fill="var(--muted)">${MON[lastM]}</text>`; }
+    }
+  }
+  const rows=[1,3,5].map(r=>`<text x="0" y="${top+r*(cell+gap)+10}" font-size="9.5" fill="var(--muted)">${WD[(r+1)%7]}</text>`).join('');
+  document.getElementById('heatmap').innerHTML=
+    `<svg width="${W}" height="${H}" style="display:block">${monthLbls}${rows}${sq}</svg>`;
+  document.getElementById('heatLegend').innerHTML=
+    `Menej ${heat.map(h=>`<i style="background:${h}"></i>`).join('')} Viac`;
+  document.querySelectorAll('#heatmap rect').forEach(r=>{
+    r.addEventListener('mousemove',ev=>{
+      const key=r.dataset.day, list=byDay.get(key)||[];
+      let rows=list.map(a=>`<div class="t-r"><span>${KMETA[a.sport].icon} ${KMETA[a.sport].label}</span><b class="num">${a.km>=0.5?a.km.toFixed(1)+' km · ':''}${Math.round(a.min)} min</b></div>`).join('');
+      if(!rows) rows='<div class="t-r"><span>Deň voľna</span></div>';
+      showTip(`<div class="t-h num">${fmtDs(key)} · ${WD_FULL[new Date(key+'T12:00').getDay()]}</div>${rows}`,ev);
+    });
+    r.addEventListener('mouseleave',hideTip);
+  });
+}
+
+/* ============ TÝŽDENNÝ OBJEM (stacked bars) ============ */
+let volMode='km';
+function renderVol(){
+  const N=16;
+  const thisMon=mondayOf(refDate);
+  const weeks=[];
+  for(let i=N-1;i>=0;i--){
+    const from=addDays(thisMon,-7*i), to=addDays(from,7);
+    const list=acts.filter(a=>inRange(a,from,to));
+    const per={}; KEYS.forEach(k=>per[k]=0);
+    list.forEach(a=>{ per[a.sport]+= volMode==='km'?a.km : volMode==='min'?a.min : a.cal; });
+    weeks.push({from,to,per,total:Object.values(per).reduce((s,v)=>s+v,0)});
+  }
+  const W=640,H=240,padL=40,padB=24,padT=12;
+  const max=Math.max(...weeks.map(w=>w.total),1);
+  const bw=(W-padL-8)/N;
+  const colors={}; KEYS.forEach(k=>colors[k]=cssv(KMETA[k].cv));
+  let bars='',axis='';
+  const steps=4;
+  for(let i=0;i<=steps;i++){
+    const v=max/steps*i, y=H-padB-(H-padB-padT)*(i/steps);
+    axis+=`<line x1="${padL}" x2="${W-6}" y1="${y}" y2="${y}" stroke="var(--grid)" stroke-width="1"/>
+      <text x="${padL-6}" y="${y+3.5}" text-anchor="end" font-size="10" fill="var(--muted)" class="num">${volMode==='km'?v.toFixed(0):nf.format(Math.round(v))}</text>`;
+  }
+  weeks.forEach((w,i)=>{
+    let y=H-padB;
+    const x=padL+i*bw+bw*0.14, wdt=bw*0.72;
+    KEYS.forEach(k=>{
+      const v=w.per[k]; if(v<=0) return;
+      const h=(H-padB-padT)*(v/max);
+      y-=h;
+      bars+=`<rect x="${x.toFixed(1)}" y="${(y+1).toFixed(1)}" width="${wdt.toFixed(1)}" height="${Math.max(0,h-2).toFixed(1)}" rx="2.5" fill="${colors[k]}" data-i="${i}"/>`;
+    });
+    const lb=`${w.from.getDate()}.${w.from.getMonth()+1}.`;
+    if(i%2===(N-1)%2) bars+=`<text x="${(x+wdt/2).toFixed(1)}" y="${H-8}" text-anchor="middle" font-size="9.5" fill="var(--muted)" class="num">${lb}</text>`;
+    bars+=`<rect x="${(padL+i*bw).toFixed(1)}" y="${padT}" width="${bw.toFixed(1)}" height="${H-padB-padT}" fill="transparent" data-i="${i}" class="hit"/>`;
+  });
+  document.getElementById('volChart').innerHTML=`<svg viewBox="0 0 ${W} ${H}" style="width:100%;display:block">${axis}${bars}
+    <line x1="${padL}" x2="${W-6}" y1="${H-padB}" y2="${H-padB}" stroke="var(--baseline)" stroke-width="1"/></svg>`;
+  const unit=volMode==='km'?'km':volMode==='min'?'min':'kcal';
+  document.getElementById('volChart').querySelectorAll('[data-i]').forEach(el=>{
+    el.addEventListener('mousemove',ev=>{
+      const w=weeks[+el.dataset.i];
+      const rows=KEYS.filter(k=>w.per[k]>0).map(k=>`<div class="t-r"><span>${KMETA[k].icon} ${KMETA[k].label}</span><b class="num">${volMode==='km'?w.per[k].toFixed(1):nf.format(Math.round(w.per[k]))} ${unit}</b></div>`).join('');
+      showTip(`<div class="t-h num">${w.from.getDate()}.${w.from.getMonth()+1}. – ${addDays(w.to,-1).getDate()}.${addDays(w.to,-1).getMonth()+1}.</div>${rows}<div class="t-r" style="margin-top:4px"><span>Spolu</span><b class="num">${volMode==='km'?w.total.toFixed(1):nf.format(Math.round(w.total))} ${unit}</b></div>`,ev);
+    });
+    el.addEventListener('mouseleave',hideTip);
+  });
+  document.getElementById('volLegend').innerHTML=KEYS.map(k=>`<span class="li"><span class="sw" style="background:${colors[k]}"></span>${KMETA[k].label}</span>`).join('');
+}
+document.getElementById('volChips').innerHTML=['km','min','kcal'].map(m=>`<span class="chip${m===volMode?' on':''}" data-m="${m}">${m}</span>`).join('');
+document.getElementById('volChips').onclick=e=>{
+  const m=e.target.dataset.m; if(!m) return;
+  volMode=m;
+  document.querySelectorAll('#volChips .chip').forEach(c=>c.classList.toggle('on',c.dataset.m===m));
+  renderVol();
+};
+
+/* ============ DONUT ============ */
+function renderDonut(){
+  const from=addDays(refDate,-30);
+  const list=acts.filter(a=>a.date>=from);
+  const per=KEYS.map(k=>({k,v:sum(list.filter(a=>a.sport===k),a=>a.min)})).filter(x=>x.v>0);
+  const tot=sum(per,x=>x.v);
+  const cx=90,cy=90,R=64,r=40;
+  let a0=-Math.PI/2, segs='';
+  per.forEach(x=>{
+    const a1=a0+2*Math.PI*(x.v/tot);
+    const large=(a1-a0)>Math.PI?1:0;
+    const p=(a)=>[cx+R*Math.cos(a),cy+R*Math.sin(a)];
+    const q=(a)=>[cx+r*Math.cos(a),cy+r*Math.sin(a)];
+    const [x0,y0]=p(a0),[x1,y1]=p(a1),[x2,y2]=q(a1),[x3,y3]=q(a0);
+    segs+=`<path d="M${x0.toFixed(1)},${y0.toFixed(1)} A${R},${R} 0 ${large} 1 ${x1.toFixed(1)},${y1.toFixed(1)} L${x2.toFixed(1)},${y2.toFixed(1)} A${r},${r} 0 ${large} 0 ${x3.toFixed(1)},${y3.toFixed(1)} Z" fill="${cssv(KMETA[x.k].cv)}" stroke="var(--card)" stroke-width="2" data-k="${x.k}" data-v="${Math.round(x.v)}"/>`;
+    a0=a1;
+  });
+  const rows=per.sort((a,b)=>b.v-a.v).map(x=>`<div style="margin:4px 0;display:flex;justify-content:space-between;align-items:center;gap:12px"><span class="li" style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--soft)"><span class="sw" style="width:10px;height:10px;border-radius:3px;background:${cssv(KMETA[x.k].cv)}"></span>${KMETA[x.k].label}</span><b class="num" style="font-size:12px">${hm(x.v)} · ${Math.round(100*x.v/tot)} %</b></div>`).join('');
+  document.getElementById('donut').innerHTML=`
+    <div style="display:flex;gap:18px;align-items:center;flex-wrap:wrap">
+      <svg width="180" height="180" viewBox="0 0 180 180">${segs}
+        <text x="90" y="86" text-anchor="middle" font-size="17" font-weight="800" fill="var(--text)" class="num">${hm(tot)}</text>
+        <text x="90" y="102" text-anchor="middle" font-size="10" fill="var(--muted)">spolu</text></svg>
+      <div style="flex:1;min-width:150px">${rows}</div>
+    </div>`;
+  document.querySelectorAll('#donut path').forEach(pth=>{
+    pth.addEventListener('mousemove',ev=>{
+      const k=pth.dataset.k, v=+pth.dataset.v;
+      showTip(`<div class="t-h">${KMETA[k].icon} ${KMETA[k].label}</div><div class="t-r"><span>Čas</span><b class="num">${hm(v)}</b></div><div class="t-r"><span>Podiel</span><b class="num">${Math.round(100*v/tot)} %</b></div>`,ev);
+    });
+    pth.addEventListener('mouseleave',hideTip);
+  });
+}
+
+/* ============ TEMPO BEHOV ============ */
+let paceRange=180;
+function renderPace(){
+  const from=paceRange===0? new Date(0) : addDays(refDate,-paceRange);
+  const runs=acts.filter(a=>a.sport==='run' && a.km>=2 && a.date>=from)
+    .map(a=>({...a,pace:a.min/a.km})).filter(a=>a.pace>=3.5 && a.pace<=8.5);
+  const W=640,H=260,padL=44,padB=26,padT=14,padR=10;
+  if(runs.length<2){ document.getElementById('paceChart').innerHTML='<div class="chart-sub">Málo dát pre zvolené obdobie.</div>'; return; }
+  const t0=runs[0].date.getTime(), t1=runs[runs.length-1].date.getTime()||t0+1;
+  const pMin=Math.min(...runs.map(r=>r.pace)), pMax=Math.max(...runs.map(r=>r.pace));
+  const lo=Math.floor(pMin*2)/2-0.25, hi=Math.ceil(pMax*2)/2+0.25;
+  const X=t=>padL+(W-padL-padR)*((t-t0)/(t1-t0||1));
+  const Y=p=>padT+(H-padB-padT)*((p-lo)/(hi-lo));   /* nižšie tempo (rýchlejšie) hore */
+  let grid='';
+  for(let p=Math.ceil(lo*2)/2; p<=hi; p+=0.5){
+    const y=Y(p);
+    grid+=`<line x1="${padL}" x2="${W-padR}" y1="${y}" y2="${y}" stroke="var(--grid)"/>
+      <text x="${padL-6}" y="${y+3.5}" text-anchor="end" font-size="10" fill="var(--muted)" class="num">${paceStr(p)}</text>`;
+  }
+  /* easy zóna 6:20–6:40 */
+  const zone=`<rect x="${padL}" y="${Y(6.333).toFixed(1)}" width="${W-padL-padR}" height="${(Y(6.667)-Y(6.333)).toFixed(1)}" fill="var(--volt-soft)"/>
+    <text x="${W-padR-4}" y="${(Y(6.333)+11).toFixed(1)}" text-anchor="end" font-size="9.5" fill="var(--muted)">easy zóna</text>`;
+  /* kĺzavý medián (okno 5) */
+  let line='';
+  const med=[];
+  runs.forEach((r,i)=>{
+    const wnd=runs.slice(Math.max(0,i-2),i+3).map(x=>x.pace).sort((a,b)=>a-b);
+    med.push({t:r.date.getTime(),p:wnd[Math.floor(wnd.length/2)]});
+  });
+  line=med.map((m,i)=>`${i?'L':'M'}${X(m.t).toFixed(1)},${Y(m.p).toFixed(1)}`).join('');
+  const best=runs.reduce((a,b)=>b.pace<a.pace?b:a);
+  let dots='';
+  runs.forEach(r=>{
+    const isBest=r===best;
+    dots+=`<circle cx="${X(r.date.getTime()).toFixed(1)}" cy="${Y(r.pace).toFixed(1)}" r="${r.km>=8?6:4.5}"
+      fill="${cssv('--c-run')}" stroke="var(--card)" stroke-width="2" data-d="${r.day}" data-km="${r.km.toFixed(2)}" data-p="${r.pace.toFixed(3)}" data-ef="${r.ef}"/>`;
+    if(isBest) dots+=`<text x="${X(r.date.getTime()).toFixed(1)}" y="${(Y(r.pace)-10).toFixed(1)}" text-anchor="middle" font-size="10" font-weight="700" fill="var(--text)" class="num">PB ${paceStr(r.pace)}</text>`;
+  });
+  /* x labels */
+  let xl='';
+  for(let i=0;i<4;i++){
+    const t=t0+(t1-t0)*i/3, d=new Date(t);
+    xl+=`<text x="${X(t).toFixed(1)}" y="${H-8}" text-anchor="${i===0?'start':i===3?'end':'middle'}" font-size="10" fill="var(--muted)" class="num">${d.getDate()}.${d.getMonth()+1}.${String(d.getFullYear()).slice(2)}</text>`;
+  }
+  document.getElementById('paceChart').innerHTML=`<svg viewBox="0 0 ${W} ${H}" style="width:100%;display:block">
+    ${zone}${grid}
+    <path d="${line}" fill="none" stroke="${cssv('--c-run')}" stroke-width="2" opacity=".55"/>
+    ${dots}${xl}</svg>`;
+  document.querySelectorAll('#paceChart circle').forEach(c=>{
+    c.addEventListener('mousemove',ev=>{
+      showTip(`<div class="t-h num">${fmtDs(c.dataset.d)}</div>
+        <div class="t-r"><span>Vzdialenosť</span><b class="num">${(+c.dataset.km).toFixed(2)} km</b></div>
+        <div class="t-r"><span>Tempo</span><b class="num">${paceStr(+c.dataset.p)}/km</b></div>
+        <div class="t-r"><span>Efort</span><b class="num">${c.dataset.ef}</b></div>`,ev);
+    });
+    c.addEventListener('mouseleave',hideTip);
+  });
+}
+document.getElementById('paceChips').innerHTML=[[90,'3M'],[180,'6M'],[365,'1R'],[0,'Všetko']].map(([v,l])=>`<span class="chip${v===paceRange?' on':''}" data-v="${v}">${l}</span>`).join('');
+document.getElementById('paceChips').onclick=e=>{
+  const v=e.target.dataset.v; if(v===undefined) return;
+  paceRange=+v;
+  document.querySelectorAll('#paceChips .chip').forEach(c=>c.classList.toggle('on',+c.dataset.v===paceRange));
+  renderPace();
+};
+
+/* ============ WEEKDAY CHART ============ */
+function renderWeekday(){
+  const from=addDays(refDate,-90);
+  const list=acts.filter(a=>a.date>=from);
+  const per=[0,0,0,0,0,0,0], cnt=[0,0,0,0,0,0,0];
+  list.forEach(a=>{ per[(a.date.getDay()+6)%7]+=a.min; });
+  const daysCount=13; /* ~13 týždňov */
+  const avg=per.map(v=>v/daysCount);
+  const W=300,H=210,padL=34,padB=22,padT=10;
+  const max=Math.max(...avg,1);
+  const bw=(W-padL-8)/7;
+  let out='';
+  for(let i=0;i<=3;i++){
+    const v=max/3*i, y=H-padB-(H-padB-padT)*(i/3);
+    out+=`<line x1="${padL}" x2="${W-4}" y1="${y}" y2="${y}" stroke="var(--grid)"/>
+      <text x="${padL-5}" y="${y+3.5}" text-anchor="end" font-size="9.5" fill="var(--muted)" class="num">${Math.round(v)}</text>`;
+  }
+  const maxI=avg.indexOf(Math.max(...avg));
+  avg.forEach((v,i)=>{
+    const h=(H-padB-padT)*(v/max), x=padL+i*bw+bw*0.16, y=H-padB-h;
+    out+=`<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${(bw*0.68).toFixed(1)}" height="${h.toFixed(1)}" rx="3.5" fill="${i===maxI?cssv('--c-run'):'var(--card2)'}" stroke="${i===maxI?'none':'var(--border)'}" data-i="${i}" data-v="${Math.round(v)}"/>
+      <text x="${(x+bw*0.34).toFixed(1)}" y="${H-7}" text-anchor="middle" font-size="10" fill="var(--muted)">${['Po','Ut','St','Št','Pi','So','Ne'][i]}</text>`;
+    if(i===maxI) out+=`<text x="${(x+bw*0.34).toFixed(1)}" y="${(y-5).toFixed(1)}" text-anchor="middle" font-size="10" font-weight="700" fill="var(--text)" class="num">${Math.round(v)}′</text>`;
+  });
+  out+=`<line x1="${padL}" x2="${W-4}" y1="${H-padB}" y2="${H-padB}" stroke="var(--baseline)"/>`;
+  document.getElementById('weekdayChart').innerHTML=`<svg viewBox="0 0 ${W} ${H}" style="width:100%;display:block">${out}</svg>`;
+  document.querySelectorAll('#weekdayChart rect').forEach(r=>{
+    r.addEventListener('mousemove',ev=>{
+      showTip(`<div class="t-h">${WD_FULL[(+r.dataset.i+1)%7]}</div><div class="t-r"><span>Priemerne</span><b class="num">${r.dataset.v} min/deň</b></div>`,ev);
+    });
+    r.addEventListener('mouseleave',hideTip);
+  });
+}
+
+/* ============ REKORDY ============ */
+{
+  const runs=acts.filter(a=>a.sport==='run');
+  const rides=acts.filter(a=>a.sport==='ride');
+  const r5=runs.filter(a=>a.km>=4.75&&a.km<=5.6&&(a.min/a.km)<8).reduce((a,b)=> (b.min/b.km)<(a.min/a.km)?b:a);
+  const bestPace10=runs.filter(a=>a.km>=9).reduce((a,b)=> (b.min/b.km)<(a.min/a.km)?b:a);
+  const longRun=runs.reduce((a,b)=>b.km>a.km?b:a);
+  const longRide=rides.reduce((a,b)=>b.km>a.km?b:a);
+  const climbRide=rides.reduce((a,b)=>b.elev>a.elev?b:a);
+  /* najviac kcal v jeden deň */
+  let bestKcalDay=null,bestKcal=0;
+  byDay.forEach((list,day)=>{ const k=sum(list,a=>a.cal); if(k>bestKcal){bestKcal=k;bestKcalDay=day;} });
+  /* najlepší týždeň km */
+  const weekKm=new Map();
+  acts.forEach(a=>{ const m=iso(mondayOf(a.date)); weekKm.set(m,(weekKm.get(m)||0)+a.km); });
+  let bw=null,bwv=0; weekKm.forEach((v,k)=>{ if(v>bwv){bwv=v;bw=k;} });
+  /* najlepší mesiac km */
+  const mKm=new Map();
+  acts.forEach(a=>{ const m=a.day.slice(0,7); mKm.set(m,(mKm.get(m)||0)+a.km); });
+  let bm=null,bmv=0; mKm.forEach((v,k)=>{ if(v>bmv){bmv=v;bm=k;} });
+  const best=bestStreak();
+  const totalPR=sum(acts,a=>a.pr);
+  const recs=[
+    {i:'⚡',v:paceStr(r5.min/r5.km)+'/km',l:'najrýchlejšia 5-ka',d:fmtDs(r5.day)},
+    {i:'🚀',v:longRun.km.toFixed(1)+' km',l:'najdlhší beh',d:fmtDs(longRun.day)},
+    {i:'🚴',v:longRide.km.toFixed(1)+' km',l:'najdlhšia jazda',d:fmtDs(longRide.day)},
+    {i:'⛰️',v:Math.round(climbRide.elev)+' m',l:'najväčšie prevýšenie (jazda)',d:fmtDs(climbRide.day)},
+    {i:'🔥',v:nf.format(bestKcal)+' kcal',l:'najvýživnejší deň',d:fmtDs(bestKcalDay)},
+    {i:'📅',v:bwv.toFixed(1)+' km',l:'najlepší týždeň',d:'od '+fmtDs(bw)},
+    {i:'🏆',v:bmv.toFixed(0)+' km',l:'najlepší mesiac',d:MON_FULL[+bm.slice(5,7)-1]+' '+bm.slice(0,4)},
+    {i:'🔗',v:best.len+' dní',l:'najdlhšia séria',d:'do '+fmtDs(best.end)},
+  ];
+  document.getElementById('records').innerHTML=recs.map(r=>
+    `<div class="rec"><div class="r-ico">${r.i}</div><div class="r-val num">${r.v}</div><div class="r-lbl">${r.l}</div><div class="r-date num">${r.d}</div></div>`).join('');
+}
+
+/* ============ ODZNAKY ============ */
+{
+  const runs=acts.filter(a=>a.sport==='run');
+  const best=bestStreak();
+  const mKm=new Map(), mDays=new Map();
+  acts.forEach(a=>{ const m=a.day.slice(0,7); mKm.set(m,(mKm.get(m)||0)+a.km); });
+  byDay.forEach((_,day)=>{ const m=day.slice(0,7); mDays.set(m,(mDays.get(m)||0)+1); });
+  const firstWhere=(list,pred)=>{ const f=list.find(pred); return f?fmtDs(f.day):null; };
+  const nthDay=(pred,n)=>{ let c=0; for(const a of acts){ if(pred(a)){ c++; if(c>=n) return fmtDs(a.day); } } return null; };
+  const totalKm=sum(acts,a=>a.km);
+  const morning=acts.filter(a=>a.hour<8).length;
+  const night=acts.filter(a=>a.hour>=21).length;
+  const silaN=acts.filter(a=>a.sport==='sila').length;
+  const futN=acts.filter(a=>a.sport==='futbal').length;
+  const prTotal=sum(acts,a=>a.pr);
+  const m100=[...mKm.entries()].find(([m,v])=>v>=100);
+  const m150=[...mKm.entries()].find(([m,v])=>v>=150);
+  const perfM=[...mDays.entries()].find(([m,v])=>v>=28);
+  const badges=[
+    {i:'🔥',n:'Séria 7',d:'7 dní v pohybe po sebe',ok:best.len>=7,when:'splnené',p:Math.min(1,best.len/7)},
+    {i:'🌋',n:'Séria 14',d:'14 dní v pohybe po sebe',ok:best.len>=14,when:'splnené',p:Math.min(1,best.len/14)},
+    {i:'👑',n:'Séria 30',d:'30 dní v pohybe po sebe',ok:best.len>=30,when:'splnené',p:Math.min(1,best.len/30)},
+    {i:'💯',n:'Klub 100 km',d:'100 km za jeden mesiac',ok:!!m100,when:m100?MON_FULL[+m100[0].slice(5,7)-1]+' '+m100[0].slice(0,4):null,p:Math.min(1,Math.max(...mKm.values())/100)},
+    {i:'🏔️',n:'Klub 150 km',d:'150 km za jeden mesiac',ok:!!m150,when:m150?MON_FULL[+m150[0].slice(5,7)-1]+' '+m150[0].slice(0,4):null,p:Math.min(1,Math.max(...mKm.values())/150)},
+    {i:'🚀',n:'Desiatka',d:'beh na 10 km a viac',ok:runs.some(a=>a.km>=10),when:firstWhere(runs,a=>a.km>=10),p:Math.min(1,Math.max(...runs.map(a=>a.km))/10)},
+    {i:'🦾',n:'Dvadsiatka',d:'beh na 20 km a viac',ok:runs.some(a=>a.km>=20),when:firstWhere(runs,a=>a.km>=20),p:Math.min(1,Math.max(...runs.map(a=>a.km))/20)},
+    {i:'⛰️',n:'Vrchár',d:'500+ m prevýšenia v jednej jazde',ok:acts.some(a=>a.sport==='ride'&&a.elev>=500),when:firstWhere(acts,a=>a.sport==='ride'&&a.elev>=500),p:Math.min(1,Math.max(...acts.filter(a=>a.sport==='ride').map(a=>a.elev))/500)},
+    {i:'🏋️',n:'Železo ×10',d:'10 silových tréningov',ok:silaN>=10,when:silaN>=10?nthDay(a=>a.sport==='sila',10):null,p:Math.min(1,silaN/10)},
+    {i:'⚽',n:'Stredajšia liga',d:'10 futbalových zápasov',ok:futN>=10,when:futN>=10?nthDay(a=>a.sport==='futbal',10):null,p:Math.min(1,futN/10)},
+    {i:'🌅',n:'Ranné vtáča',d:'15 aktivít pred 8:00',ok:morning>=15,when:morning>=15?'splnené':null,p:Math.min(1,morning/15)},
+    {i:'🦉',n:'Nočná sova',d:'15 aktivít po 21:00',ok:night>=15,when:night>=15?'splnené':null,p:Math.min(1,night/15)},
+    {i:'🌍',n:'1000 km klub',d:'1000 km celkovo',ok:totalKm>=1000,when:'splnené',p:Math.min(1,totalKm/1000)},
+    {i:'🛰️',n:'2500 km klub',d:'2500 km celkovo',ok:totalKm>=2500,when:null,p:Math.min(1,totalKm/2500)},
+    {i:'📅',n:'Perfektný mesiac',d:'28+ aktívnych dní v mesiaci',ok:!!perfM,when:perfM?MON_FULL[+perfM[0].slice(5,7)-1]+' '+perfM[0].slice(0,4):null,p:Math.min(1,Math.max(...mDays.values())/28)},
+    {i:'🎯',n:'Lovec rekordov',d:'100 osobných rekordov na Strave',ok:prTotal>=100,when:prTotal>=100?'splnené':null,p:Math.min(1,prTotal/100)},
+  ];
+  const earned=badges.filter(b=>b.ok).length;
+  document.getElementById('badgeCount').textContent=`${earned} z ${badges.length} získaných`;
+  document.getElementById('badges').innerHTML=badges.map(b=>`
+    <div class="badge${b.ok?'':' locked'}">
+      <div class="b-ico">${b.i}</div>
+      <div class="b-name">${b.n}</div>
+      <div class="b-desc">${b.d}</div>
+      ${b.ok? `<div class="b-date num">✓ ${b.when||'splnené'}</div>`
+            : `<div class="b-bar"><i style="width:${Math.round(b.p*100)}%"></i></div><div class="b-prog num">${Math.round(b.p*100)} %</div>`}
+    </div>`).join('');
+}
+
+/* ============ MESAČNÉ SÚHRNY ============ */
+{
+  const months=new Map();
+  acts.forEach(a=>{
+    const m=a.day.slice(0,7);
+    if(!months.has(m)) months.set(m,{km:0,min:0,cal:0,days:new Set(),runKm:0,elev:0});
+    const o=months.get(m);
+    o.km+=a.km; o.min+=a.min; o.cal+=a.cal; o.days.add(a.day);
+    if(a.sport==='run') o.runKm+=a.km;
+    o.elev+=a.elev;
+  });
+  const keys=[...months.keys()].sort().slice(-9).reverse();
+  const maxKm=Math.max(...keys.map(k=>months.get(k).km));
+  const bestK=keys.reduce((a,b)=>months.get(b).km>months.get(a).km?b:a);
+  const rows=keys.map(k=>{
+    const o=months.get(k);
+    const cur = k===iso(refDate).slice(0,7);
+    return `<tr class="${k===bestK?'best':''}">
+      <td>${MON_FULL[+k.slice(5,7)-1]} ${k.slice(0,4)}${cur?' <span style="color:var(--volt);font-size:10px">● prebieha</span>':''}</td>
+      <td class="num"><span class="mbar" style="width:${Math.round(70*o.km/maxKm)}px"></span>${o.km.toFixed(1)}</td>
+      <td class="num">${o.runKm.toFixed(1)}</td>
+      <td class="num">${hm(o.min)}</td>
+      <td class="num">${nf.format(o.cal)}</td>
+      <td class="num">${o.days.size}</td>
+    </tr>`;
+  }).join('');
+  document.getElementById('monthsTbl').innerHTML=`
+    <thead><tr><th>Mesiac</th><th>km spolu</th><th>km beh</th><th>čas</th><th>kcal</th><th>aktívne dni</th></tr></thead>
+    <tbody>${rows}</tbody>`;
+}
+
+/* ============ TELESNÉ ZLOŽENIE ============ */
+{
+  const prev={w:75.05,fat:21.6,muscle:55.81,bmi:23.2,water:53.7,visc:12};
+  const cur ={w:74.10,fat:21.2,muscle:55.37,bmi:22.9,water:54.0,visc:11};
+  const items=[
+    {l:'Hmotnosť',v:cur.w.toFixed(2)+' kg',d:cur.w-prev.w,goodDown:true,dec:2,unit:'kg'},
+    {l:'Telesný tuk',v:cur.fat.toFixed(1)+' %',d:cur.fat-prev.fat,goodDown:true,dec:1,unit:'p. b.'},
+    {l:'Svalová hmota',v:cur.muscle.toFixed(2)+' kg',d:cur.muscle-prev.muscle,goodDown:false,dec:2,unit:'kg'},
+    {l:'BMI',v:cur.bmi.toFixed(1),d:cur.bmi-prev.bmi,goodDown:true,dec:1,unit:''},
+    {l:'Voda',v:cur.water.toFixed(1)+' %',d:cur.water-prev.water,goodDown:false,dec:1,unit:'p. b.'},
+    {l:'Viscerálny tuk',v:cur.visc,d:cur.visc-prev.visc,goodDown:true,dec:0,unit:''},
+  ];
+  document.getElementById('bodyComp').innerHTML=items.map(x=>{
+    const good=x.goodDown? x.d<=0 : x.d>=0;
+    const cls=x.d===0?'':good?'up':'down';
+    const sign=x.d>0?'+':x.d<0?'−':'±';
+    return `<div class="bc"><div class="l">${x.l}</div><div class="v num">${x.v}</div>
+      <div class="d num ${cls}">${sign}${Math.abs(x.d).toFixed(x.dec)} ${x.unit}</div></div>`;
+  }).join('');
+}
+
+/* ============ POSLEDNÉ AKTIVITY ============ */
+{
+  const last=acts.slice(-25).reverse();
+  const rows=last.map(a=>{
+    const pace = a.sport==='run'&&a.km>0.5 ? paceStr(a.min/a.km)+'/km'
+      : a.sport==='ride'&&a.km>0.3&&a.min>0 ? (a.km/(a.min/60)).toFixed(1)+' km/h' : '—';
+    const efc = a.ef>=60?'var(--bad)':a.ef>=25?'var(--warn)':'var(--muted)';
+    return `<tr>
+      <td class="num">${fmtDs(a.day)}</td>
+      <td><span class="sp-tag"><span class="sp-dot" style="background:${cssv(KMETA[a.sport].cv)}"></span>${KMETA[a.sport].icon} ${KMETA[a.sport].label}</span></td>
+      <td class="num">${a.km>=0.05?a.km.toFixed(2)+' km':'—'}</td>
+      <td class="num">${hm(a.min)}</td>
+      <td class="num">${pace}</td>
+      <td class="num">${a.elev>=1?Math.round(a.elev)+' m':'—'}</td>
+      <td class="num">${nf.format(a.cal)}</td>
+      <td><span class="ef-pill num" style="color:${efc}">${a.ef}</span></td>
+    </tr>`;
+  }).join('');
+  document.getElementById('actsTbl').innerHTML=`
+    <thead><tr><th>Dátum</th><th>Šport</th><th>Vzdialenosť</th><th>Čas</th><th>Tempo</th><th>Prevýš.</th><th>kcal</th><th>Efort</th></tr></thead>
+    <tbody>${rows}</tbody>`;
+}
+
+/* ============ RENDER (theme-dependent charts) ============ */
+function renderAllCharts(){ renderHeatmap(); renderVol(); renderDonut(); renderPace(); renderWeekday(); }
+setTheme(localStorage.getItem('pulse-theme') || (matchMedia('(prefers-color-scheme: light)').matches?'light':'dark'));
+</script>
+</body>
+</html>

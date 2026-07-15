@@ -664,13 +664,13 @@ function renderDonut(){
     segs+=`<path d="M${x0.toFixed(1)},${y0.toFixed(1)} A${R},${R} 0 ${large} 1 ${x1.toFixed(1)},${y1.toFixed(1)} L${x2.toFixed(1)},${y2.toFixed(1)} A${r},${r} 0 ${large} 0 ${x3.toFixed(1)},${y3.toFixed(1)} Z" fill="${cssv(KMETA[x.k].cv)}" stroke="var(--card)" stroke-width="2" data-k="${x.k}" data-v="${Math.round(x.v)}"/>`;
     a0=a1;
   });
-  const rows=per.sort((a,b)=>b.v-a.v).map(x=>`<div style="margin:4px 0;display:flex;justify-content:space-between;align-items:center;gap:12px"><span class="li" style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--soft)"><span class="sw" style="width:10px;height:10px;border-radius:3px;background:${cssv(KMETA[x.k].cv)}"></span>${KMETA[x.k].label}</span><b class="num" style="font-size:12px">${hm(x.v)} · ${Math.round(100*x.v/tot)} %</b></div>`).join('');
+  const rows=per.sort((a,b)=>b.v-a.v).map(x=>`<div style="margin:4px 0;display:flex;justify-content:space-between;align-items:center;gap:12px;white-space:nowrap"><span class="li" style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--soft);white-space:nowrap"><span class="sw" style="width:10px;height:10px;border-radius:3px;flex:none;background:${cssv(KMETA[x.k].cv)}"></span>${KMETA[x.k].label}</span><b class="num" style="font-size:12px;white-space:nowrap">${hm(x.v)} · ${Math.round(100*x.v/tot)} %</b></div>`).join('');
   document.getElementById('donut').innerHTML=`
     <div style="display:flex;gap:18px;align-items:center;flex-wrap:wrap">
       <svg width="180" height="180" viewBox="0 0 180 180">${segs}
         <text x="90" y="86" text-anchor="middle" font-size="17" font-weight="800" fill="var(--text)" class="num">${hm(tot)}</text>
         <text x="90" y="102" text-anchor="middle" font-size="10" fill="var(--muted)">spolu</text></svg>
-      <div style="flex:1;min-width:150px">${rows}</div>
+      <div style="flex:1;min-width:200px">${rows}</div>
     </div>`;
   document.querySelectorAll('#donut path').forEach(pth=>{
     pth.addEventListener('mousemove',ev=>{

@@ -12,9 +12,9 @@
 <script type="module">  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
   import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged }
     from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-  import { getFirestore, doc, getDoc }
+  import { getFirestore, doc, getDoc, setDoc }
     from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-  window.fb = { initializeApp, getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged, getFirestore, doc, getDoc };
+  window.fb = { initializeApp, getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged, getFirestore, doc, getDoc, setDoc };
   window.dispatchEvent(new Event('fb-ready'));</script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -317,6 +317,21 @@ footer a{color:var(--soft)}
 </div><!-- /appRoot -->
 
 <script>
+/* ============================================================
+   NOVÉ AKTIVITY (delta)
+   Plná história aktivít žije vo Firestore dokumente pulse/data (pole
+   "raw") — to zostáva zdroj pravdy. SEED_RAW nižšie je len prírastok
+   od posledného syncu: pri prihlásení sa spojí s tým, čo je vo Firestore
+   (dedup podľa časovej značky) a zapíše sa späť, presne ako
+   syncMonthsFromFirestore robí pre workout-dashboard.html. Update =
+   dopíš nové riadky sem a commitni, žiadne samostatné prihlasovanie
+   netreba. Formát riadku:
+   YYYY-MM-DDTHH:MM|Sport|dist_m|moving_s|elev_m|kcal|effort|pr|ach
+   ============================================================ */
+const SEED_RAW = `2026-07-16T20:36|Walk|2548|1653|17|132|3|0|0
+2026-07-16T18:19|WeightTraining|0|2495|0|186|5|0|0
+2026-07-16T08:58|Ride|869|355|2|9|1|0|0`;
+
 function boot(RAW, bodyCompCur, bodyCompPrev){
 /* ============ PARSE ============ */
 const SPORT = {
@@ -948,7 +963,7 @@ setTheme(localStorage.getItem('pulse-theme') || (matchMedia('(prefers-color-sche
 /* ============ AUTH / DATA LOADING ============ */
 window.addEventListener('fb-ready', () => {
   const { initializeApp, getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged,
-    getFirestore, doc, getDoc } = window.fb;
+    getFirestore, doc, getDoc, setDoc } = window.fb;
   const firebaseConfig = {
     apiKey:"AIzaSyDzwgVupB_pDsoHZiG8JvQLx5QZy-BXdNY",
     authDomain:"kornelsson-bea69.firebaseapp.com",
@@ -965,19 +980,37 @@ window.addEventListener('fb-ready', () => {
   let booted = false;
 
   // Dáta (aktivity + telesné zloženie) žijú v Firestore dokumente pulse/data,
-  // chránenom auth pravidlami — bez prihlásenia sa k nim nedá dostať, na rozdiel
-  // od predchádzajúcej verzie, ktorá mala všetko embedded priamo v HTML.
+  // chránenom auth pravidlami — bez prihlásenia sa k nim nedá dostať. SEED_RAW
+  // (delta nových aktivít, pozri vyššie) sa pri každom prihlásení zlúči s tým,
+  // čo je vo Firestore, a prípadný rozdiel sa zapíše späť — rovnaký vzor ako
+  // syncMonthsFromFirestore vo workout-dashboard.html.
+  async function syncSeedRawIntoFirestore(ref, data){
+    const existingLines = (data.raw || '').split('\n').filter(Boolean);
+    const existingTs = new Set(existingLines.map(l => l.split('|')[0]));
+    const newLines = SEED_RAW.split('\n').filter(Boolean).filter(l => !existingTs.has(l.split('|')[0]));
+    if(newLines.length === 0) return data.raw;
+    const merged = [...newLines, ...existingLines].join('\n');
+    try {
+      await setDoc(ref, { ...data, raw: merged }, { merge: true });
+    } catch(e){
+      console.warn('Zápis nových aktivít do Firestore zlyhal, zobrazujem aspoň lokálne zlúčené dáta.', e);
+    }
+    return merged;
+  }
+
   async function loadAndBoot(attempt = 1){
     if(booted) return;
     try {
-      const snap = await getDoc(doc(db, 'pulse', 'data'));
+      const ref = doc(db, 'pulse', 'data');
+      const snap = await getDoc(ref);
       if(!snap.exists()){
         $('loginError').textContent = 'Dáta v Firestore ešte neboli nahraté.';
         return;
       }
       const data = snap.data();
+      const mergedRaw = await syncSeedRawIntoFirestore(ref, data);
       booted = true;
-      boot(data.raw, data.bodyComp.cur, data.bodyComp.prev);
+      boot(mergedRaw, data.bodyComp.cur, data.bodyComp.prev);
     } catch(e){
       // Krátko po obnovení prihlásenia z IndexedDB vie Firestore token
       // chvíľu meškať za auth stavom, čo sa prejaví ako permission-denied.

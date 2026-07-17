@@ -322,12 +322,11 @@
 <script>
 /* ============================================================
    MONTHLY DATA
-   Reálne dáta (apríl, máj, jún 2026 a ďalšie) teraz žijú vo Firestore
-   kolekcii "months" (chránenej auth pravidlami) — pozri
-   syncMonthsFromFirestore nižšie. SEED_MONTHS je zámerne prázdne, aby
-   sa žiadne osobné dáta nedali vidieť cez "zobraziť zdroj" stránky.
-   Ak by Firestore niekedy vypadol, dashboard jednoducho nemá čo
-   zobraziť, kým sa spojenie neobnoví — nespadne.
+   Mesačné reporty žijú priamo tu v SEED_MONTHS a commitujú sa do gitu.
+   syncMonthsFromFirestore (nižšie) ich pri prihlásení nahrá do Firestore
+   kolekcie "months", ak tam ešte nie sú — takže update = uprav SEED_MONTHS
+   a commitni, žiadne samostatné prihlasovanie netreba. Firestore je len
+   zrkadlo/cache pre rýchle načítanie, nie zdroj pravdy.
    ============================================================ */
 const SEED_MONTHS = [
   {

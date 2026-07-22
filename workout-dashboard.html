@@ -398,11 +398,11 @@ const SEED_MONTHS = [
         14: { type:"strength", label:"Silový", sub:"35 min" },
         15: { type:"run", label:"Futbal", detail:"83 min, efort 96", sub:"848 kcal" },
         16: { type:"strength", label:"Silový", detail:"42 min · namiesto plánovaného tempo behu", sub:"186 kcal + krátka jazda (0,9 km) a večerná prechádzka (2,5 km)" },
-        17: { type:"bike", label:"Bicykel", detail:"15 km · Z2", sub:"vytrvalostná jazda" },
+        17: { type:"run", label:"Beh", detail:"5,07 km · 5:59/km", sub:"efort 25 · namiesto plánovanej jazdy" },
         18: { type:"rest", label:"Voľno" },
-        19: { type:"run", label:"Beh (long)", detail:"9 km · Z2-Z3", sub:"6:10-6:30/km" },
-        20: { type:"rest", label:"Voľno" },
-        21: { type:"strength", label:"Silový", sub:"40 min" },
+        19: { type:"run", label:"Beh", detail:"5,02 km · 6:19/km", sub:"efort 17 · kratšie než plánovaných 9 km" },
+        20: { type:"strength", label:"Silový", detail:"36 min", sub:"151 kcal" },
+        21: { type:"rest", label:"Voľno", detail:"plánovaný silový tréning sa nekonal" },
         22: { type:"run", label:"Futbal", sub:"ak nevyjde počasie, tak beh" },
         23: { type:"run", label:"Beh (tempo)", detail:"6 km · Z3-Z4", sub:"5:40-6:00/km" },
         24: { type:"strength", label:"Silový", sub:"30 min" },
@@ -460,32 +460,34 @@ const SEED_MONTHS = [
   {
     key: "2026-07",
     label: "Júl 2026",
-    generatedAt: "2026-07-17",
+    generatedAt: "2026-07-22",
     inProgress: true,
-    asOf: "2026-07-17",
-    totals: { activeDays: 15, totalDays: 17, distanceKm: 92.91, timeMin: 1062.1, calories: 6316, elevationM: 864.9, prCount: 15, achievementCount: 18 },
+    asOf: "2026-07-22",
+    totals: { activeDays: 18, totalDays: 22, distanceKm: 105.04, timeMin: 1186.3, calories: 7239, elevationM: 888.9, prCount: 15, achievementCount: 18 },
     bySport: {
-      Run:            { count: 6, distanceKm: 28.31, timeMin: 178.9, calories: 1897, elevationM: 0,     icon: "🏃" },
-      Walk:           { count: 16, distanceKm: 30.08, timeMin: 336.1, calories: 1505, elevationM: 207.4, icon: "🚶" },
+      Run:            { count: 8, distanceKm: 38.40, timeMin: 240.9, calories: 2566, elevationM: 0,     icon: "🏃" },
+      Walk:           { count: 18, distanceKm: 32.12, timeMin: 362.7, calories: 1608, elevationM: 231.4, icon: "🚶" },
       Ride:           { count: 5, distanceKm: 34.52, timeMin: 183.1, calories: 938,  elevationM: 642.5, icon: "🚴" },
-      WeightTraining: { count: 6, distanceKm: 0,     timeMin: 215.3, calories: 826,  elevationM: 0,     icon: "🏋️" },
+      WeightTraining: { count: 7, distanceKm: 0,     timeMin: 251.0, calories: 977,  elevationM: 0,     icon: "🏋️" },
       Soccer:         { count: 2, distanceKm: 0,     timeMin: 148.7, calories: 1150, elevationM: 15,    icon: "⚽" }
     },
     weekly: [
       { week: "27 (1.-5.7.)", distanceKm: 40.26 },
       { week: "28 (6.-12.7.)", distanceKm: 43.50 },
-      { week: "29 (13.-16.7.)", distanceKm: 9.14 }
+      { week: "29 (13.-19.7.)", distanceKm: 21.27 },
+      { week: "30 (20.-22.7.)", distanceKm: 0.00 }
     ],
     highlights: [
-      { title: "15 aktívnych dní zo 17 doterajších (88 %)", body: "Jediný úplne voľný deň zatiaľ bol 5. júl." },
-      { title: "15. júl — najsilnejší futbalový výkon mesiaca", body: "83 min, 848 kcal, relatívny efort 96 (najvyšší efort mesiaca zatiaľ) — tentoraz Strava zápas rovno rozpoznala ako Soccer, nie ako beh." },
+      { title: "18 aktívnych dní z 22 doterajších (82 %)", body: "Voľné dni zatiaľ: 5., 18. a 21. júl." },
+      { title: "15. júl — najsilnejší futbalový výkon mesiaca", body: "83 min, 848 kcal, relatívny efort 96 (najvyšší efort mesiaca zatiaľ) — Strava zápas rovno rozpoznala ako Soccer, nie ako beh." },
       { title: "4. júl — sobotňajšia jazda so 14 osobnými rekordmi", body: "25.39 km, 581 m prevýšenia, 774 kcal — stále najsilnejší nebežecký výkon mesiaca." },
-      { title: "8. júl — futbal namiesto voľna", body: "Strava zaznamenala pickup futbal ako beh (4.3 km, 66 min, efort 66) — v prehľade počítané ako Soccer, nie do bežeckých štatistík." },
-      { title: "9. júl — trojkombo v jeden deň", body: "Beh (5.02 km), silový tréning (35 min) aj bicykel (2.7 km) v ten istý deň." }
+      { title: "17. júl — beh sa vrátil namiesto plánovanej jazdy", body: "5.07 km, tempo 5:59/km, efort 25 — prvý beh po viacdňovej prestávke." },
+      { title: "9. júl — najrýchlejšie tempo mesiaca", body: "5.02 km za 5:58/km, efort 20 — najrýchlejší beh doterajšieho júla." }
     ],
     lowlights: [
       { title: "13. júl — plánovaný beh sa nekonal", body: "Namiesto plánovaného 5 km behu len krátka 5-minútová prechádzka (1.25 km)." },
-      { title: "Bez behu už 5 dní (13.-16. júl)", body: "Namiesto behov voľno, dva silové tréningy a futbal — aj 16. júla, keď plán počítal s 5,5 km tempo behom, sa nakoniec bežalo nula km." }
+      { title: "21. júl — plánovaný silový tréning sa nekonal", body: "Celý deň bez akejkoľvek zaznamenanej aktivity." },
+      { title: "Pokles objemu v treťom týždni", body: "Týždenná vzdialenosť klesla z 43.50 km (týždeň 28) na 21.27 km (týždeň 29) a zatiaľ 0 km v rozbehnutom týždni 30 (20.-22.7.)." }
     ],
     recommendations: [],
     runs: [
@@ -494,7 +496,9 @@ const SEED_MONTHS = [
       { date:"09.07.", name:"Lunch Run", distanceKm:5.02, paceMinKm:5.97, calories:337, effort:20 },
       { date:"10.07.", name:"Afternoon Run", distanceKm:5.02, paceMinKm:6.38, calories:334, effort:10 },
       { date:"11.07.", name:"Morning Run", distanceKm:5.01, paceMinKm:6.30, calories:345, effort:24 },
-      { date:"12.07.", name:"Evening Run", distanceKm:3.20, paceMinKm:6.42, calories:211, effort:9 }
+      { date:"12.07.", name:"Evening Run", distanceKm:3.20, paceMinKm:6.42, calories:211, effort:9 },
+      { date:"17.07.", name:"Afternoon Run", distanceKm:5.07, paceMinKm:5.98, calories:335, effort:25 },
+      { date:"19.07.", name:"Morning Run", distanceKm:5.02, paceMinKm:6.31, calories:334, effort:17 }
     ],
     bodyComposition: {
       date: "2026-07-07",
